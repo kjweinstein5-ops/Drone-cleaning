@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>PROPWASH — Operator App (demo)</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  :root { --blue:#0b6cc4; --green:#1a9e54; --red:#c0392b; --amber:#e08e0b; --ink:#1c2733; --muted:#7a8794; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin:0; background:#eef1f4; color:var(--ink); }
+  .app { max-width:520px; margin:0 auto; min-height:100vh; background:#f7f9fb; }
+  .topbar { background:var(--blue); color:#fff; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:10; }
+  .brand { font-weight:800; letter-spacing:1px; }
+  .pilot { font-size:12px; opacity:.9; }
+  .pad { padding:16px 18px; }
+  .job { background:#fff; border-radius:14px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.08); margin-bottom:14px; }
+  .job h2 { margin:0 0 2px; font-size:17px; }
+  .muted { color:var(--muted); font-size:13px; }
+  .zones { display:flex; gap:6px; margin-top:12px; flex-wrap:wrap; }
+  .chip { font-size:11px; padding:4px 9px; border-radius:20px; background:#eef1f4; color:var(--muted); font-weight:600; }
+  .chip.done { background:#e3f5ea; color:var(--green); }
+  .chip.active { background:#dbeafe; color:var(--blue); }
+  .chip.fail { background:#fdecea; color:var(--red); }
+  .card { background:#fff; border-radius:16px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,.10); }
+  .card h1 { font-size:20px; margin:0 0 2px; }
+  .safety { border-radius:10px; padding:10px 12px; font-size:13px; font-weight:600; margin:12px 0; }
+  .safety.solar { background:#fff6e6; color:#8a5a00; border:1px solid #ffe2a8; }
+  .safety.std { background:#eef6ff; color:#1a5fa0; border:1px solid #cfe3fb; }
+  .checklist { list-style:none; padding:0; margin:14px 0; }
+  .checklist li { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid #eef1f4; }
+  .num { flex:0 0 24px; height:24px; border-radius:50%; background:var(--blue); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .step-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .step-val { font-size:16px; font-weight:600; }
+  .btn { display:block; width:100%; border:0; border-radius:12px; padding:16px; font-size:16px; font-weight:700; color:#fff; margin-top:10px; cursor:pointer; }
+  .btn.primary { background:var(--blue); }
+  .btn.go { background:var(--green); }
+  .btn.ghost { background:#fff; color:var(--ink); border:1.5px solid #d4dbe2; }
+  .btn.abort { background:#fff; color:var(--red); border:1.5px solid #f1b9b3; }
+  .btn:active { transform:scale(.99); }
+  .dwell { text-align:center; padding:24px 0; }
+  .dwell .big { font-size:54px; font-weight:800; color:var(--blue); }
+  .overlay { background:#0b1722; border-radius:12px; height:150px; position:relative; overflow:hidden; margin:12px 0; display:flex; align-items:center; justify-content:center; color:#9fb4c7; font-size:13px; }
+  .verdict { text-align:center; padding:18px 0; }
+  .verdict .icon { font-size:46px; }
+  .verdict.pass .icon { color:var(--green); }
+  .verdict.fail .icon { color:var(--red); }
+  .verdict h1 { margin:6px 0 2px; }
+  .metric { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eef1f4; font-size:14px; }
+  .metric b { font-variant-numeric:tabular-nums; }
+  .footer-note { font-size:11px; color:var(--muted); text-align:center; padding:18px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// Demo job packet — mirrors the WorkOrder/Prescription schema from the backend.
+const JOB = {
+  property: "Carlsbad Commerce Center — Bldg C",
+  address: "2200 Faraday Ave, Carlsbad, CA",
+  estMinutes: 95,
+  zones: [
+    { id:"SOL-ROOF", label:"Rooftop solar array", surface:"solar_panel",
+      nozzle:"#4 — 25° narrow, 0.35mm", chemical:"DI water only (no detergent)",
+      pressure:"1.8 bar", standoff:"0.8 m", dwell:8, pattern:"E–W sweep", solar:true, willFail:false },
+    { id:"STUCCO-N", label:"North façade — stucco", surface:"stucco",
+      nozzle:"#3 — 40° fan, 0.6mm", chemical:"Standard degreaser (30%)",
+      pressure:"4.0 bar", standoff:"1.0 m", dwell:6, pattern:"N–S sweep", solar:false, willFail:true },
+    { id:"RF-S", label:"Roof — south slope", surface:"composite_shingle",
+      nozzle:"#2 — 40° fan, 0.5mm", chemical:"Eco degreaser (35%)",
+      pressure:"5.5 bar", standoff:"1.2 m", dwell:7, pattern:"N–S sweep", solar:false, willFail:false },
+  ]
+};
+
+function Topbar() {
+  return (
+    <div className="topbar">
+      <span className="brand">PROPWASH</span>
+      <span className="pilot">Pilot: K. Weinstein · Part 107 ✓</span>
+    </div>
+  );
+}
+
+function JobHeader({ zones, statuses }) {
+  return (
+    <div className="job">
+      <h2>{JOB.property}</h2>
+      <div className="muted">{JOB.address}</div>
+      <div className="muted">{zones.length} zones · est. {JOB.estMinutes} min</div>
+      <div className="zones">
+        {zones.map((z,i) => (
+          <span key={z.id} className={"chip " + (statuses[i]||"")}>{z.id}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ZoneCard({ zone, onConfirm }) {
+  return (
+    <div className="card">
+      <h1>{zone.label}</h1>
+      <div className="muted">{zone.id} · {zone.surface}</div>
+      <div className={"safety " + (zone.solar ? "solar":"std")}>
+        {zone.solar
+          ? "⚠ SOLAR — DI water only, hard pressure ceiling 2.0 bar. Detergent forbidden."
+          : "Standard surface — stay within prescribed pressure."}
+      </div>
+      <ul className="checklist">
+        <li><span className="num">1</span><div><div className="step-label">Fit nozzle</div><div className="step-val">{zone.nozzle}</div></div></li>
+        <li><span className="num">2</span><div><div className="step-label">Load chemical</div><div className="step-val">{zone.chemical}</div></div></li>
+        <li><span className="num">3</span><div><div className="step-label">Pressure</div><div className="step-val">{zone.pressure}</div></div></li>
+        <li><span className="num">4</span><div><div className="step-label">Standoff distance</div><div className="step-val">{zone.standoff}</div></div></li>
+        <li><span className="num">5</span><div><div className="step-label">Coverage pattern</div><div className="step-val">{zone.pattern}</div></div></li>
+      </ul>
+      <button className="btn primary" onClick={onConfirm}>Confirm ready &amp; begin</button>
+      <div className="footer-note">You remain in command at all times. You can abort the moment anything looks wrong.</div>
+    </div>
+  );
+}
+
+function Executing({ zone, onDone, onAbort }) {
+  const [left, setLeft] = useState(zone.dwell);
+  useEffect(() => {
+    if (left <= 0) { onDone(); return; }
+    const t = setTimeout(() => setLeft(left-1), 1000);
+    return () => clearTimeout(t);
+  }, [left]);
+  return (
+    <div className="card">
+      <h1>Cleaning · {zone.id}</h1>
+      <div className="muted">Executing prescribed clean — monitor the overlay</div>
+      <div className="overlay">live thermal + video overlay (demo)</div>
+      <div className="dwell">
+        <div className="big">{left}s</div>
+        <div className="muted">dwell remaining</div>
+      </div>
+      <button className="btn abort" onClick={onAbort}>■ Abort / Override</button>
+    </div>
+  );
+}
+
+function Verifying({ onResult }) {
+  useEffect(() => { const t = setTimeout(onResult, 1800); return () => clearTimeout(t); }, []);
+  return (
+    <div className="card">
+      <h1>Verifying…</h1>
+      <div className="muted">Post-clean thermal re-scan in progress</div>
+      <div className="overlay">re-scanning zone (demo)</div>
+    </div>
+  );
+}
+
+function Verdict({ zone, pass, onNext, onRetry, isLast }) {
+  return (
+    <div className="card">
+      <div className={"verdict " + (pass?"pass":"fail")}>
+        <div className="icon">{pass ? "✓" : "↻"}</div>
+        <h1>{pass ? "VERIFIED CLEAN" : "RE-QUEUE — retry with more pressure"}</h1>
+        <div className="muted">{zone.id}</div>
+      </div>
+      <div className="metric"><span>Residual (proxy)</span><b>{pass ? "0.06" : "0.41"}</b></div>
+      <div className="metric"><span>Threshold</span><b>0.15</b></div>
+      {!pass && <div className="metric"><span>Adjustment</span><b>pressure +0.5 bar</b></div>}
+      {pass
+        ? <button className="btn go" onClick={onNext}>{isLast ? "Finish job" : "Next zone →"}</button>
+        : <button className="btn primary" onClick={onRetry}>Retry zone with new params</button>}
+    </div>
+  );
+}
+
+function Done() {
+  return (
+    <div className="card">
+      <div className="verdict pass"><div className="icon">✓</div><h1>Job complete</h1></div>
+      <div className="muted" style={{textAlign:'center'}}>All zones verified clean. ROI report generating for the customer.</div>
+    </div>
+  );
+}
+
+function App() {
+  const zones = JOB.zones;
+  const [idx, setIdx] = useState(0);
+  const [phase, setPhase] = useState("brief"); // brief|exec|verify|verdict|done
+  const [statuses, setStatuses] = useState(zones.map(()=>"" ));
+  const [pass, setPass] = useState(true);
+  const retriedRef = useRef({});
+
+  const setStatus = (i, s) => setStatuses(prev => prev.map((x,j)=> j===i ? s : x));
+
+  if (phase === "done") return (<div className="app"><Topbar/><JobHeader zones={zones} statuses={statuses}/><div className="pad"><Done/></div></div>);
+
+  const zone = zones[idx];
+  const onConfirm = () => { setStatus(idx,"active"); setPhase("exec"); };
+  const onAbort = () => { setStatus(idx,""); setPhase("brief"); };
+  const onExecDone = () => setPhase("verify");
+  const onResult = () => {
+    const willFail = zone.willFail && !retriedRef.current[zone.id];
+    setPass(!willFail); setPhase("verdict");
+  };
+  const onNext = () => {
+    setStatus(idx,"done");
+    if (idx+1 >= zones.length) setPhase("done");
+    else { setIdx(idx+1); setPhase("brief"); }
+  };
+  const onRetry = () => { retriedRef.current[zone.id] = true; setStatus(idx,"fail"); setPhase("exec"); };
+
+  return (
+    <div className="app">
+      <Topbar/>
+      <JobHeader zones={zones} statuses={statuses}/>
+      <div className="pad">
+        {phase==="brief"   && <ZoneCard zone={zone} onConfirm={onConfirm}/>}
+        {phase==="exec"    && <Executing zone={zone} onDone={onExecDone} onAbort={onAbort}/>}
+        {phase==="verify"  && <Verifying onResult={onResult}/>}
+        {phase==="verdict" && <Verdict zone={zone} pass={pass} onNext={onNext} onRetry={onRetry} isLast={idx+1>=zones.length}/>}
+      </div>
+      <div className="footer-note">PROPWASH operator app — demo with mock data. Operator stays in command (FAA Part 107).</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
