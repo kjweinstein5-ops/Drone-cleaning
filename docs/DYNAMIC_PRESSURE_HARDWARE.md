@@ -275,21 +275,178 @@ principle as your service contracts (IP_PROTECTION.md §7).
 
 ---
 
-## 8. What to do this quarter
+## 8. Near-future build: PROPWASH IHM (Integrated Head Module)
 
-1. **Buy the bench parts** (SMC ITV0010 or equivalent, STM32 Nucleo board, pressure sensor)
-   and validate the PID loop on a test rig. This creates tangible, dated invention evidence.
-2. **Add `PSMTransport`** as a new execution adapter in `propwash/backend/execution/` behind
-   a feature flag (`PROPWASH_ENABLE_PSM=true`). Mirror the `CompanionTransport` pattern.
-3. **Talk to a patent attorney** about adding a hardware claim to the provisional — the EPR
-   + firmware ceiling + pilot override combination strengthens the method patent significantly.
-4. **Ask Lucid directly** (in the outreach call, `docs/LUCID_OUTREACH.md`) whether PSM can
-   be accessory-installed within their airworthiness framework, or whether you need to run
-   it only on hardware you own.
+> **Phase 2 hardware — build after PSM is proven on-drone.**
+> This is the stronger patent position and the device that eliminates manual nozzle swaps.
+
+### The problem PSM alone doesn't solve
+
+With PSM, the operator still has to **land between surface types and manually swap the
+nozzle tip** — a 25° narrow for solar, a 40° fan for stucco, a 45° fan for gutters.
+Each swap takes 3–5 minutes and requires touching hardware on the drone. Across a
+multi-zone job (solar array → façade → roof), that adds 10–15 minutes of dead time
+per job and is a non-trivial source of human error (wrong tip installed for a zone).
+
+### What the IHM is
+
+A servo-actuated nozzle-selector turret — a small revolver-style manifold holding
+3–4 different nozzle tips — bolted directly to the spray arm, upstream of the exit point.
+A single servo rotates the manifold to align the correct tip with the spray line.
+Combined with the PSM, the orchestrator commands *both* parameters in a single message:
+
+```
+Zone: SOL-ROOF
+  → IHM: rotate to tip slot 1  (25° narrow, 0.35 mm — solar safe)
+  → PSM: set pressure 1.8 bar
+
+Zone: STUCCO-N
+  → IHM: rotate to tip slot 3  (40° fan, 0.6 mm — standard)
+  → PSM: set pressure 4.0 bar
+
+Zone: GUTTER-W
+  → IHM: rotate to tip slot 4  (45° fan, 0.7 mm — heavy)
+  → PSM: set pressure 6.5 bar
+```
+
+No landing. No manual swap. The system reconfigures itself between zones.
+
+### Key components (BOM sketch — IHM)
+
+| Component | Function | Off-the-shelf path |
+|---|---|---|
+| Brushless servo (waterproof) | Rotate manifold to selected slot | Hitec D956WP or similar (35 g) |
+| Stainless manifold body | 4-port nozzle carousel, splash-proof | Custom machined (SS or Delrin) |
+| Position encoder / limit switches | Confirm correct slot aligned | Magnetic encoder (AS5600) |
+| PSM microcontroller (shared) | Add IHM control to existing PSM firmware | No new MCU needed |
+| Drip seal / O-ring set | Prevent cross-port leakage | Standard BSP O-ring kit |
+| Total weight target | | < 180 g (excluding nozzle tips) |
+
+The IHM shares the PSM's microcontroller and CAN bus — they are one integrated module
+in the production version, two separate boards in the prototype phase.
+
+### Safety invariants for the IHM
+
+Two rules enforced in firmware, same authority level as PSM pressure ceiling:
+
+1. **Tip-pressure interlock:** The firmware stores a maximum pressure for each tip slot.
+   If the orchestrator sends a pressure setpoint that exceeds the installed tip's ceiling,
+   the firmware **clamps the pressure and logs a deviation** — it does not refuse the
+   command outright (the zone still gets cleaned), but it protects the surface.
+   Solar tip slot (slot 1): hard ceiling 2.0 bar regardless of commanded pressure.
+
+2. **Rotation lockout under pressure:** The manifold servo will not rotate while line
+   pressure is above 0.3 bar. Before switching tips, firmware drops pressure to idle,
+   waits for sensor confirmation, then rotates. This prevents spray from the wrong
+   orifice during transition.
+
+### Architecture — IHM added
+
+```
+PROPWASH orchestrator (Tier 2)
+        │
+        │  { tip_slot: 1, pressure_bar: 1.8 }  (validated by SafetyChecker)
+        ▼
+   PSM+IHM firmware (Tier 1)
+   ┌──────────────────────────────────────────────┐
+   │ 1. Accept { tip_slot, pressure } from Tier 2 │
+   │ 2. Drop pressure to idle                     │
+   │ 3. Rotate manifold → tip_slot                │
+   │ 4. Confirm position via encoder              │
+   │ 5. Ramp pressure to setpoint                 │
+   │ 6. Check tip-pressure interlock              │  ← solar slot: hard 2.0 bar
+   │ 7. Run PID loop, stream telemetry            │
+   │ 8. Pilot override → pressure idle + lock     │
+   └──────────────────────────────────────────────┘
+```
+
+### The combined patent claim (PSM + IHM together)
+
+This is the claim that matters most — file it as a dependent claim on the PSM
+provisional, or as a separate continuation if IHM is proven after the provisional files:
+
+> *"A spray system for an unmanned aerial vehicle comprising: (a) an electronic pressure
+> regulator commanded by a surface-classification model output; (b) a servo-actuated
+> multi-tip nozzle selector whose active tip is commanded by the same surface-
+> classification model output; (c) firmware enforcing a per-tip-slot maximum pressure
+> ceiling that cannot be exceeded by any software command; (d) a rotation interlock
+> that prevents tip transition while line pressure exceeds an idle threshold; wherein
+> pressure setpoint and nozzle geometry are co-prescribed in a single work-order message,
+> validated against per-surface safety limits, and confirmed via onboard sensors before
+> any cleaning pass commences."*
+
+That is a very strong, very specific claim. Every element is novel in this combination.
+Designing around it requires independently solving: (1) the closed-loop verification
+feedback, (2) the per-surface ceiling enforcement, (3) the tip-pressure interlock, and
+(4) the rotation lockout — all on a drone form factor. That's years of work.
+
+### What to trade-secret (not claim in the patent)
+
+- The **tip-slot assignment** logic: which nozzle goes in which slot for a given job
+  profile (based on the job's surface mix — this is a non-obvious optimization your
+  data will calibrate over time).
+- The **rotation timing model** under vibration: how long to wait for the manifold to
+  settle before re-pressurizing (tuned from flight data, not derivable theoretically).
+- The **per-surface deviation signatures**: what the pressure telemetry looks like when
+  a nozzle is partially clogged vs. when the surface is absorbing more liquid than
+  expected (early warning system for re-queue decisions).
+
+### Product positioning: PSM vs. PSM+IHM
+
+| Product | What it replaces | ASP estimate | Target buyer |
+|---|---|---|---|
+| PSM only | Manual pressure knob adjustment | $1,800–2,500 | Any spray drone operator |
+| PSM + IHM (integrated) | Manual pressure + manual nozzle swap | $3,500–5,000 | High-volume operators, solar O&M fleets |
+| PSM + IHM + subscription | All of above + calibration updates, telemetry dashboard | $3,500 + $600/yr | Enterprise solar / commercial cleaning |
+
+The IHM doubles the ASP without proportionally doubling the BOM cost (~$200 more in
+parts for the servo + machined manifold + encoder). That's where the margin expansion lives.
+
+### Build roadmap for IHM
+
+**Phase 1 (bench — no drone needed):**
+1. 3D-print a 4-slot manifold prototype in PETG.
+2. Mount a Hitec D956WP servo and AS5600 encoder.
+3. Test rotation accuracy and the pressure-interlock logic on the PSM dev board.
+4. Document with video + timestamped logs — invention evidence.
+
+**Estimated cost:** ~$300 additional parts on top of PSM bench rig.
+**Timeline:** 6–8 weeks after PSM bench phase completes (can overlap).
+
+**Phase 2 (integration):**
+1. Machine the production manifold in 316 stainless (corrosion resistance for chemical exposure).
+2. Integrate IHM control into PSM firmware as a single unified module.
+3. Mount on drone spray arm, run `sim/scenario.py` with `PSMIHMTransport`.
+4. Fly multi-surface test job: solar → stucco → composite shingle, confirm no cross-zone contamination (DI water in solar slot, degreaser in stucco slot — manifold must not cross-contaminate).
+
+**Phase 3 (production):**
+1. PCB layout combines PSM + IHM control on one board.
+2. IP65 enclosure designed to house EPR, servo controller, and manifold mounting interface.
+3. File patent on PSM+IHM combined claim before first public demo.
 
 ---
 
-## 9. Mental model
+## 10. What to do this quarter
+
+**Now (PSM — the foundation):**
+1. **Buy bench parts** (~$800: SMC ITV0010 EPR, STM32 Nucleo board, Honeywell pressure sensor)
+   and validate the PID loop on a garden-hose rig. Dated test logs = invention evidence.
+2. **Add `PSMTransport`** to `propwash/backend/execution/` behind `PROPWASH_ENABLE_PSM=true`.
+3. **Talk to a patent attorney** this month about a hardware claim on the provisional.
+4. **Ask Lucid** (outreach call, `docs/LUCID_OUTREACH.md`) whether PSM can be accessory-
+   installed within their airworthiness envelope.
+
+**Next quarter (IHM — the upgrade):**
+5. **Add ~$300 in parts** to the bench rig: Hitec D956WP servo, AS5600 encoder, 3D-printed
+   4-slot manifold prototype. Test rotation + pressure interlock logic.
+6. **Extend PSM firmware** to handle tip-slot commands and rotation lockout.
+7. **Add the combined PSM+IHM claim** to the patent application (or as a continuation)
+   before any public demo of nozzle selection capability.
+8. **Design the production manifold** in 316SS for chemical resistance.
+
+---
+
+## 11. Mental model
 
 ```
 Patent the mechanism (EPR + feedback loop + firmware ceiling + pilot override).
