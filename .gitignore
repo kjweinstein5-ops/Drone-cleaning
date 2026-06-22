@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Environment
+.env
+*.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data / imagery (do not commit raw sensor data)
+*.tiff
+*.tif
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.ply
+*.las
+*.laz
+
+# Secrets
+*.pem
+*.key
+credentials*.json
