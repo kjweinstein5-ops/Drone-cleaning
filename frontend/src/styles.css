@@ -41,3 +41,72 @@ body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; mar
 .metric b { font-variant-numeric:tabular-nums; }
 .note { font-size:11px; color:var(--muted); }
 .note.center { text-align:center; padding:18px; }
+
+/* ── View nav ── */
+.view-nav { display:flex; border-bottom:2px solid #dce2e8; background:#f7f9fb; }
+.view-nav-btn { flex:1; border:0; background:none; padding:11px 4px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .15s,border-color .15s; }
+.view-nav-btn.active { color:var(--blue); border-bottom-color:var(--blue); }
+.view-nav-btn:hover:not(.active) { color:var(--ink); }
+
+/* ── Twin Viewer ── */
+.twin-root { padding:14px 14px 24px; }
+.twin-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; gap:10px; flex-wrap:wrap; }
+.twin-title { font-size:16px; font-weight:800; }
+.mode-toggle { display:flex; border:1.5px solid var(--blue); border-radius:8px; overflow:hidden; }
+.mode-btn { border:0; background:none; padding:6px 14px; font-size:12px; font-weight:700; color:var(--blue); cursor:pointer; }
+.mode-btn.active { background:var(--blue); color:#fff; }
+.twin-body { display:flex; gap:14px; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; }
+.twin-stage-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; }
+.twin-stage { perspective:600px; padding:10px; }
+.twin-grid { transform:rotateX(40deg) rotateZ(-8deg); transform-style:preserve-3d; box-shadow:0 12px 32px rgba(0,0,0,.22); border-radius:10px; overflow:hidden; }
+.twin-legend { display:flex; flex-direction:column; align-items:center; width:270px; }
+.legend-bar { width:100%; height:10px; border-radius:5px; background:linear-gradient(to right,rgb(13,71,161),rgb(2,136,209),rgb(46,160,67),rgb(251,192,45),rgb(244,81,30),rgb(183,28,28)); }
+.legend-labels { display:flex; justify-content:space-between; width:100%; font-size:10px; color:var(--muted); margin-top:2px; }
+.twin-hint { flex:1; min-width:140px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); font-size:13px; gap:6px; padding:30px 0; }
+.twin-detail { flex:1; min-width:200px; background:#fff; border-radius:14px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,.1); }
+.detail-label { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:4px; }
+.thermal-bar-wrap { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.thermal-bar-track { flex:1; height:10px; border-radius:5px; background:#eef1f4; position:relative; overflow:visible; }
+.thermal-bar-fill { height:100%; border-radius:5px; transition:width .4s; }
+.thermal-bar-threshold { position:absolute; left:15%; top:-3px; bottom:-3px; width:2px; background:#1c2733; border-radius:1px; }
+.thermal-val { font-weight:800; font-size:14px; min-width:32px; text-align:right; }
+.twin-metric { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eef1f4; font-size:13px; }
+.soiling-box { margin-top:12px; border:2px solid; border-radius:10px; padding:10px 12px; }
+.twin-strip { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
+.twin-chip { display:flex; align-items:center; gap:8px; background:#fff; border-radius:12px; padding:8px 12px; box-shadow:0 1px 3px rgba(0,0,0,.08); cursor:pointer; min-width:110px; border:2px solid transparent; }
+.twin-chip.selected { border-color:var(--blue); }
+.twin-chip-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+
+/* ── Data Hub ── */
+.hub-root { padding:14px 14px 24px; }
+.hub-header { margin-bottom:12px; }
+.hub-title { font-size:18px; font-weight:800; }
+.hub-tabs { display:flex; gap:4px; margin-bottom:14px; overflow-x:auto; }
+.hub-tab { border:0; background:#eef1f4; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; color:var(--muted); cursor:pointer; white-space:nowrap; }
+.hub-tab.active { background:var(--blue); color:#fff; }
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+.stat-card { background:#fff; border-radius:12px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.stat-val { font-size:22px; font-weight:800; line-height:1; }
+.stat-unit { font-size:14px; font-weight:600; margin-left:2px; }
+.stat-label { font-size:11px; color:var(--muted); margin-top:4px; }
+.section-title { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin:14px 0 6px; font-weight:700; }
+.mini-chart-wrap { background:#f7f9fb; border-radius:10px; padding:10px; margin-bottom:10px; overflow-x:auto; }
+.resoil-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #eef1f4; }
+.resoil-bar-wrap { flex:1; }
+.resoil-bar-track { height:8px; background:#eef1f4; border-radius:4px; overflow:hidden; }
+.resoil-bar-fill { height:100%; border-radius:4px; transition:width .4s; }
+.hub-zone-card { background:#fff; border-radius:12px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,.08); margin-bottom:12px; }
+.hub-zone-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.hub-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eef1f4; font-size:13px; }
+.badge { font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; margin-left:6px; }
+.badge.pass { background:#e3f5ea; color:var(--green); }
+.badge.fail { background:#fdecea; color:var(--red); }
+.badge.solar { background:#fff6e6; color:#8a5a00; }
+.hub-table-wrap { overflow-x:auto; }
+.hub-table { width:100%; border-collapse:collapse; font-size:13px; }
+.hub-table th { text-align:left; padding:6px 8px; font-size:11px; color:var(--muted); border-bottom:2px solid #eef1f4; }
+.hub-table td { padding:8px 8px; border-bottom:1px solid #eef1f4; }
+.alert-row { display:flex; align-items:flex-start; gap:10px; padding:12px; border-radius:10px; margin-bottom:8px; }
+.alert-row.human { background:#fff6e6; }
+.alert-row.requeue { background:#eef6ff; }
+.alert-icon { font-size:18px; flex-shrink:0; padding-top:1px; }

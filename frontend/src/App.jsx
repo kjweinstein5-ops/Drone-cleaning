@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import TwinViewer from "./TwinViewer";
+import DataHub from "./DataHub";
 
 // PROPWASH operator app — per-zone clean execution + verification.
 // Operator stays in command at all times (FAA Part 107, CLAUDE.md §10).
@@ -22,6 +24,92 @@ const DEMO_JOB = {
   ],
 };
 
+const NAV = [
+  { id: "operator", label: "Operator" },
+  { id: "twin",     label: "Twin Viewer" },
+  { id: "hub",      label: "Data Hub" },
+];
+
+export default function App() {
+  const [view, setView] = useState("operator");
+
+  return (
+    <div className="app">
+      <div className="topbar">
+        <span className="brand">PROPWASH</span>
+        <span className="pilot">Pilot: K. Weinstein · Part 107 ✓</span>
+      </div>
+
+      <div className="view-nav">
+        {NAV.map(n => (
+          <button
+            key={n.id}
+            className={"view-nav-btn" + (view === n.id ? " active" : "")}
+            onClick={() => setView(n.id)}>
+            {n.label}
+          </button>
+        ))}
+      </div>
+
+      {view === "operator" && <OperatorView />}
+      {view === "twin"     && <TwinViewer />}
+      {view === "hub"      && <DataHub />}
+    </div>
+  );
+}
+
+// ── Operator view (per-zone clean execution) ──────────────────────────────────
+function OperatorView() {
+  const job   = DEMO_JOB;
+  const zones = job.zones;
+  const [idx, setIdx]           = useState(0);
+  const [phase, setPhase]       = useState("brief");
+  const [statuses, setStatuses] = useState(zones.map(() => ""));
+  const [pass, setPass]         = useState(true);
+  const retried                 = useRef({});
+
+  const setStatus = (i, s) => setStatuses(p => p.map((x, j) => (j === i ? s : x)));
+  const zone = zones[idx];
+
+  const onConfirm = () => { setStatus(idx, "active"); setPhase("exec"); };
+  const onAbort   = () => { setStatus(idx, ""); setPhase("brief"); };
+  const onResult  = () => { const f = zone.willFail && !retried.current[zone.id]; setPass(!f); setPhase("verdict"); };
+  const onNext    = () => {
+    setStatus(idx, "done");
+    if (idx + 1 >= zones.length) setPhase("done");
+    else { setIdx(idx + 1); setPhase("brief"); }
+  };
+  const onRetry = () => { retried.current[zone.id] = true; setStatus(idx, "fail"); setPhase("exec"); };
+
+  return (
+    <>
+      <div className="job">
+        <h2>{job.property}</h2>
+        <div className="muted">{job.address}</div>
+        <div className="muted">{zones.length} zones · est. {job.estMinutes} min</div>
+        <div className="zones">
+          {zones.map((z, i) => (
+            <span key={z.id} className={"chip " + (statuses[i] || "")}>{z.id}</span>
+          ))}
+        </div>
+      </div>
+      <div className="pad">
+        {phase === "brief"   && <ZoneCard zone={zone} onConfirm={onConfirm} />}
+        {phase === "exec"    && <Executing zone={zone} onDone={() => setPhase("verify")} onAbort={onAbort} />}
+        {phase === "verify"  && <Verifying onResult={onResult} />}
+        {phase === "verdict" && <Verdict zone={zone} pass={pass} isLast={idx + 1 >= zones.length} onNext={onNext} onRetry={onRetry} />}
+        {phase === "done"    && (
+          <div className="card">
+            <div className="verdict pass"><div className="icon">✓</div><h1>Job complete</h1></div>
+            <div className="muted" style={{ textAlign: "center" }}>All zones verified clean. ROI report generating for the customer.</div>
+          </div>
+        )}
+      </div>
+      <p className="note center">Demo data. Operator stays in command (FAA Part 107).</p>
+    </>
+  );
+}
+
 function ZoneCard({ zone, onConfirm }) {
   return (
     <div className="card">
@@ -33,11 +121,11 @@ function ZoneCard({ zone, onConfirm }) {
           : "Standard surface — stay within prescribed pressure."}
       </div>
       <ol className="checklist">
-        <Step n={1} label="Fit nozzle" val={zone.nozzle} />
-        <Step n={2} label="Load chemical" val={zone.chemical} />
-        <Step n={3} label="Pressure" val={zone.pressure} />
+        <Step n={1} label="Fit nozzle"        val={zone.nozzle} />
+        <Step n={2} label="Load chemical"     val={zone.chemical} />
+        <Step n={3} label="Pressure"          val={zone.pressure} />
         <Step n={4} label="Standoff distance" val={zone.standoff} />
-        <Step n={5} label="Coverage pattern" val={zone.pattern} />
+        <Step n={5} label="Coverage pattern"  val={zone.pattern} />
       </ol>
       <button className="btn primary" onClick={onConfirm}>Confirm ready &amp; begin</button>
       <p className="note">You remain in command. Abort the moment anything looks wrong.</p>
@@ -92,7 +180,7 @@ function Verdict({ zone, pass, isLast, onNext, onRetry }) {
         <div className="muted">{zone.id}</div>
       </div>
       <Metric label="Residual (proxy)" val={pass ? "0.06" : "0.41"} />
-      <Metric label="Threshold" val="0.15" />
+      <Metric label="Threshold"        val="0.15" />
       {!pass && <Metric label="Adjustment" val="pressure +0.5 bar" />}
       {pass
         ? <button className="btn go" onClick={onNext}>{isLast ? "Finish job" : "Next zone →"}</button>
@@ -104,57 +192,3 @@ function Verdict({ zone, pass, isLast, onNext, onRetry }) {
 const Metric = ({ label, val }) => (
   <div className="metric"><span>{label}</span><b>{val}</b></div>
 );
-
-export default function App() {
-  // Backend wiring point: swap DEMO_JOB for listJobs()/getJob() from ./api.js.
-  const job = DEMO_JOB;
-  const zones = job.zones;
-  const [idx, setIdx] = useState(0);
-  const [phase, setPhase] = useState("brief");
-  const [statuses, setStatuses] = useState(zones.map(() => ""));
-  const [pass, setPass] = useState(true);
-  const retried = useRef({});
-
-  const setStatus = (i, s) => setStatuses((p) => p.map((x, j) => (j === i ? s : x)));
-  const zone = zones[idx];
-
-  const onConfirm = () => { setStatus(idx, "active"); setPhase("exec"); };
-  const onAbort = () => { setStatus(idx, ""); setPhase("brief"); };
-  const onResult = () => { const f = zone.willFail && !retried.current[zone.id]; setPass(!f); setPhase("verdict"); };
-  const onNext = () => {
-    setStatus(idx, "done");
-    if (idx + 1 >= zones.length) setPhase("done");
-    else { setIdx(idx + 1); setPhase("brief"); }
-  };
-  const onRetry = () => { retried.current[zone.id] = true; setStatus(idx, "fail"); setPhase("exec"); };
-
-  return (
-    <div className="app">
-      <div className="topbar">
-        <span className="brand">PROPWASH</span>
-        <span className="pilot">Pilot: K. Weinstein · Part 107 ✓</span>
-      </div>
-      <div className="job">
-        <h2>{job.property}</h2>
-        <div className="muted">{job.address}</div>
-        <div className="muted">{zones.length} zones · est. {job.estMinutes} min</div>
-        <div className="zones">
-          {zones.map((z, i) => <span key={z.id} className={"chip " + (statuses[i] || "")}>{z.id}</span>)}
-        </div>
-      </div>
-      <div className="pad">
-        {phase === "brief" && <ZoneCard zone={zone} onConfirm={onConfirm} />}
-        {phase === "exec" && <Executing zone={zone} onDone={() => setPhase("verify")} onAbort={onAbort} />}
-        {phase === "verify" && <Verifying onResult={onResult} />}
-        {phase === "verdict" && <Verdict zone={zone} pass={pass} isLast={idx + 1 >= zones.length} onNext={onNext} onRetry={onRetry} />}
-        {phase === "done" && (
-          <div className="card">
-            <div className="verdict pass"><div className="icon">✓</div><h1>Job complete</h1></div>
-            <div className="muted" style={{ textAlign: "center" }}>All zones verified clean. ROI report generating for the customer.</div>
-          </div>
-        )}
-      </div>
-      <p className="note center">Demo data. Operator stays in command (FAA Part 107).</p>
-    </div>
-  );
-}

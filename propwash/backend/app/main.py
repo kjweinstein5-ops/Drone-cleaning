@@ -7,7 +7,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from propwash.backend.app.routers import jobs, zones, health
+from propwash.backend.app.routers import jobs, zones, health, twins
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,3 +28,4 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(zones.router, prefix="/zones", tags=["zones"])
 app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
+app.include_router(twins.router, prefix="/twins", tags=["twins"])

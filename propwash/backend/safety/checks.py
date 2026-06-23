@@ -16,6 +16,7 @@ from typing import List
 
 from propwash.backend.models.prescription import ChemicalType, Prescription
 from propwash.backend.models.zone import SurfaceType
+from propwash.backend.safety.human_detection import HumanDetectionResult
 
 
 _PRESCRIPTION_TABLE_PATH = os.path.join(
@@ -148,3 +149,23 @@ class SafetyChecker:
 
         passed = not any(v.fatal for v in violations)
         return SafetyCheckResult(passed=passed, violations=violations)
+
+    def check_human_presence(self, detection: HumanDetectionResult) -> SafetyCheckResult:
+        """Pre-pass human presence gate. Must be called before every cleaning dispatch.
+
+        The detection result is produced by human_detection.detect_human_presence()
+        which runs against the most recent thermal frame for the target zone.
+        A HALT result is always fatal — no cleaning pass may proceed.
+        """
+        if detection.halt:
+            return SafetyCheckResult(
+                passed=False,
+                violations=[
+                    SafetyViolation(
+                        rule="HUMAN_DETECTED",
+                        message=detection.reason,
+                        fatal=True,
+                    )
+                ],
+            )
+        return SafetyCheckResult(passed=True)

@@ -10,6 +10,7 @@ export default defineConfig({
       "/jobs": { target: "http://localhost:8000", changeOrigin: true, ws: true },
       "/zones": { target: "http://localhost:8000", changeOrigin: true },
       "/health": { target: "http://localhost:8000", changeOrigin: true },
+      "/twins": { target: "http://localhost:8000", changeOrigin: true },
     },
   },
 });
