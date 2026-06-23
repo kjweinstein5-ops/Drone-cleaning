@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ARCHOICE — AR Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--accent:#FF6A1A;--ink:#0E0F12;--blueprint:#1E2A44;--signal:#F5F6F8;--mono:#9AA3B2;
+    --display:'Barlow Condensed',sans-serif;--body:'Inter',sans-serif;--code:'Space Mono',monospace;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--ink);color:var(--signal);font-family:var(--body);overflow:hidden}
+  #stage{position:fixed;inset:0}
+  video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+  /* AR viewfinder overlay */
+  .overlay{position:absolute;inset:0;pointer-events:none}
+  .vf{position:absolute;top:18%;left:12%;right:12%;bottom:34%;border:1px solid rgba(245,246,248,.35)}
+  .vf c{position:absolute;width:26px;height:26px;border:3px solid var(--accent)}
+  .vf c.tl{top:-2px;left:-2px;border-right:0;border-bottom:0}.vf c.tr{top:-2px;right:-2px;border-left:0;border-bottom:0}
+  .vf c.bl{bottom:-2px;left:-2px;border-right:0;border-top:0}.vf c.br{bottom:-2px;right:-2px;border-left:0;border-top:0}
+  .scan{position:absolute;left:0;right:0;height:2px;background:var(--accent);box-shadow:0 0 14px var(--accent);
+    animation:sc 2.8s ease-in-out infinite}
+  @keyframes sc{0%{top:2%}50%{top:98%}100%{top:2%}}
+  .hud{position:absolute;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;
+    font-family:var(--code);font-size:.66rem;letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+  .hud .r{color:var(--mono)}
+
+  /* bottom sheet */
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:rgba(8,9,11,.94);backdrop-filter:blur(8px);
+    border-top:1px solid var(--blueprint);border-radius:18px 18px 0 0;padding:16px 18px 26px;
+    max-height:62vh;overflow-y:auto;pointer-events:auto;transition:transform .25s}
+  .mono{font-family:var(--code);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mono)}
+  h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:1.5rem;line-height:1;margin:4px 0}
+  .cap{font-size:.86rem;color:#c7ccd6;margin-top:4px}
+  .btn{display:block;width:100%;font-family:var(--code);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;
+    padding:14px;border:none;border-radius:4px;background:var(--accent);color:var(--ink);font-weight:700;cursor:pointer;margin-top:14px}
+  .btn:disabled{opacity:.5}
+  .btn.ghost{background:transparent;border:1px solid var(--blueprint);color:var(--signal);font-weight:500}
+
+  .diag{border:1px solid var(--blueprint);border-radius:8px;padding:13px;margin-top:8px}
+  .row{display:flex;justify-content:space-between;align-items:center;margin:5px 0;font-size:.86rem}
+  .conf{font-family:var(--code);color:var(--accent)}
+  .bar{height:6px;background:var(--blueprint);border-radius:3px;overflow:hidden;margin-top:5px}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .flag{font-size:.78rem;margin-top:10px;padding:8px;border-left:2px solid var(--accent);background:rgba(255,106,26,.07);border-radius:0 4px 4px 0}
+  .flag.warn{border-color:#e0b34a;background:rgba(224,179,74,.08)}
+  ol{list-style:none;counter-reset:s;margin:8px 0}
+  ol li{counter-increment:s;position:relative;padding:8px 0 8px 28px;border-bottom:1px solid rgba(30,42,68,.6);font-size:.85rem}
+  ol li::before{content:counter(s);position:absolute;left:0;top:7px;width:19px;height:19px;background:var(--blueprint);
+    color:var(--accent);font-family:var(--code);font-size:.66rem;display:flex;align-items:center;justify-content:center;border-radius:3px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .chip{font-family:var(--code);font-size:.62rem;border:1px solid var(--blueprint);padding:5px 8px;border-radius:3px;color:#c7ccd6}
+  .chip b{color:var(--accent)}
+  .slot{border:1px solid var(--blueprint);border-radius:7px;padding:10px 11px;margin-top:9px;display:flex;gap:10px;align-items:center}
+  .slot.best{border-color:var(--accent)}
+  .slot .info{flex:1}
+  .slot .label{font-family:var(--code);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase}
+  .label.best_fit{color:var(--accent)}.label.sponsored{color:#e0b34a}.label.budget{color:var(--mono)}
+  .slot h4{font-size:.88rem;font-weight:600;margin:2px 0}
+  .slot .price{font-family:var(--code);font-size:.78rem}
+  .slot .why{font-size:.68rem;color:var(--mono);margin-top:3px}
+  .err{font-family:var(--code);font-size:.72rem;color:#e0b34a;margin-top:10px}
+  .badge{font-family:var(--code);font-size:.56rem;padding:2px 6px;border:1px solid var(--mono);border-radius:3px;color:var(--mono)}
+  .center{text-align:center;padding:14px 0}
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="cam" autoplay playsinline muted></video>
+  <div class="overlay">
+    <div class="hud"><span id="mode">ARCHOICE · LIVE</span><span class="r" id="readout">LiDAR · sim</span></div>
+    <div class="vf"><c class="tl"></c><c class="tr"></c><c class="bl"></c><c class="br"></c><div class="scan"></div></div>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div id="view-start">
+      <span class="mono">Step 01 · Point</span>
+      <h2>Aim at the problem</h2>
+      <p class="cap">Frame the broken thing inside the brackets, then scan. <span class="badge" id="srcbadge">camera</span></p>
+      <button class="btn" id="scanBtn">Scan this problem</button>
+      <button class="btn ghost" id="startCam">Enable camera</button>
+      <p class="err" id="camerr"></p>
+    </div>
+    <div id="view-result" style="display:none"></div>
+  </div>
+</div>
+
+<canvas id="snap" style="display:none"></canvas>
+
+<script>
+// ARCHOICE web AR prototype.
+// - Uses the rear camera via getUserMedia (works in mobile Safari/Chrome over https or localhost).
+// - Captures a frame, base64-encodes it, POSTs to the backend /diagnose then /plan.
+// - If the backend is unreachable, falls back to a clearly-labeled local stub so it still displays.
+const API = location.origin.startsWith('http') && location.port ? '' : ''; // same-origin when served by FastAPI
+const $ = s => document.querySelector(s);
+let stream = null;
+
+async function startCamera(){
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } }, audio:false });
+    const v = $('#cam'); v.srcObject = stream; await v.play();
+    $('#camerr').textContent = ''; $('#startCam').style.display='none';
+    $('#srcbadge').textContent='camera live';
+  }catch(e){
+    $('#camerr').textContent = '↳ Camera unavailable ('+e.name+'). Scan still works with a placeholder frame.';
+    $('#srcbadge').textContent='no camera';
+  }
+}
+
+function captureB64(){
+  const v = $('#cam');
+  if(!v.videoWidth) return null;
+  const c = $('#snap'); c.width = 768; c.height = Math.round(768 * v.videoHeight / v.videoWidth);
+  c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.7).split(',')[1];
+}
+
+async function api(path, body){
+  const res = await fetch((API||'') + path, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return res.json();
+}
+
+// Local fallback if no backend is reachable (mirrors the server stub).
+function localStub(){
+  return { diagnosis:{ object_name:'bathtub-wall caulk line', problem:'Failed, cracked sealant joint allowing water ingress',
+      severity:'moderate', confidence:0.94, requires_pro:false,
+      reasoning:'Visible cracking along a wet joint; DIY-feasible recaulk.' }, stub:true };
+}
+function localPlan(){
+  return { plan:{ title:'Recaulk the joint', est_minutes:45, est_cost_usd:31, difficulty:2,
+    steps:[{order:1,instruction:'Cut and remove the old caulk with a removal tool.'},
+      {order:2,instruction:'Clean and dry the joint; wipe with rubbing alcohol.'},
+      {order:3,instruction:'Tape both edges for a clean line.'},
+      {order:4,instruction:'Apply a continuous bead of mildew-resistant silicone.'},
+      {order:5,instruction:'Tool the bead, pull tape, cure 24h before water exposure.'}],
+    tools:['Caulk removal tool','Caulk gun','Finishing tool'],
+    materials:[{name:'Mildew-resistant silicone',quantity:'1 tube'},{name:"Painter's tape",quantity:'1 roll'}]},
+    recommendations:[{ need:'sealant', slots:[
+      {slot:'best_fit',name:'Mildew-Shield Silicone, Clear',price_usd:8.97,sponsored:false,why:'Ranked on fit only — mildew-rated, matches the joint.'},
+      {slot:'sponsored',name:'BrandX Pro Kitchen & Bath',price_usd:11.48,sponsored:true,why:'Paid placement — still passes the fit + safety floor.'},
+      {slot:'budget',name:'Value Tub & Tile Sealant',price_usd:5.24,sponsored:false,why:'Lowest viable-quality option — never paid.'}]}],
+    stub:true };
+}
+
+async function scan(){
+  $('#scanBtn').disabled = true; $('#mode').textContent='ARCHOICE · DIAGNOSING…';
+  const img = captureB64();
+  let diagResp, planResp, offline=false;
+  try{
+    diagResp = await api('/diagnose', { image_b64: img, media_type:'image/jpeg', note:'' });
+    planResp = await api('/plan', diagResp.diagnosis);
+  }catch(e){
+    offline = true; diagResp = localStub(); planResp = localPlan();
+  }
+  render(diagResp, planResp, offline);
+}
+
+function slotHtml(s){
+  return `<div class="slot ${s.slot==='best_fit'?'best':''}">
+    <div class="info"><span class="label ${s.slot}">${s.slot==='best_fit'?'★ Best fit':s.slot}</span>
+      <h4>${s.name}</h4><span class="price">$${s.price_usd.toFixed(2)}</span>
+      <div class="why">${s.why}</div></div></div>`;
+}
+
+function render(d, pr, offline){
+  const diag = d.diagnosis, plan = pr.plan, recs = pr.recommendations||[];
+  $('#mode').textContent='ARCHOICE · RESULT';
+  $('#view-start').style.display='none';
+  const stub = d.stub || pr.stub;
+  let h = `<span class="mono">Step 02 · Diagnose ${stub?'<span class="badge">stub</span>':'<span class="badge">claude</span>'} ${offline?'<span class="badge">offline</span>':''}</span>
+    <h2>${diag.problem}</h2>
+    <div class="diag">
+      <div class="row"><strong>${diag.object_name}</strong><span class="conf">${Math.round(diag.confidence*100)}%</span></div>
+      <div class="bar"><i style="width:${Math.round(diag.confidence*100)}%"></i></div>
+      <div class="row"><span class="mono">Severity</span><span>${diag.severity}</span></div>
+      ${diag.reasoning?`<div class="row"><span class="mono">Why</span></div><div class="cap">${diag.reasoning}</div>`:''}`;
+
+  if(diag.requires_pro){
+    h += `<div class="flag warn">⚠ Safety-critical or low-confidence — ARCHOICE routes this to a licensed professional. No DIY plan or product ads shown.</div></div>
+      <button class="btn">Find a vetted pro</button>
+      <button class="btn ghost" id="again">↺ Scan again</button>`;
+    finish(h); return;
+  }
+
+  h += `<div class="flag">✓ DIY-feasible — not a structural/electrical fault.</div></div>
+    <span class="mono" style="display:block;margin-top:14px">Step 03 · Plan</span>
+    <h2>${plan.title}</h2>
+    <div class="chips"><span class="chip">Time <b>~${plan.est_minutes}m</b></span>
+      <span class="chip">Difficulty <b>${plan.difficulty}/5</b></span>
+      <span class="chip">Est. cost <b>$${plan.est_cost_usd.toFixed(0)}</b></span></div>
+    <ol>${plan.steps.map(s=>`<li>${s.instruction}</li>`).join('')}</ol>`;
+
+  if(recs.length){
+    h += `<span class="mono" style="display:block;margin-top:14px">Step 04 · Choose · ${recs[0].need}</span>`;
+    h += recs[0].slots.map(slotHtml).join('');
+  }
+  h += `<button class="btn">Add list · buy at retailer</button>
+        <button class="btn ghost" id="again">↺ Scan again</button>`;
+  finish(h);
+}
+
+function finish(html){
+  const r = $('#view-result'); r.style.display='block'; r.innerHTML = html;
+  const a = $('#again'); if(a) a.onclick = reset;
+}
+function reset(){
+  $('#view-result').style.display='none'; $('#view-result').innerHTML='';
+  $('#view-start').style.display='block'; $('#scanBtn').disabled=false; $('#mode').textContent='ARCHOICE · LIVE';
+}
+
+$('#startCam').onclick = startCamera;
+$('#scanBtn').onclick = scan;
+// Try to start the camera immediately; user can re-trigger if the prompt was dismissed.
+startCamera();
+</script>
+</body>
+</html>

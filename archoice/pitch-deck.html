@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARCHOICE — Pitch Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--accent:#FF6A1A;--ink:#0E0F12;--blueprint:#1E2A44;--signal:#F5F6F8;--mono:#9AA3B2;
+    --display:'Barlow Condensed',sans-serif;--body:'Inter',sans-serif;--code:'Space Mono',monospace;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  body{background:var(--ink);color:var(--signal);font-family:var(--body)}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.16;
+    background-image:linear-gradient(var(--blueprint) 1px,transparent 1px),linear-gradient(90deg,var(--blueprint) 1px,transparent 1px);
+    background-size:44px 44px}
+  .slide{position:relative;z-index:1;min-height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;
+    justify-content:center;padding:7vh 8vw;border-bottom:1px solid rgba(30,42,68,.5)}
+  .num{position:absolute;top:24px;right:30px;font-family:var(--code);font-size:.7rem;color:var(--mono)}
+  .kicker{font-family:var(--code);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  h1{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(2.6rem,7vw,5.5rem);line-height:.95}
+  h1 em{color:var(--accent);font-style:normal}
+  h2{font-family:var(--display);font-weight:600;text-transform:uppercase;font-size:clamp(2rem,5vw,3.4rem);line-height:1;margin-bottom:18px}
+  p.lead{font-size:clamp(1.05rem,2.2vw,1.4rem);color:#c7ccd6;max-width:760px;line-height:1.5}
+  ul{list-style:none;margin-top:18px;max-width:780px}
+  ul li{padding:11px 0 11px 26px;position:relative;font-size:1.05rem;color:#d4d8e0;border-bottom:1px solid rgba(30,42,68,.5)}
+  ul li::before{content:"▸";position:absolute;left:0;color:var(--accent)}
+  .grid{display:grid;gap:16px;margin-top:24px}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .card{border:1px solid var(--blueprint);border-radius:5px;padding:20px;background:rgba(30,42,68,.15)}
+  .card .n{font-family:var(--code);color:var(--accent);font-size:.8rem}
+  .card h3{font-family:var(--display);font-weight:600;text-transform:uppercase;font-size:1.4rem;margin:6px 0}
+  .card p{font-size:.92rem;color:#b9bfca}
+  .stat{font-family:var(--display);font-weight:700;color:var(--accent);font-size:clamp(3rem,9vw,6rem);line-height:.9}
+  table{border-collapse:collapse;width:100%;max-width:840px;margin-top:22px;font-size:.92rem}
+  th,td{padding:11px 12px;text-align:center;border-bottom:1px solid rgba(30,42,68,.6)}
+  th:first-child,td:first-child{text-align:left;font-weight:600}
+  thead th{font-family:var(--code);font-size:.66rem;text-transform:uppercase;color:var(--mono)}
+  .yes{color:var(--accent);font-weight:700}.no{color:#4a5160}.part{color:#c7ccd6}
+  tr.us{background:rgba(255,106,26,.08)} tr.us td:first-child{color:var(--accent)}
+  .brand{font-family:var(--display);font-weight:700;letter-spacing:.06em}
+  .brand b{color:var(--accent)}
+  .disc{font-size:.72rem;color:#5a606c;margin-top:20px;max-width:720px}
+  .hint{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:2;font-family:var(--code);
+    font-size:.64rem;color:var(--mono);letter-spacing:.1em}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start}
+  @media(max-width:680px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- 1 cover -->
+<section class="slide"><span class="num">01 / 12</span>
+  <div class="brand" style="font-size:1.5rem;margin-bottom:30px">AR<b>CHOICE</b></div>
+  <h1>Point.<br><em>Diagnose.</em><br>Fix.</h1>
+  <p class="lead" style="margin-top:24px">The AR + AI app that turns the moment you stand in front of a broken thing
+    into a guided, shoppable, do-it-or-delegate project.</p>
+  <p class="disc">Seed pitch · v0.1 · 2026 · Carlsbad, CA</p>
+</section>
+
+<!-- 2 problem -->
+<section class="slide"><span class="num">02 / 12</span>
+  <div class="kicker">The problem</div>
+  <h2>The person with the problem isn't the person with the expertise</h2>
+  <ul>
+    <li>They don't know <b>what's actually wrong</b>.</li>
+    <li>They don't know <b>what the fix involves</b> — steps, tools, skill, risk.</li>
+    <li>They don't know <b>what to buy</b> out of 40 near-identical SKUs.</li>
+    <li>They don't know <b>whether to DIY or hire</b>, or what's fair to pay.</li>
+  </ul>
+  <p class="lead" style="margin-top:22px">Result: paralysis, abandoned projects, wrong purchases, returns —
+    and intent is highest at the exact moment no tool helps.</p>
+</section>
+
+<!-- 3 insight -->
+<section class="slide"><span class="num">03 / 12</span>
+  <div class="kicker">Why now</div>
+  <h2>Three curves just crossed</h2>
+  <div class="grid g3">
+    <div class="card"><div class="n">01</div><h3>LiDAR in every phone</h3><p>Sub-cm spatial measurement, free, in mainstream devices.</p></div>
+    <div class="card"><div class="n">02</div><h3>Multimodal AI</h3><p>A photo of a problem → a structured project plan in seconds.</p></div>
+    <div class="card"><div class="n">03</div><h3>AR buyers convert</h3><p>~42% shorter decision-to-purchase for AR-assisted shoppers.*</p></div>
+  </div>
+  <p class="disc">* Secondary-source industry estimate — to be validated first-party.</p>
+</section>
+
+<!-- 4 product -->
+<section class="slide"><span class="num">04 / 12</span>
+  <div class="kicker">The product</div>
+  <h2>Five modes, one loop</h2>
+  <p class="lead">Point → Diagnose → Plan → Choose → Execute / Delegate → Verify.</p>
+  <div class="grid g3" style="margin-top:22px">
+    <div class="card"><div class="n">01 · Diagnose</div><p>AI names the object, the problem, and the severity.</p></div>
+    <div class="card"><div class="n">02 · Measure</div><p>LiDAR captures the dimensions of the work zone.</p></div>
+    <div class="card"><div class="n">03 · Plan</div><p>Steps, tools, materials, cost, time, difficulty.</p></div>
+    <div class="card"><div class="n">04 · Choose</div><p>The exact SKUs to buy, previewed in AR.</p></div>
+    <div class="card"><div class="n">05 · Execute</div><p>AR step guidance, or one-tap handoff to a vetted pro.</p></div>
+  </div>
+</section>
+
+<!-- 5 wedge -->
+<section class="slide"><span class="num">05 / 12</span>
+  <div class="kicker">The wedge</div>
+  <h2>Everyone else uses AR to <em style="color:var(--accent);font-style:normal">look</em>. We use it to <em style="color:var(--accent);font-style:normal">fix</em>.</h2>
+  <p class="lead">Incumbents stop at visualization — "see the couch in your room." ARCHOICE owns the
+    layer nobody has: <b>AI diagnosis + project decomposition + the hardware-recommendation graph</b>
+    that turns "what's wrong" into "here's exactly what to buy and do."</p>
+</section>
+
+<!-- 6 competition -->
+<section class="slide"><span class="num">06 / 12</span>
+  <div class="kicker">Landscape</div>
+  <h2>Nobody closes the loop</h2>
+  <table>
+    <thead><tr><th>Product</th><th>Diagnose</th><th>AI plan</th><th>DIY guide</th><th>SKU recs</th><th>Pro handoff</th></tr></thead>
+    <tbody>
+      <tr><td>Houzz Pro</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="part">○</td><td class="part">○</td></tr>
+      <tr><td>Magicplan</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="part">○</td></tr>
+      <tr><td>IKEA Place</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="part">○</td><td class="no">—</td></tr>
+      <tr><td>Angi / Thumbtack</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+      <tr class="us"><td>ARCHOICE</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 7 business model -->
+<section class="slide"><span class="num">07 / 12</span>
+  <div class="kicker">Business model</div>
+  <h2>Five ways to earn at peak intent</h2>
+  <ul>
+    <li><b>Freemium → Pro</b> — unlimited plans + AR execution guidance (~$9–14/mo).</li>
+    <li><b>Brand placement</b> — labeled sponsored SKU slot (highest margin).</li>
+    <li><b>Affiliate</b> — buy-buttons to Home Depot / Lowe's / Amazon.</li>
+    <li><b>SDK / white-label</b> — retailers embed our diagnosis engine.</li>
+    <li><b>Contractor Pro</b> — scoped, high-intent leads + project management.</li>
+  </ul>
+  <p class="disc">Trust guardrail: sponsored is always labeled; a neutral Best Fit always shown alongside.</p>
+</section>
+
+<!-- 8 market -->
+<section class="slide"><span class="num">08 / 12</span>
+  <div class="kicker">Market</div>
+  <h2>Standing in front of trillions of dollars of stuff</h2>
+  <div class="two">
+    <div><div class="stat">$500B+</div><p class="lead">U.S. home-improvement spend — much of it DIY, much of it mis-bought.</p></div>
+    <div><div class="stat">42%</div><p class="lead">faster decision-to-purchase for AR buyers* — captured at the highest-intent moment.</p></div>
+  </div>
+  <p class="disc">* Validate first-party. Market figures are directional.</p>
+</section>
+
+<!-- 9 financials -->
+<section class="slide"><span class="num">09 / 12</span>
+  <div class="kicker">Projections <span style="color:var(--mono)">(goals, not traction)</span></div>
+  <h2>Path to ~$8.7M</h2>
+  <table>
+    <thead><tr><th></th><th>Year 1</th><th>Year 2</th><th>Year 3</th></tr></thead>
+    <tbody>
+      <tr><td>Installs (cum.)</td><td>120k</td><td>800k</td><td>3.2M</td></tr>
+      <tr><td>Pro subscribers</td><td>4k</td><td>35k</td><td>140k</td></tr>
+      <tr class="us"><td>Blended revenue</td><td>~$0.7M</td><td>~$6.4M</td><td>~$8.7M</td></tr>
+    </tbody>
+  </table>
+  <p class="disc">All figures are projections to validate against the real funnel — planning anchors, not forecasts.</p>
+</section>
+
+<!-- 10 gtm -->
+<section class="slide"><span class="num">10 / 12</span>
+  <div class="kicker">Go to market</div>
+  <h2>Three phases</h2>
+  <div class="grid g3">
+    <div class="card"><div class="n">Phase 1 · m0–9</div><h3>DIY wedge</h3><p>iOS LiDAR, one high-frequency category. Prove the diagnose→buy loop converts.</p></div>
+    <div class="card"><div class="n">Phase 2 · m9–18</div><h3>Monetize intent</h3><p>Affiliate + brand placement; Contractor Pro in 1–2 metros.</p></div>
+    <div class="card"><div class="n">Phase 3 · m18+</div><h3>Platform</h3><p>SDK/white-label, Android, broaden the product graph.</p></div>
+  </div>
+</section>
+
+<!-- 11 tech -->
+<section class="slide"><span class="num">11 / 12</span>
+  <div class="kicker">Technology</div>
+  <h2>The moat is the product graph</h2>
+  <ul>
+    <li><b>Capture:</b> ARKit / ARCore + LiDAR depth.</li>
+    <li><b>Brains:</b> multimodal Claude API — diagnosis + project decomposition.</li>
+    <li><b>Moat:</b> the calibrated problem → material → SKU graph, grown from real usage (trade secret).</li>
+    <li><b>Client:</b> React Native, iOS-first; web AR prototype for fast demos.</li>
+  </ul>
+</section>
+
+<!-- 12 ask -->
+<section class="slide"><span class="num">12 / 12</span>
+  <div class="kicker">The ask</div>
+  <h2>Fund the loop</h2>
+  <p class="lead">Raising to ship the iOS MVP in one beachhead category and prove the
+    diagnose → plan → choose → buy loop converts better than search-and-guess.</p>
+  <div class="brand" style="font-size:1.6rem;margin-top:34px">AR<b>CHOICE</b></div>
+  <p class="disc">Point. Diagnose. Fix. · Honest claims only: no "fully autonomous," no unvalidated stats stated as fact.</p>
+</section>
+
+<div class="hint">↓ scroll · 12 slides</div>
+</body>
+</html>

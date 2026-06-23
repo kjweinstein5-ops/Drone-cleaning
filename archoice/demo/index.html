@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARCHOICE — Interactive Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--accent:#FF6A1A;--ink:#0E0F12;--blueprint:#1E2A44;--signal:#F5F6F8;--mono:#9AA3B2;
+    --display:'Barlow Condensed',sans-serif;--body:'Inter',sans-serif;--code:'Space Mono',monospace;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ink);color:var(--signal);font-family:var(--body);min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;padding:24px 16px}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;
+    background-image:linear-gradient(var(--blueprint) 1px,transparent 1px),linear-gradient(90deg,var(--blueprint) 1px,transparent 1px);
+    background-size:40px 40px}
+  .brand{font-family:var(--display);font-weight:700;font-size:1.4rem;letter-spacing:.06em;z-index:1;margin-bottom:4px}
+  .brand b{color:var(--accent)}
+  .tag{font-family:var(--code);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mono);z-index:1;margin-bottom:20px}
+
+  /* phone frame */
+  .phone{position:relative;z-index:1;width:min(380px,94vw);background:#08090b;border:2px solid var(--blueprint);
+    border-radius:30px;padding:14px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .screen{background:var(--ink);border-radius:20px;overflow:hidden;min-height:560px;display:flex;flex-direction:column}
+
+  /* progress */
+  .steps{display:flex;gap:6px;padding:14px 16px 0}
+  .steps i{flex:1;height:3px;background:var(--blueprint);border-radius:2px}
+  .steps i.on{background:var(--accent)}
+
+  .panel{padding:18px 18px 22px;flex:1;display:none;animation:fade .3s ease}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .mono{font-family:var(--code);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mono)}
+  h2{font-family:var(--display);font-weight:600;font-size:1.7rem;text-transform:uppercase;margin:6px 0 2px;line-height:1}
+
+  /* viewfinder */
+  .vf{position:relative;width:100%;aspect-ratio:4/3;border:1px solid rgba(245,246,248,.2);margin:14px 0;
+    background:repeating-linear-gradient(45deg,#11151c 0 12px,#0d1117 12px 24px);overflow:hidden}
+  .vf c{position:absolute;width:18px;height:18px;border:2px solid var(--accent)}
+  .vf c.tl{top:6px;left:6px;border-right:0;border-bottom:0}.vf c.tr{top:6px;right:6px;border-left:0;border-bottom:0}
+  .vf c.bl{bottom:6px;left:6px;border-right:0;border-top:0}.vf c.br{bottom:6px;right:6px;border-left:0;border-top:0}
+  .scan{position:absolute;left:0;right:0;height:2px;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:sc 2.6s ease-in-out infinite}
+  @keyframes sc{0%{top:6%}50%{top:92%}100%{top:6%}}
+  .vf .obj{position:absolute;top:42%;left:30%;width:40%;height:14%;border:1px dashed var(--accent);}
+  .vf small{position:absolute;font-family:var(--code);font-size:.6rem;color:var(--accent)}
+  .vf .r1{top:38%;left:30%}.vf .r2{bottom:8px;right:10px;color:var(--mono)}
+
+  .btn{display:block;width:100%;font-family:var(--code);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;
+    padding:13px;border:none;border-radius:3px;background:var(--accent);color:var(--ink);font-weight:700;cursor:pointer;margin-top:14px}
+  .btn.ghost{background:transparent;border:1px solid var(--blueprint);color:var(--signal);font-weight:500}
+
+  /* diagnosis card */
+  .diag{border:1px solid var(--blueprint);border-radius:6px;padding:14px;margin-top:6px}
+  .diag .row{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+  .conf{font-family:var(--code);color:var(--accent);font-size:.9rem}
+  .bar{height:6px;background:var(--blueprint);border-radius:3px;overflow:hidden;margin-top:4px}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .flag{font-size:.78rem;color:#c7ccd6;margin-top:10px;padding:8px;border-left:2px solid var(--accent);background:rgba(255,106,26,.06)}
+
+  /* plan steps */
+  ol.plan{list-style:none;counter-reset:s;margin:10px 0}
+  ol.plan li{counter-increment:s;position:relative;padding:9px 0 9px 30px;border-bottom:1px solid rgba(30,42,68,.6);font-size:.88rem}
+  ol.plan li::before{content:counter(s);position:absolute;left:0;top:8px;width:20px;height:20px;background:var(--blueprint);
+    color:var(--accent);font-family:var(--code);font-size:.7rem;display:flex;align-items:center;justify-content:center;border-radius:3px}
+  .meta{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
+  .chip{font-family:var(--code);font-size:.66rem;border:1px solid var(--blueprint);padding:5px 9px;border-radius:3px;color:#c7ccd6}
+  .chip b{color:var(--accent)}
+
+  /* product slots */
+  .slot{border:1px solid var(--blueprint);border-radius:6px;padding:11px 12px;margin-top:10px;display:flex;gap:10px;align-items:center}
+  .slot.best{border-color:var(--accent)}
+  .slot .sw{width:40px;height:40px;border-radius:4px;flex:none}
+  .slot .info{flex:1}
+  .slot .label{font-family:var(--code);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase}
+  .label.best{color:var(--accent)}.label.spon{color:#e0b34a}.label.bud{color:var(--mono)}
+  .slot h4{font-size:.9rem;font-weight:600;margin:2px 0}
+  .slot .price{font-family:var(--code);font-size:.8rem;color:var(--signal)}
+  .add{font-family:var(--code);font-size:.62rem;text-transform:uppercase;background:var(--accent);color:var(--ink);
+    border:none;padding:7px 9px;border-radius:3px;cursor:pointer;font-weight:700}
+  .add.in{background:var(--blueprint);color:var(--accent)}
+  .why{font-size:.7rem;color:var(--mono);margin-top:4px}
+
+  /* list */
+  .listrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(30,42,68,.6);font-size:.86rem}
+  .total{display:flex;justify-content:space-between;margin-top:14px;font-family:var(--display);font-size:1.5rem;text-transform:uppercase}
+  .total b{color:var(--accent)}
+  .success{text-align:center;padding:30px 10px}
+  .success .big{font-family:var(--display);font-size:2rem;color:var(--accent);text-transform:uppercase}
+  .restart{font-family:var(--code);font-size:.66rem;color:var(--mono);background:none;border:none;cursor:pointer;margin-top:18px;text-decoration:underline}
+  .disc{font-size:.62rem;color:#5a606c;margin-top:14px;text-align:center;max-width:380px;z-index:1}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="brand">AR<b>CHOICE</b></div>
+<div class="tag">Interactive demo · diagnose → fix → buy</div>
+
+<div class="phone"><div class="screen">
+  <div class="steps">
+    <i class="on" data-s="0"></i><i data-s="1"></i><i data-s="2"></i><i data-s="3"></i><i data-s="4"></i>
+  </div>
+
+  <!-- 0: capture -->
+  <div class="panel active" id="p0">
+    <span class="mono">Step 01 · Point</span>
+    <h2>Aim at the problem</h2>
+    <div class="vf">
+      <c class="tl"></c><c class="tr"></c><c class="bl"></c><c class="br"></c>
+      <div class="scan"></div>
+      <div class="obj"></div>
+      <small class="r1">↑ target</small>
+      <small class="r2">LiDAR · 0.4cm</small>
+    </div>
+    <p style="font-size:.86rem;color:#c7ccd6">Example: cracked, peeling caulk along a bathtub edge — a moisture entry point.</p>
+    <button class="btn" onclick="go(1)">Scan this problem</button>
+  </div>
+
+  <!-- 1: diagnose -->
+  <div class="panel" id="p1">
+    <span class="mono">Step 02 · Diagnose</span>
+    <h2>What's wrong</h2>
+    <div class="diag">
+      <div class="row"><strong>Failed sealant joint</strong><span class="conf">94%</span></div>
+      <div class="bar"><i style="width:94%"></i></div>
+      <div class="row" style="margin-top:10px"><span class="mono">Object</span><span style="font-size:.82rem">Bathtub–wall caulk line</span></div>
+      <div class="row"><span class="mono">Severity</span><span style="font-size:.82rem;color:var(--accent)">Moderate — water ingress risk</span></div>
+      <div class="row"><span class="mono">Span measured</span><span style="font-size:.82rem">1.82 m · ~6 mm gap</span></div>
+      <div class="flag">✓ DIY-feasible. Not a structural or plumbing fault — no licensed pro required.</div>
+    </div>
+    <button class="btn" onclick="go(2)">Plan the fix</button>
+    <button class="btn ghost" onclick="go(0)">Rescan</button>
+  </div>
+
+  <!-- 2: plan -->
+  <div class="panel" id="p2">
+    <span class="mono">Step 03 · Plan</span>
+    <h2>Recaulk the joint</h2>
+    <div class="meta">
+      <span class="chip">Time <b>~45 min</b></span>
+      <span class="chip">Difficulty <b>2/5</b></span>
+      <span class="chip">Est. cost <b>$31</b></span>
+    </div>
+    <ol class="plan">
+      <li>Cut & pull out the old caulk with a removal tool.</li>
+      <li>Clean & dry the joint; wipe with rubbing alcohol.</li>
+      <li>Tape both edges for a clean line.</li>
+      <li>Apply a continuous bead of mildew-resistant silicone.</li>
+      <li>Tool the bead, pull tape, cure 24 h before water exposure.</li>
+    </ol>
+    <button class="btn" onclick="go(3)">Choose what to buy</button>
+  </div>
+
+  <!-- 3: choose -->
+  <div class="panel" id="p3">
+    <span class="mono">Step 04 · Choose</span>
+    <h2>What to buy</h2>
+    <p class="mono" style="margin-bottom:4px">Sealant · 1 of 4 items</p>
+
+    <div class="slot best">
+      <div class="sw" style="background:linear-gradient(135deg,#FF6A1A,#b34400)"></div>
+      <div class="info"><span class="label best">★ Best fit</span>
+        <h4>Mildew-Shield Silicone, Clear</h4><span class="price">$8.97</span>
+        <div class="why">Ranked on fit only — mildew-rated, matches 6 mm joint.</div></div>
+      <button class="add" onclick="addItem(this,'Mildew-Shield Silicone',8.97)">Add</button>
+    </div>
+
+    <div class="slot">
+      <div class="sw" style="background:linear-gradient(135deg,#e0b34a,#8a6d1f)"></div>
+      <div class="info"><span class="label spon">Sponsored</span>
+        <h4>BrandX Pro Kitchen &amp; Bath</h4><span class="price">$11.48</span>
+        <div class="why">Paid placement · still passes the fit + safety floor.</div></div>
+      <button class="add" onclick="addItem(this,'BrandX Pro Silicone',11.48)">Add</button>
+    </div>
+
+    <div class="slot">
+      <div class="sw" style="background:linear-gradient(135deg,#5a626f,#2c313a)"></div>
+      <div class="info"><span class="label bud">Budget</span>
+        <h4>Value Tub &amp; Tile Sealant</h4><span class="price">$5.24</span>
+        <div class="why">Lowest viable-quality pick · never paid.</div></div>
+      <button class="add" onclick="addItem(this,'Value Sealant',5.24)">Add</button>
+    </div>
+
+    <button class="btn" onclick="go(4)">Review shopping list</button>
+  </div>
+
+  <!-- 4: list / checkout -->
+  <div class="panel" id="p4">
+    <span class="mono">Step 05 · Buy</span>
+    <h2>Your shopping list</h2>
+    <div id="listbody"></div>
+    <div class="total">Total <b id="total">$0.00</b></div>
+    <button class="btn" onclick="checkout()">Buy all · 1 retailer</button>
+    <div id="done"></div>
+  </div>
+
+</div></div>
+
+<p class="disc">Demo only — no real purchase, AI, or backend. Illustrates the ARCHOICE loop and the
+labeled Best-Fit / Sponsored / Budget recommendation slots from the advertising spec.</p>
+
+<script>
+  let cart = [];
+  function go(n){
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('p'+n).classList.add('active');
+    document.querySelectorAll('.steps i').forEach(i=>{ i.classList.toggle('on', +i.dataset.s <= n); });
+    if(n===4) renderList();
+  }
+  function addItem(btn,name,price){
+    if(btn.classList.contains('in')){ // remove
+      cart = cart.filter(c=>c.name!==name);
+      btn.classList.remove('in'); btn.textContent='Add';
+    } else {
+      // only one sealant in this demo slot group — clear other sealant picks
+      cart = cart.filter(c=>!c.sealant);
+      document.querySelectorAll('#p3 .add.in').forEach(b=>{b.classList.remove('in');b.textContent='Add';});
+      cart.push({name,price,sealant:true});
+      btn.classList.add('in'); btn.textContent='✓ Added';
+    }
+  }
+  function renderList(){
+    // base project items + chosen sealant
+    const base=[{name:'Caulk removal tool',price:6.49},{name:'Painter’s tape',price:4.99},{name:'Caulk finishing tool',price:3.99}];
+    const items=[...base,...cart.map(c=>({name:c.name,price:c.price}))];
+    let t=0, html='';
+    items.forEach(i=>{t+=i.price; html+=`<div class="listrow"><span>${i.name}</span><span class="price">$${i.price.toFixed(2)}</span></div>`;});
+    if(cart.length===0) html+=`<div class="listrow" style="color:var(--mono)"><span>Sealant</span><span>— pick one in Choose —</span></div>`;
+    document.getElementById('listbody').innerHTML=html;
+    document.getElementById('total').textContent='$'+t.toFixed(2);
+  }
+  function checkout(){
+    document.getElementById('done').innerHTML=
+      `<div class="success"><div class="big">List handed off</div>
+       <p style="font-size:.82rem;color:#c7ccd6;margin-top:6px">Sent to your retailer cart via affiliate link. You earned the fix.</p>
+       <button class="restart" onclick="reset()">↺ Run the demo again</button></div>`;
+  }
+  function reset(){ cart=[]; document.getElementById('done').innerHTML='';
+    document.querySelectorAll('#p3 .add.in').forEach(b=>{b.classList.remove('in');b.textContent='Add';}); go(0);}
+</script>
+</body>
+</html>
