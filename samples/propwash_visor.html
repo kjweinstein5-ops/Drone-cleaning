@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>PROPWASH — Command Visor</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+:root {
+  --bg:     #060c18;
+  --bg2:    #0b1528;
+  --card:   #0f1d35;
+  --card2:  #152240;
+  --border: #1a2e50;
+  --blue:   #3b7ef8;
+  --cyan:   #06c0d8;
+  --green:  #10d98a;
+  --red:    #f04040;
+  --amber:  #f5a623;
+  --text:   #dde6f0;
+  --muted:  #5a7298;
+  --dim:    #334155;
+}
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0; }
+body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); overscroll-behavior:none; }
+.app { max-width:520px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--bg); position:relative; }
+/* ── Top bar ── */
+.topbar { background:rgba(6,12,24,.95); border-bottom:1px solid var(--border); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:50; backdrop-filter:blur(12px); }
+.brand { font-weight:900; font-size:16px; letter-spacing:2px; color:var(--blue); }
+.topbar-mid { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+.topbar-right { display:flex; align-items:center; gap:8px; }
+.live-badge { font-size:9px; font-weight:800; color:var(--green); border:1px solid var(--green); padding:2px 5px; border-radius:3px; letter-spacing:.5px; animation:pulse-live 2s infinite; }
+@keyframes pulse-live { 0%,100%{opacity:1} 50%{opacity:.5} }
+.clock { font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
+/* ── Bottom nav ── */
+.bottom-nav { position:sticky; bottom:0; background:rgba(6,12,24,.97); border-top:1px solid var(--border); display:flex; z-index:50; backdrop-filter:blur(12px); }
+.nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 4px 12px; border:0; background:none; color:var(--muted); font-size:10px; font-weight:600; cursor:pointer; letter-spacing:.4px; text-transform:uppercase; transition:color .15s; border-top:2px solid transparent; }
+.nav-btn.active { color:var(--blue); border-top-color:var(--blue); }
+.nav-btn svg { width:20px; height:20px; }
+/* ── Scrollable content ── */
+.content { flex:1; overflow-y:auto; padding-bottom:env(safe-area-inset-bottom); }
+/* ── Cards ── */
+.card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; margin:12px 14px 0; }
+.card h1 { font-size:19px; font-weight:800; margin-bottom:2px; }
+/* ── Job strip ── */
+.job-strip { background:var(--card2); border:1px solid var(--border); margin:12px 14px 0; border-radius:14px; padding:14px; }
+.job-strip h2 { font-size:15px; font-weight:700; }
+.muted { color:var(--muted); font-size:12px; }
+.chips { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+.chip { font-size:10px; padding:3px 9px; border-radius:20px; background:var(--bg2); color:var(--muted); font-weight:700; border:1px solid var(--border); }
+.chip.active { background:rgba(59,126,248,.15); color:var(--blue); border-color:var(--blue); }
+.chip.done   { background:rgba(16,217,138,.12); color:var(--green); border-color:var(--green); }
+.chip.fail   { background:rgba(240,64,64,.12);  color:var(--red);   border-color:var(--red); }
+/* ── Safety banners ── */
+.safety { border-radius:8px; padding:9px 12px; font-size:12px; font-weight:600; margin:12px 0; }
+.safety.solar { background:rgba(245,166,35,.1); color:var(--amber); border:1px solid rgba(245,166,35,.3); }
+.safety.std   { background:rgba(59,126,248,.08); color:#7db4f8; border:1px solid rgba(59,126,248,.2); }
+/* ── Checklist ── */
+.checklist { list-style:none; margin:12px 0; }
+.checklist li { display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
+.num { flex:0 0 22px; height:22px; border-radius:50%; background:var(--blue); color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+.step-lbl { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+.step-val { font-size:15px; font-weight:600; color:var(--text); }
+/* ── Buttons ── */
+.btn { display:block; width:100%; border:0; border-radius:10px; padding:15px; font-size:15px; font-weight:800; color:#fff; margin-top:10px; cursor:pointer; letter-spacing:.3px; transition:opacity .15s; }
+.btn:active { opacity:.85; }
+.btn.primary { background:var(--blue); }
+.btn.go  { background:var(--green); color:#000; }
+.btn.abort { background:rgba(240,64,64,.12); color:var(--red); border:1.5px solid rgba(240,64,64,.4); }
+.note { font-size:11px; color:var(--muted); text-align:center; padding:10px 0 4px; }
+/* ── Executing ── */
+.overlay { background:#040c18; border:1px solid var(--border); border-radius:10px; height:140px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:12px; margin:12px 0; }
+.scan-line { position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--cyan),transparent); animation:scan 1.8s ease-in-out infinite; top:0; }
+@keyframes scan { 0%{top:0} 100%{top:100%} }
+.thermal-grid { position:absolute; inset:0; opacity:.15; background:repeating-linear-gradient(0deg,var(--cyan) 0 1px,transparent 1px 20px),repeating-linear-gradient(90deg,var(--cyan) 0 1px,transparent 1px 20px); }
+.dwell-ring { text-align:center; padding:20px 0; }
+.dwell-big { font-size:52px; font-weight:900; color:var(--cyan); line-height:1; font-variant-numeric:tabular-nums; }
+/* ── Verdict ── */
+.verdict-wrap { text-align:center; padding:16px 0; }
+.verdict-icon { font-size:44px; line-height:1; }
+.verdict-wrap.pass .verdict-icon { color:var(--green); }
+.verdict-wrap.fail .verdict-icon { color:var(--amber); }
+.verdict-wrap h1 { margin:6px 0 2px; font-size:18px; }
+.metric { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.metric b { font-variant-numeric:tabular-nums; color:var(--text); }
+/* ══════════════════════════════════════════════
+   TWIN VIEWER
+══════════════════════════════════════════════ */
+.twin-wrap { padding:12px 14px 0; }
+.twin-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+.twin-prop { font-size:15px; font-weight:800; }
+.mode-switch { display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.mode-btn { border:0; background:none; padding:6px 14px; font-size:11px; font-weight:800; color:var(--muted); cursor:pointer; text-transform:uppercase; letter-spacing:.5px; }
+.mode-btn.active { background:var(--blue); color:#fff; }
+/* 3D stage */
+.stage-wrap { display:flex; justify-content:center; margin-bottom:14px; }
+.stage { perspective:700px; }
+.map3d { transform:rotateX(46deg) rotateZ(-12deg); transform-style:preserve-3d; position:relative; width:310px; height:208px; }
+.zone-tile { position:absolute; border-radius:7px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; transition:filter .2s,transform .15s; border:2px solid rgba(255,255,255,.08); user-select:none; }
+.zone-tile:hover { filter:brightness(1.25); transform:translateZ(6px); }
+.zone-tile.sel { border-color:rgba(255,255,255,.6); }
+.zone-lbl { font-size:9px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing:.5px; text-shadow:0 1px 4px rgba(0,0,0,.8); }
+.zone-pct { font-size:17px; font-weight:900; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.9); }
+.zone-tag { font-size:8px; color:rgba(255,255,255,.65); text-shadow:0 1px 4px rgba(0,0,0,.8); }
+/* Legend */
+.legend { display:flex; flex-direction:column; align-items:stretch; margin:0 14px 12px; gap:4px; }
+.legend-bar { height:8px; border-radius:4px; background:linear-gradient(to right,rgb(30,64,175),rgb(6,182,212),rgb(16,185,129),rgb(234,179,8),rgb(249,115,22),rgb(239,68,68)); }
+.legend-labels { display:flex; justify-content:space-between; font-size:10px; color:var(--muted); }
+/* Detail panel */
+.detail-panel { background:var(--card); border:1px solid var(--border); border-radius:14px; margin:0 14px 12px; padding:14px; }
+.detail-name { font-size:16px; font-weight:800; margin-bottom:2px; }
+.grime-bar-wrap { display:flex; align-items:center; gap:8px; margin:8px 0 4px; }
+.grime-track { flex:1; height:8px; border-radius:4px; background:var(--bg2); position:relative; }
+.grime-fill { height:100%; border-radius:4px; transition:width .5s; }
+.grime-thresh { position:absolute; left:15%; top:-4px; bottom:-4px; width:2px; background:rgba(255,255,255,.3); border-radius:1px; }
+.grime-pct { font-size:13px; font-weight:800; min-width:32px; text-align:right; }
+.dm { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.dm span { color:var(--muted); }
+.dm b { color:var(--text); font-variant-numeric:tabular-nums; }
+.soil-box { margin-top:10px; border-radius:8px; padding:10px 12px; border:1px solid; }
+/* Zone strip */
+.zone-strip { display:flex; gap:8px; overflow-x:auto; padding:0 14px 12px; }
+.zchip { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 10px; cursor:pointer; min-width:96px; flex-shrink:0; display:flex; gap:8px; align-items:center; }
+.zchip.sel { border-color:var(--blue); }
+.zdot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.zchip-id { font-size:11px; font-weight:800; }
+.zchip-surf { font-size:10px; color:var(--muted); }
+.zchip-soil { font-size:10px; }
+/* ══════════════════════════════════════════════
+   DATA HUB
+══════════════════════════════════════════════ */
+.hub-wrap { padding:12px 14px 0; }
+.hub-title { font-size:18px; font-weight:900; margin-bottom:2px; }
+.htabs { display:flex; gap:4px; margin:12px 0; overflow-x:auto; padding-bottom:2px; }
+.htab { border:0; background:var(--card); border:1px solid var(--border); border-radius:8px; padding:7px 12px; font-size:11px; font-weight:800; color:var(--muted); cursor:pointer; white-space:nowrap; text-transform:uppercase; letter-spacing:.4px; }
+.htab.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+/* stat cards */
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+.stat-num { font-size:22px; font-weight:900; line-height:1; }
+.stat-lbl { font-size:10px; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+.section-ttl { font-size:10px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); font-weight:700; margin:14px 0 6px; }
+/* resoil bars */
+.resoil-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.resoil-track { flex:1; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; }
+.resoil-fill { height:100%; border-radius:3px; }
+.resoil-wks { font-size:12px; font-weight:800; min-width:44px; text-align:right; }
+/* sparkline chart */
+.sparkwrap { background:var(--bg2); border-radius:8px; padding:10px; margin-bottom:10px; overflow-x:auto; }
+/* hub zone cards */
+.hz-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px; }
+.hz-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.hz-name { font-size:14px; font-weight:800; }
+.badge { font-size:9px; font-weight:800; padding:2px 7px; border-radius:20px; display:inline-block; }
+.badge.pass   { background:rgba(16,217,138,.15); color:var(--green); }
+.badge.fail   { background:rgba(240,64,64,.15);  color:var(--red); }
+.badge.solar  { background:rgba(245,166,35,.15); color:var(--amber); }
+.badge.human  { background:rgba(245,166,35,.15); color:var(--amber); }
+.badge.requeue{ background:rgba(59,126,248,.15); color:var(--blue); }
+.hrow { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.hrow span { color:var(--muted); }
+/* table */
+.htable-wrap { overflow-x:auto; }
+.htable { width:100%; border-collapse:collapse; font-size:12px; }
+.htable th { text-align:left; padding:6px 8px; font-size:10px; color:var(--muted); border-bottom:1px solid var(--border); text-transform:uppercase; letter-spacing:.5px; }
+.htable td { padding:8px 8px; border-bottom:1px solid var(--border); font-variant-numeric:tabular-nums; }
+/* alert rows */
+.alert-row { display:flex; gap:10px; padding:12px; border-radius:10px; margin-bottom:8px; }
+.alert-row.human  { background:rgba(245,166,35,.08); border:1px solid rgba(245,166,35,.2); }
+.alert-row.requeue{ background:rgba(59,126,248,.06); border:1px solid rgba(59,126,248,.15); }
+.alert-ico { font-size:18px; flex-shrink:0; }
+.alert-detail { font-size:11px; color:var(--muted); margin-top:2px; }
+/* PSM delta */
+.delta-ok  { color:var(--green); font-weight:800; }
+.delta-bad { color:var(--red); font-weight:800; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ══ DATA ═══════════════════════════════════════════════════════════════════ */
+const DEMO_JOB = {
+  property:"Carlsbad Commerce Center — Bldg C",
+  address:"2200 Faraday Ave, Carlsbad, CA",
+  estMinutes:95,
+  zones:[
+    { id:"SOL-ROOF", label:"Rooftop solar array", surface:"solar_panel",
+      nozzle:"#4 — 25° narrow, 0.35 mm", chemical:"DI water only (no detergent)",
+      pressure:"1.8 bar", standoff:"0.8 m", dwell:8, pattern:"E–W sweep", solar:true, willFail:false },
+    { id:"STUCCO-N", label:"North façade — stucco", surface:"stucco",
+      nozzle:"#3 — 40° fan, 0.6 mm", chemical:"Standard degreaser (30%)",
+      pressure:"4.0 bar", standoff:"1.0 m", dwell:6, pattern:"N–S sweep", solar:false, willFail:true },
+    { id:"RF-S", label:"Roof — south slope", surface:"composite_shingle",
+      nozzle:"#2 — 40° fan, 0.5 mm", chemical:"Eco degreaser (35%)",
+      pressure:"5.5 bar", standoff:"1.2 m", dwell:7, pattern:"N–S sweep", solar:false, willFail:false },
+  ],
+};
+
+const DEMO_TWIN = {
+  property:"Carlsbad Commerce Center — Bldg C",
+  address:"2200 Faraday Ave, Carlsbad, CA",
+  captured:"2026-06-20",
+  zones:[
+    { id:"SOL-ROOF", label:"Rooftop solar array",   surface:"Solar Panel",       solar:true,
+      gPre:0.71, gPost:0.04, temp:42.3, moisture:0.12, pitch:18,
+      pPres:1.8,  pAct:1.79, verdict:"PASS", humanClear:true, soilWeeks:8.2,
+      col:0, row:0, cs:2, rs:1 },
+    { id:"RF-S",     label:"Roof — south slope",     surface:"Composite Shingle", solar:false,
+      gPre:0.62, gPost:0.06, temp:55.8, moisture:0.28, pitch:38,
+      pPres:5.5,  pAct:5.52, verdict:"PASS", humanClear:true, soilWeeks:14.1,
+      col:0, row:1, cs:2, rs:1 },
+    { id:"STUCCO-N", label:"North façade — stucco",  surface:"Stucco",            solar:false,
+      gPre:0.83, gPost:0.09, temp:31.5, moisture:0.61, pitch:90,
+      pPres:4.0,  pAct:3.97, verdict:"PASS", humanClear:true, soilWeeks:11.4,
+      col:2, row:0, cs:1, rs:2 },
+  ],
+};
+
+const DEMO_HUB = {
+  summary:{ jobs:3, zones:9, fpr:0.72, dataPoints:1847, revenueYTD:28400, roiYTD:141200 },
+  zones: DEMO_TWIN.zones,
+  grimeHistory:{
+    "SOL-ROOF":[0.74,0.68,0.71], "STUCCO-N":[0.81,0.77,0.83], "RF-S":[0.66,0.58,0.62],
+  },
+  jobs:[
+    { date:"2026-06-20", passed:3, failed:0, fpr:0.67, dur:95 },
+    { date:"2026-03-12", passed:3, failed:1, fpr:0.50, dur:118 },
+    { date:"2025-12-04", passed:3, failed:0, fpr:1.00, dur:88 },
+  ],
+  telemetry:[
+    { zone:"SOL-ROOF",  date:"2026-06-20", pres:1.80, act:1.79 },
+    { zone:"STUCCO-N",  date:"2026-06-20", pres:4.00, act:3.97 },
+    { zone:"RF-S",      date:"2026-06-20", pres:5.50, act:5.52 },
+    { zone:"SOL-ROOF",  date:"2026-03-12", pres:1.80, act:1.81 },
+    { zone:"STUCCO-N",  date:"2026-03-12", pres:4.50, act:4.48 },
+    { zone:"RF-S",      date:"2026-03-12", pres:5.50, act:5.49 },
+    { zone:"SOL-ROOF",  date:"2025-12-04", pres:1.80, act:1.80 },
+    { zone:"STUCCO-N",  date:"2025-12-04", pres:4.00, act:3.99 },
+    { zone:"RF-S",      date:"2025-12-04", pres:5.50, act:5.51 },
+  ],
+  alerts:[
+    { type:"human",  zone:"RF-S",     time:"2026-06-20 09:32", resolved:true,  msg:"Thermal blob — operator confirmed clear, cleaning resumed." },
+    { type:"requeue",zone:"STUCCO-N", time:"2026-06-20 10:14", resolved:true,  msg:"First pass FAIL (0.41 > 0.15). Retried +0.5 bar → PASS." },
+    { type:"human",  zone:"RF-S",     time:"2026-03-12 08:55", resolved:true,  msg:"Thermal blob — maintenance worker off-zone, resumed." },
+    { type:"requeue",zone:"STUCCO-N", time:"2026-03-12 10:02", resolved:true,  msg:"First pass FAIL. Retried → PASS." },
+  ],
+};
+
+/* ══ UTILITIES ══════════════════════════════════════════════════════════════ */
+const RAMP = [[0,[30,64,175]],[.25,[6,182,212]],[.5,[16,185,129]],[.65,[234,179,8]],[.82,[249,115,22]],[1,[239,68,68]]];
+function tc(v, a=1) {
+  const c = Math.max(0,Math.min(1,v));
+  for(let i=1;i<RAMP.length;i++){
+    if(c<=RAMP[i][0]){
+      const t=(c-RAMP[i-1][0])/(RAMP[i][0]-RAMP[i-1][0]);
+      const [r0,g0,b0]=RAMP[i-1][1],[r1,g1,b1]=RAMP[i][1];
+      return `rgba(${Math.round(r0+(r1-r0)*t)},${Math.round(g0+(g1-g0)*t)},${Math.round(b0+(b1-b0)*t)},${a})`;
+    }
+  }
+  return `rgba(239,68,68,${a})`;
+}
+function soilColor(w) { return w<8?"#f04040":w<12?"#f5a623":"#10d98a"; }
+function useClock() {
+  const [t,setT]=useState(()=>new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}));
+  useEffect(()=>{ const id=setInterval(()=>setT(new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})),1000); return()=>clearInterval(id); },[]);
+  return t;
+}
+
+/* ══ TOPBAR ═════════════════════════════════════════════════════════════════ */
+const VIEW_LABELS = { operator:"Operator Console", twin:"Twin Viewer", hub:"Data Hub" };
+function Topbar({ view, clock }) {
+  return (
+    <div className="topbar">
+      <span className="brand">PROPWASH</span>
+      <span className="topbar-mid">{VIEW_LABELS[view]}</span>
+      <div className="topbar-right">
+        <span className="live-badge">LIVE</span>
+        <span className="clock">{clock}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ══ BOTTOM NAV ═════════════════════════════════════════════════════════════ */
+function BottomNav({ view, set }) {
+  const items = [
+    { id:"operator", label:"Operator",
+      icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+    { id:"twin",     label:"Twin Viewer",
+      icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="8.5" x2="22" y2="8.5"/><line x1="2" y1="15.5" x2="22" y2="15.5"/></svg> },
+    { id:"hub",      label:"Data Hub",
+      icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+  ];
+  return (
+    <div className="bottom-nav">
+      {items.map(it=>(
+        <button key={it.id} className={"nav-btn"+(view===it.id?" active":"")} onClick={()=>set(it.id)}>
+          {it.icon}{it.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ══ OPERATOR VIEW ══════════════════════════════════════════════════════════ */
+function OperatorView() {
+  const zones=DEMO_JOB.zones;
+  const [idx,setIdx]=useState(0);
+  const [phase,setPhase]=useState("brief");
+  const [statuses,setStatuses]=useState(zones.map(()=>""));
+  const [pass,setPass]=useState(true);
+  const retried=useRef({});
+  const setSt=(i,s)=>setStatuses(p=>p.map((x,j)=>j===i?s:x));
+  const z=zones[idx];
+  const onConfirm=()=>{setSt(idx,"active");setPhase("exec");};
+  const onAbort=()=>{setSt(idx,"");setPhase("brief");};
+  const onResult=()=>{const f=z.willFail&&!retried.current[z.id];setPass(!f);setPhase("verdict");};
+  const onNext=()=>{setSt(idx,"done");if(idx+1>=zones.length)setPhase("done");else{setIdx(idx+1);setPhase("brief");}};
+  const onRetry=()=>{retried.current[z.id]=true;setSt(idx,"fail");setPhase("exec");};
+  return (
+    <div className="content">
+      <div className="job-strip">
+        <h2>{DEMO_JOB.property}</h2>
+        <div className="muted">{DEMO_JOB.address} · est. {DEMO_JOB.estMinutes} min</div>
+        <div className="chips">
+          {zones.map((z,i)=><span key={z.id} className={"chip "+(statuses[i]||"")}>{z.id}</span>)}
+        </div>
+      </div>
+      <div style={{padding:"0 14px 24px"}}>
+        {phase==="brief"   && <ZoneCard zone={z} onConfirm={onConfirm}/>}
+        {phase==="exec"    && <Executing zone={z} onDone={()=>setPhase("verify")} onAbort={onAbort}/>}
+        {phase==="verify"  && <Verifying onResult={onResult}/>}
+        {phase==="verdict" && <Verdict zone={z} pass={pass} isLast={idx+1>=zones.length} onNext={onNext} onRetry={onRetry}/>}
+        {phase==="done"    && <div className="card" style={{textAlign:"center",padding:"28px 20px"}}>
+          <div style={{fontSize:44,color:"var(--green)"}}>✓</div>
+          <h1 style={{marginTop:10}}>Job Complete</h1>
+          <div className="muted" style={{marginTop:6}}>All zones verified clean. ROI report generating.</div>
+        </div>}
+      </div>
+      <p className="note" style={{paddingBottom:16}}>Demo data · Operator stays in command (FAA Part 107)</p>
+    </div>
+  );
+}
+
+function ZoneCard({zone,onConfirm}) {
+  return (
+    <div className="card" style={{marginLeft:0,marginRight:0,marginTop:12}}>
+      <h1>{zone.label}</h1>
+      <div className="muted" style={{marginBottom:2}}>{zone.id} · {zone.surface}</div>
+      <div className={"safety "+(zone.solar?"solar":"std")}>
+        {zone.solar?"⚠ SOLAR — DI water only · hard ceiling 2.0 bar · no detergent":"Standard surface — stay within prescribed pressure."}
+      </div>
+      <ol className="checklist">
+        {[["Nozzle",zone.nozzle],["Chemical",zone.chemical],["Pressure",zone.pressure],["Standoff",zone.standoff],["Pattern",zone.pattern]].map(([l,v],i)=>(
+          <li key={i}><span className="num">{i+1}</span><div><div className="step-lbl">{l}</div><div className="step-val">{v}</div></div></li>
+        ))}
+      </ol>
+      <button className="btn primary" onClick={onConfirm}>Confirm ready — begin zone</button>
+      <p className="note">You remain in command. Abort the moment anything looks wrong.</p>
+    </div>
+  );
+}
+
+function Executing({zone,onDone,onAbort}) {
+  const [left,setLeft]=useState(zone.dwell);
+  useEffect(()=>{if(left<=0){onDone();return;}const t=setTimeout(()=>setLeft(l=>l-1),1000);return()=>clearTimeout(t);},[left]);
+  return (
+    <div className="card" style={{marginLeft:0,marginRight:0,marginTop:12}}>
+      <h1>Cleaning · {zone.id}</h1>
+      <div className="muted">Executing prescription — monitor overlay</div>
+      <div className="overlay">
+        <div className="thermal-grid"/>
+        <div className="scan-line"/>
+        <span style={{position:"relative",zIndex:1}}>live thermal + RGB overlay</span>
+      </div>
+      <div className="dwell-ring">
+        <div className="dwell-big">{left}s</div>
+        <div className="muted">dwell remaining</div>
+      </div>
+      <button className="btn abort" onClick={onAbort}>■  Abort / Override</button>
+    </div>
+  );
+}
+
+function Verifying({onResult}) {
+  useEffect(()=>{const t=setTimeout(onResult,2000);return()=>clearTimeout(t);},[]);
+  return (
+    <div className="card" style={{marginLeft:0,marginRight:0,marginTop:12}}>
+      <h1>Verifying…</h1>
+      <div className="muted">Post-clean thermal re-scan in progress</div>
+      <div className="overlay">
+        <div className="thermal-grid"/>
+        <div className="scan-line" style={{animationDuration:"1.2s"}}/>
+        <span style={{position:"relative",zIndex:1,color:"var(--cyan)"}}>analysing residual grime proxy…</span>
+      </div>
+    </div>
+  );
+}
+
+function Verdict({zone,pass,isLast,onNext,onRetry}) {
+  return (
+    <div className="card" style={{marginLeft:0,marginRight:0,marginTop:12}}>
+      <div className={"verdict-wrap "+(pass?"pass":"fail")}>
+        <div className="verdict-icon">{pass?"✓":"↻"}</div>
+        <h1>{pass?"VERIFIED CLEAN":"RE-QUEUE — adjust pressure"}</h1>
+        <div className="muted">{zone.id}</div>
+      </div>
+      {[["Residual (proxy)",pass?"0.06":"0.41"],["Threshold","0.15"],...(!pass?[["Adjustment","pressure +0.5 bar"]]:[])].map(([l,v])=>(
+        <div key={l} className="metric"><span>{l}</span><b>{v}</b></div>
+      ))}
+      {pass
+        ? <button className="btn go" onClick={onNext}>{isLast?"Finish job":"Next zone →"}</button>
+        : <button className="btn primary" onClick={onRetry}>Retry with new params</button>}
+    </div>
+  );
+}
+
+/* ══ TWIN VIEWER ════════════════════════════════════════════════════════════ */
+const CELL=100;
+function TwinViewer() {
+  const [mode,setMode]=useState("pre");
+  const [sel,setSel]=useState(null);
+  const zones=DEMO_TWIN.zones;
+  const toggle=z=>setSel(s=>s?.id===z.id?null:z);
+  return (
+    <div className="content">
+      <div className="twin-wrap">
+        <div className="twin-hdr">
+          <div>
+            <div className="twin-prop">{DEMO_TWIN.property}</div>
+            <div className="muted">{DEMO_TWIN.address} · {DEMO_TWIN.captured}</div>
+          </div>
+          <div className="mode-switch">
+            <button className={"mode-btn"+(mode==="pre"?" active":"")} onClick={()=>setMode("pre")}>Pre</button>
+            <button className={"mode-btn"+(mode==="post"?" active":"")} onClick={()=>setMode("post")}>Post</button>
+          </div>
+        </div>
+
+        {/* 3D MAP */}
+        <div className="stage-wrap">
+          <div className="stage">
+            <div className="map3d" style={{width:3*CELL+4,height:2*CELL+4}}>
+              {zones.map(z=>{
+                const v=mode==="pre"?z.gPre:(z.gPost??z.gPre);
+                const bg=tc(v);
+                const glow=tc(v,.4);
+                return (
+                  <div key={z.id}
+                    className={"zone-tile"+(sel?.id===z.id?" sel":"")}
+                    onClick={()=>toggle(z)}
+                    style={{
+                      left:z.col*CELL+2, top:z.row*CELL+2,
+                      width:z.cs*CELL-4, height:z.rs*CELL-4,
+                      background:`linear-gradient(135deg,${tc(v,.9)},${tc(v+.1,.7)})`,
+                      boxShadow:`0 0 22px ${glow}, inset 0 1px 0 rgba(255,255,255,.12)`,
+                    }}>
+                    <div className="zone-lbl">{z.id}</div>
+                    <div className="zone-pct">{Math.round(v*100)}%</div>
+                    {z.solar&&<div className="zone-tag">☀ SOLAR</div>}
+                    {!z.humanClear&&<div className="zone-tag">⚠ HUMAN</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* legend */}
+        <div className="legend">
+          <div className="legend-bar"/>
+          <div className="legend-labels"><span>Clean</span><span>Dirty</span></div>
+        </div>
+
+        {/* Detail or hint */}
+        {sel
+          ? <ZoneDetail z={sel} mode={mode}/>
+          : <div style={{textAlign:"center",padding:"16px 0",color:"var(--muted)",fontSize:13}}>Tap a zone to inspect</div>
+        }
+      </div>
+
+      {/* strip */}
+      <div className="zone-strip">
+        {zones.map(z=>{
+          const v=mode==="pre"?z.gPre:(z.gPost??z.gPre);
+          return (
+            <div key={z.id} className={"zchip"+(sel?.id===z.id?" sel":"")} onClick={()=>toggle(z)}>
+              <div className="zdot" style={{background:tc(v),boxShadow:`0 0 8px ${tc(v,.5)}`}}/>
+              <div>
+                <div className="zchip-id">{z.id}</div>
+                <div className="zchip-surf">{z.surface}</div>
+                <div className="zchip-soil" style={{color:soilColor(z.soilWeeks)}}>↻ ~{z.soilWeeks}w</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{height:16}}/>
+    </div>
+  );
+}
+
+function ZoneDetail({z,mode}) {
+  const v=mode==="pre"?z.gPre:(z.gPost??z.gPre);
+  const delta=z.gPre-(z.gPost??z.gPre);
+  return (
+    <div className="detail-panel">
+      <div className="detail-name">{z.label}</div>
+      <div className="muted" style={{marginBottom:10}}>{z.id} · {z.surface} · {z.pitch}° pitch</div>
+
+      <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:".5px",color:"var(--muted)",marginBottom:4}}>
+        Grime proxy — {mode==="pre"?"pre":"post"}-clean
+      </div>
+      <div className="grime-bar-wrap">
+        <div className="grime-track">
+          <div className="grime-fill" style={{width:`${v*100}%`,background:tc(v)}}/>
+          <div className="grime-thresh" title="Verification threshold 15%"/>
+        </div>
+        <span className="grime-pct" style={{color:tc(v)}}>{Math.round(v*100)}%</span>
+      </div>
+      {z.gPost!=null&&<div style={{fontSize:11,color:"var(--green)",marginBottom:8}}>↓ {Math.round(delta*100)} pts improvement after cleaning</div>}
+
+      {[
+        ["Surface temp",`${z.temp.toFixed(1)} °C`],
+        ["Moisture index",`${Math.round(z.moisture*100)}%`],
+        ["Pressure prescribed",`${z.pPres} bar`],
+        ["Pressure actual (PSM)",`${z.pAct} bar`],
+        ["Verdict",z.verdict],
+        ["Human clear",z.humanClear?"✓ Cleared":"⚠ NOT CLEARED"],
+      ].map(([l,vv])=>(
+        <div key={l} className="dm">
+          <span>{l}</span>
+          <b style={l==="Verdict"?{color:z.verdict==="PASS"?"var(--green)":"var(--red)"}:l==="Human clear"?{color:z.humanClear?"var(--green)":"var(--red)"}:{}}>{vv}</b>
+        </div>
+      ))}
+
+      <div className="soil-box" style={{borderColor:soilColor(z.soilWeeks),background:`${soilColor(z.soilWeeks)}12`,marginTop:10}}>
+        <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}}>Predicted re-soil</div>
+        <div style={{fontSize:20,fontWeight:900,color:soilColor(z.soilWeeks)}}>~{z.soilWeeks} weeks</div>
+        <div className="muted" style={{fontSize:10}}>From calibrated soiling rate model · 3 visits</div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ DATA HUB ═══════════════════════════════════════════════════════════════ */
+const HUB_TABS=["Overview","Zones","Jobs","Pressure","Alerts"];
+function DataHub() {
+  const [tab,setTab]=useState("Overview");
+  return (
+    <div className="content">
+      <div className="hub-wrap">
+        <div className="hub-title">Data Hub</div>
+        <div className="muted">Carlsbad Commerce Center · All visits · Demo data</div>
+        <div className="htabs">
+          {HUB_TABS.map(t=><button key={t} className={"htab"+(tab===t?" active":"")} onClick={()=>setTab(t)}>{t}</button>)}
+        </div>
+        {tab==="Overview"  && <HubOverview d={DEMO_HUB}/>}
+        {tab==="Zones"     && <HubZones d={DEMO_HUB}/>}
+        {tab==="Jobs"      && <HubJobs d={DEMO_HUB}/>}
+        {tab==="Pressure"  && <HubPressure d={DEMO_HUB}/>}
+        {tab==="Alerts"    && <HubAlerts d={DEMO_HUB}/>}
+      </div>
+      <div style={{height:16}}/>
+    </div>
+  );
+}
+
+function HubOverview({d}) {
+  const s=d.summary;
+  return (
+    <div>
+      <div className="stat-grid">
+        <StatCard val={s.jobs}                                     lbl="Total jobs"            color="var(--blue)"/>
+        <StatCard val={s.zones}                                    lbl="Zones cleaned"         color="var(--blue)"/>
+        <StatCard val={`${Math.round(s.fpr*100)}%`}               lbl="Avg first-pass rate"   color="var(--green)"/>
+        <StatCard val={s.dataPoints.toLocaleString()}              lbl="Data points collected" color="#a78bfa"/>
+        <StatCard val={`$${s.revenueYTD.toLocaleString()}`}        lbl="Revenue YTD"           color="var(--cyan)"/>
+        <StatCard val={`$${s.roiYTD.toLocaleString()}`}            lbl="Customer ROI delivered"color="var(--green)"/>
+      </div>
+
+      <div className="section-ttl">First-pass rate trend</div>
+      <Spark points={d.jobs.map(j=>j.fpr*100)} labels={d.jobs.map(j=>j.date.slice(5))} color="var(--blue)" unit="%"/>
+
+      <div className="section-ttl">Predicted re-soil schedule</div>
+      {d.zones.map(z=>(
+        <div key={z.id} className="resoil-row">
+          <div style={{minWidth:72}}>
+            <div style={{fontWeight:700,fontSize:12}}>{z.id}</div>
+            <div className="muted" style={{fontSize:10}}>{z.surface}</div>
+          </div>
+          <div className="resoil-track">
+            <div className="resoil-fill" style={{width:`${Math.min(100,(z.soilWeeks/16)*100)}%`,background:soilColor(z.soilWeeks)}}/>
+          </div>
+          <div className="resoil-wks" style={{color:soilColor(z.soilWeeks)}}>~{z.soilWeeks}w</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HubZones({d}) {
+  return (
+    <div>
+      {d.zones.map(z=>(
+        <div key={z.id} className="hz-card">
+          <div className="hz-hdr">
+            <div>
+              <div className="hz-name">{z.id} {z.solar&&<span className="badge solar">SOLAR</span>}</div>
+              <div className="muted" style={{fontSize:11}}>{z.label}</div>
+            </div>
+            <span className={"badge "+(z.verdict==="PASS"?"pass":"fail")}>{z.verdict}</span>
+          </div>
+          <div className="section-ttl">Grime proxy history</div>
+          <Spark points={(d.grimeHistory[z.id]||[]).map(v=>v*100)} labels={d.jobs.map(j=>j.date.slice(5))} color={tc(z.gPre)} unit="%"/>
+          {[["Pre-clean",`${Math.round(z.gPre*100)}%`],["Post-clean",`${Math.round(z.gPost*100)}%`],["Surface temp",`${z.temp} °C`],["Soiling rate",`~${z.soilWeeks} weeks`]].map(([l,v])=>(
+            <div key={l} className="hrow"><span>{l}</span><b style={l==="Post-clean"?{color:"var(--green)"}:l==="Soiling rate"?{color:soilColor(z.soilWeeks)}:{}}>{v}</b></div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HubJobs({d}) {
+  return (
+    <div>
+      <div className="htable-wrap">
+        <table className="htable">
+          <thead><tr><th>Date</th><th>Passed</th><th>Failed</th><th>FPR</th><th>Duration</th></tr></thead>
+          <tbody>
+            {d.jobs.map((j,i)=>(
+              <tr key={i}>
+                <td>{j.date}</td>
+                <td style={{color:"var(--green)",fontWeight:700}}>{j.passed}</td>
+                <td style={{color:j.failed>0?"var(--red)":"var(--muted)",fontWeight:700}}>{j.failed}</td>
+                <td style={{color:j.fpr>=.8?"var(--green)":j.fpr>=.5?"var(--amber)":"var(--red)",fontWeight:800}}>{Math.round(j.fpr*100)}%</td>
+                <td>{j.dur} min</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="note" style={{paddingTop:10}}>FPR = first-pass rate. Lower → more re-queues → calibration model adjusts prescriptions.</div>
+    </div>
+  );
+}
+
+function HubPressure({d}) {
+  const byZone={};
+  d.telemetry.forEach(t=>{if(!byZone[t.zone])byZone[t.zone]=[];byZone[t.zone].push(t);});
+  return (
+    <div>
+      <div className="note" style={{marginBottom:12,paddingTop:0}}>PSM actual vs. prescribed nozzle pressure. Delta &gt;±0.2 bar flags for calibration review.</div>
+      {Object.entries(byZone).map(([zone,rows])=>(
+        <div key={zone} className="hz-card">
+          <div className="hz-name" style={{marginBottom:8}}>{zone}</div>
+          <div className="htable-wrap">
+            <table className="htable">
+              <thead><tr><th>Date</th><th>Prescribed</th><th>Actual</th><th>Delta</th></tr></thead>
+              <tbody>
+                {rows.map((r,i)=>{
+                  const d=(r.act-r.pres).toFixed(2);
+                  const ok=Math.abs(r.act-r.pres)<=0.2;
+                  return (
+                    <tr key={i}>
+                      <td>{r.date}</td>
+                      <td>{r.pres.toFixed(2)} bar</td>
+                      <td>{r.act.toFixed(2)} bar</td>
+                      <td className={ok?"delta-ok":"delta-bad"}>{d>=0?"+":""}{d}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HubAlerts({d}) {
+  return (
+    <div>
+      {d.alerts.map((a,i)=>(
+        <div key={i} className={"alert-row "+a.type}>
+          <div className="alert-ico">{a.type==="human"?"⚠":"↻"}</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:700,fontSize:13}}>
+              {a.type==="human"?"Human presence detected":"Re-queue triggered"}
+              <span className="muted" style={{fontWeight:400,marginLeft:6,fontSize:11}}>{a.zone} · {a.time}</span>
+            </div>
+            <div className="alert-detail">{a.msg}</div>
+          </div>
+          <span className={"badge "+(a.resolved?"pass":"fail")}>{a.resolved?"Resolved":"Open"}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ══ SHARED COMPONENTS ══════════════════════════════════════════════════════ */
+function StatCard({val,lbl,color}) {
+  return (
+    <div className="stat-card">
+      <div className="stat-num" style={{color}}>{val}</div>
+      <div className="stat-lbl">{lbl}</div>
+    </div>
+  );
+}
+
+function Spark({points,labels,color,unit=""}) {
+  const W=260,H=72,p=8;
+  if(points.length<2) return null;
+  const n=points.length;
+  const mx=Math.max(...points)||1;
+  const xs=points.map((_,i)=>p+(i/(n-1))*(W-p*2));
+  const ys=points.map(v=>H-p-((v/mx)*(H-p*2)));
+  const path=xs.map((x,i)=>`${i===0?"M":"L"}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(" ");
+  const area=path+` L${xs[n-1]},${H} L${xs[0]},${H} Z`;
+  return (
+    <div className="sparkwrap">
+      <svg width={W} height={H} style={{overflow:"visible",display:"block"}}>
+        <path d={area} fill={color} fillOpacity={.1}/>
+        <path d={path} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round"/>
+        {xs.map((x,i)=>(
+          <g key={i}>
+            <circle cx={x} cy={ys[i]} r={3} fill={color}/>
+            <text x={x} y={H-1} textAnchor="middle" fontSize={9} fill="var(--muted)">{labels[i]}</text>
+            <text x={x} y={ys[i]-6} textAnchor="middle" fontSize={9} fill={color} fontWeight="800">{points[i].toFixed(0)}{unit}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+/* ══ APP ROOT ═══════════════════════════════════════════════════════════════ */
+function App() {
+  const [view,setView]=useState("operator");
+  const clock=useClock();
+  return (
+    <div className="app">
+      <Topbar view={view} clock={clock}/>
+      {view==="operator" && <OperatorView/>}
+      {view==="twin"     && <TwinViewer/>}
+      {view==="hub"      && <DataHub/>}
+      <BottomNav view={view} set={setView}/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
