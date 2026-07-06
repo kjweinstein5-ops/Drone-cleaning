@@ -85,15 +85,36 @@ advisory reasoning degrades. Cloud dependency never sits in a safety loop.
 
 ---
 
-## 4. Memory — exact recommendation
+## 4. Chip binning + memory — exact recommendation
 
-**M4 Max, 64 GB unified memory.** Reasoning:
+**M4 Max, 16-core CPU / 40-core GPU, 64 GB unified memory.** Reasoning:
 
+### The chip bin is not optional — it's tied to the memory
+Apple bins the M4 Max in two ways, and memory is gated by the bin:
+
+| M4 Max bin | Max unified memory |
+|---|---|
+| 14-core CPU / 32-core GPU | **36 GB only** |
+| **16-core CPU / 40-core GPU** | 36 / 48 / **64 GB** |
+
+**To get 64 GB you *must* select the 16-core / 40-core chip** — the base 14/32 bin caps at
+36 GB. So the "should I upgrade the cores?" question is already answered by the memory
+decision: yes, and there's no 64 GB build without it.
+
+### The bigger chip also helps PROPWASH's heaviest local jobs
+Even independent of memory, the upgrade speeds up exactly what this box does:
+- **16 CPU cores** → faster **photogrammetry** (OpenDroneMap SfM is CPU-bound; this is the
+  slowest pipeline step, so cores directly cut survey→model time).
+- **40 GPU cores** → faster **computer vision** (SAM/PyTorch via Metal) and faster **local
+  LLM** token generation (Ollama's Metal backend uses the GPU).
+
+There is no sensible PROPWASH build on the 14/32 bin.
+
+### Memory sizing
 - Unified memory is soldered — **you cannot upgrade it later.** Buy the right amount once.
-- **Get 64 GB, not the 36 GB base.** The 36→64 GB jump is the single most important AI
-  upgrade on this machine.
-- 64 GB comfortably runs photogrammetry + CV + the backend + databases **simultaneously**,
-  plus a local ~70B open model (4-bit ≈ 40 GB) when you want one.
+- **Get 64 GB, not 36 GB.** The 36→64 GB jump is the single most important AI upgrade here.
+- 64 GB comfortably runs photogrammetry + CV + backend + databases **simultaneously**, plus
+  a local ~70B open model (4-bit ≈ 40 GB) when you want one.
 - The M4 Max **caps at 64 GB** — going higher forces the M3 Ultra (96 GB, ~$1,500 more,
   ~800 GB/s bandwidth). **Only worth it if fast local LLM becomes a *primary* workload.**
   Since the heavy reasoning is cloud Claude here, the M4 Max 64 GB is the cost-smart pick.
@@ -149,7 +170,7 @@ prototype / IP filings.
 
 | Item | Spec | ~Cost (verify) |
 |---|---|---|
-| Mac Studio | **M4 Max, 64 GB, 2 TB SSD** | ~$3,000 |
+| Mac Studio | **M4 Max (16-core CPU / 40-core GPU), 64 GB, 2 TB SSD** | ~$3,000 |
 | External fast storage | TB5 NVMe enclosure + 4 TB drive | ~$400 |
 | Archive/backup | 4-bay RAID NAS + drives | ~$1,000–1,500 |
 | Cloud Claude | API usage (pay-as-you-go) | usage-based |
@@ -186,4 +207,5 @@ this hybrid doesn't need, since cloud Claude does the heavy reasoning.
 
 | Date | Decision | By | Notes |
 |---|---|---|---|
-| 2026-07-06 | Recommend **M4 Max / 64 GB / 2 TB** + TB5 external + RAID NAS; cloud Claude for Tier-3; Claude confirmed **not** locally runnable | Claude (advisory) | Awaiting Kevin's purchase — status RECOMMENDED |
+| 2026-07-06 | Recommend **M4 Max (16-core/40-core) / 64 GB / 2 TB** + TB5 external + RAID NAS; cloud Claude for Tier-3; Claude confirmed **not** locally runnable | Claude (advisory) | Awaiting Kevin's purchase — status RECOMMENDED |
+| 2026-07-06 | Clarified: 64 GB requires the 16-core CPU / 40-core GPU bin (base 14/32 caps at 36 GB); upgrade also speeds photogrammetry + CV + local LLM | Claude (advisory) | Closes gap in §4 |
