@@ -33,6 +33,54 @@ LiDAR is a documented future option (§8), not a current dependency.
 
 ---
 
+## 0b. ⚠️ Laser Rangefinder ≠ LiDAR (a specific trap — read this)
+
+There is a **newer Autel option, the EVO MAX 4T**, and it is easy to assume it "does
+LiDAR." **It does not.** Its four-sensor payload (the "4T") is:
+
+| Sensor | Approx. spec | Role |
+|---|---|---|
+| Wide camera | 50 MP | RGB imagery |
+| Zoom camera | up to ~160× hybrid | Detail inspection |
+| Thermal | 640×512 radiometric | Temperature |
+| **Laser Rangefinder (LRF)** | ~5–1200 m | Distance to **one point** |
+
+The fourth sensor is a **Laser Rangefinder**, which is **not** LiDAR. The difference is
+fundamental to this pipeline:
+
+- **Laser Rangefinder (what the MAX 4T has):** fires one beam and returns the distance
+  to **a single aimed point** — "that wall is 47.3 m away." One number. It does **not**
+  produce a point cloud and it does **not** build a 3D model.
+- **LiDAR (what the MAX 4T does NOT have):** a *scanning* laser sweeping thousands–
+  millions of points per second into a dense 3D **point cloud** directly — no
+  photogrammetry required. That's a Matrice + Zenmuse L2 class payload (§8).
+
+### What this means for us
+
+**Whether we fly the EVO II Dual 640T (current, CLAUDE.md §4) or the EVO MAX 4T, the 3D
+reconstruction is still photogrammetry (SfM), not LiDAR.** Neither Autel produces a
+laser point cloud. Stage 1 is unchanged by the MAX 4T.
+
+What the MAX 4T's LRF *would* add if we upgraded:
+
+1. **Better scale/georeferencing.** Single-point laser distances give SfM ground-truth
+   measurements to lock the mesh scale — more accurate dimensions → more accurate
+   standoff and area (feeds Stage 5 and the ROI report).
+2. **Live standoff during the clean.** The LRF can stream a real-time "distance to
+   surface" number, useful to the Tier-1 safety layer and the operator overlay (§5, §9).
+
+Neither of those changes the fact that the **point cloud comes from RGB photogrammetry.**
+
+### Honesty rule (CLAUDE.md §5) — same trap as multispectral
+
+Do **not** write "LiDAR" in any spec, patent claim, pitch deck, or marketing copy while
+the sensor is a **rangefinder**. It is the exact same overclaim risk as calling the
+thermal+RGB grime score "multispectral biofilm detection." A laser rangefinder is a
+distance sensor, not a mapping sensor. If we want to *say* LiDAR, we have to *fly* LiDAR
+(§8). Until then: "photogrammetry, optionally laser-rangefinder-assisted for scale."
+
+---
+
 ## 1. The pipeline in one picture
 
 ```
@@ -355,8 +403,11 @@ a third-party cloud, because:
 
 ## 8. Do we ever add LiDAR? (documented future option, not now)
 
-**Not for Year 1.** SfM from the Autel is sufficient for cleaning prescription. Add
-LiDAR only if a concrete need appears:
+**Not for Year 1.** SfM from the Autel is sufficient for cleaning prescription.
+Remember (§0b): **no Autel option gives us LiDAR** — the EVO II Dual 640T has thermal+RGB,
+and the EVO MAX 4T adds a *laser rangefinder* (single-point distance), not a scanning
+LiDAR. True LiDAR means leaving the Autel platform entirely. Add it only if a concrete
+need appears:
 
 - **When it'd help:** heavy tree occlusion around a property; survey-grade geometry for
   very tall/complex commercial structures; night/low-light capture; faster turnaround
@@ -365,13 +416,19 @@ LiDAR only if a concrete need appears:
   L2, ~$15–20K all-in) and a second processing path (LiDAR → point cloud is direct, no
   SfM needed; our Stage 2–5 code stays the same because it already consumes a point
   cloud + mesh).
+- **The cheaper middle step first:** if the motivation is just *better scale/accuracy*,
+  the **EVO MAX 4T's laser rangefinder** (§0b) improves SfM scale for a fraction of the
+  cost of a LiDAR aircraft — same photogrammetry pipeline, tighter dimensions. Try that
+  before jumping to a Matrice + L2.
 - **Architecture note:** because Stage 2+ consumes a **point cloud + mesh abstraction**,
   swapping the *source* from SfM to LiDAR is a Stage-1 change only. Keep Stage 1 behind
-  a `GeometrySource` interface (`SfmSource`, `LidarSource`) — mirror the swappable
-  `ExecutionTransport` pattern. **Don't hard-code SfM assumptions into Stage 2+.**
+  a `GeometrySource` interface (`SfmSource`, `SfmWithLrfSource`, `LidarSource`) — mirror
+  the swappable `ExecutionTransport` pattern. **Don't hard-code SfM assumptions into
+  Stage 2+.**
 
 Do **not** claim LiDAR in any spec/patent/marketing until it's actually in the loop
-(CLAUDE.md §5 honesty rule).
+(CLAUDE.md §5 honesty rule). A laser rangefinder is **not** LiDAR (§0b) — do not conflate
+the two in any external claim.
 
 ---
 
@@ -491,7 +548,9 @@ coverage plan, end to end, no hardware autonomy assumed.
 
 We **buy the geometry and the CV muscle, and build the intelligence.** OpenDroneMap
 (self-hosted) turns the Autel's RGB photos into a 3D point cloud + mesh via
-photogrammetry — there's **no LiDAR** on the Autel, and we don't need one for Year 1.
+photogrammetry — there's **no LiDAR** on any Autel we'd fly (the EVO II Dual 640T is
+thermal+RGB; the EVO MAX 4T adds a *laser rangefinder*, i.e. single-point distance, not
+a scanning point cloud — §0b), and we don't need LiDAR for Year 1.
 Our own code then paints the thermal data onto that mesh (Stage 2), and a segmentation
 model built on open-source backbones like **SAM**, but trained on **our private San Diego
 roof dataset** and cross-checked against **deterministic mesh geometry**, identifies
