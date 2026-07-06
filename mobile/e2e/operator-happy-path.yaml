@@ -1,0 +1,16 @@
+# Maestro flow — operator happy path (job -> zone -> spray -> verdict).
+# Run with: maestro test e2e/operator-happy-path.yaml
+appId: com.propwash.operator
+---
+- launchApp
+- tapOn: 'Start shift'
+- assertVisible: 'Today’s jobs'
+- tapOn:
+    index: 0
+    text: '.*'          # first job card
+- tapOn: 'Start zone'
+- assertVisible: 'FIT NOZZLE'
+- tapOn: 'Nozzle fitted — begin spray'
+- assertVisible: 'seconds dwell'
+# Dwell auto-advances to verify; then check the verdict screen.
+- tapOn: 'View verdict'

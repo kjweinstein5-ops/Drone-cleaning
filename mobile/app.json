@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "PROPWASH Operator",
+    "slug": "propwash-operator",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "propwash",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0b6cc4"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.propwash.operator",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Document zone condition and verify clean results.",
+        "NSLocationWhenInUseUsageDescription": "Tag jobs and zones to the correct property.",
+        "UIRequiresPersistentWiFi": false
+      }
+    },
+    "android": {
+      "package": "com.propwash.operator",
+      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION"]
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "comment": "EXPO_PUBLIC_API_URL / EXPO_PUBLIC_WS_URL are read from env at build time — see .env.example"
+    }
+  }
+}
