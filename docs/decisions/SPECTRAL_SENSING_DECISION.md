@@ -6,9 +6,14 @@
 > `docs/3D_DATA_PIPELINE.md` · `docs/decisions/SENSOR_PLATFORM_SHORTLIST.md`.
 
 This is the note that decides whether PROPWASH can make **real spectral claims** about
-mold/dirt/biofilm — or must keep treating them as an inferred *proxy*. Kevin has said
-this analysis is "the most important thing." So read §1 first; it reframes the question
-honestly before we spend money.
+mold/dirt/biofilm — or must keep treating them as an inferred *proxy*. So read §1 first;
+it reframes the question honestly before we spend money.
+
+> **🧭 KEVIN'S STEER (2026-07-06):** *"I am looking at more thermal. It doesn't need to be
+> exact."* This narrows the decision decisively toward a **thermal-forward, proxy-first**
+> approach — **CLAUDE.md §5 Option A**, not the expensive multispectral platform. See the
+> updated recommendation in §5a. The multispectral options below are retained as a
+> **documented future upgrade**, not a Year-1 purchase.
 
 ---
 
@@ -147,6 +152,41 @@ unlocking honest spectral claims.
 
 ---
 
+## 5a. ⭐ Updated recommendation given Kevin's steer (thermal-forward)
+
+Kevin's steer — *"more thermal, doesn't need to be exact"* — **overrides the capital-heavy
+lean above.** If exactness isn't required, we do **not** buy a multispectral platform in
+Year 1. The right path is:
+
+**→ Stay thermal + RGB (the Autel), lean hard on thermal, keep `grime_confidence` as an
+honest PROXY.** This is **CLAUDE.md §5 Option A**, and it's the correct call when:
+
+- Precision isn't the goal — thermal (moisture / evaporative-cooling differentials) plus
+  RGB computer vision (visible staining, dark streaks) is **plenty to decide "this zone
+  is dirty, clean it and verify."** We don't need a lab-grade biofilm index to prescribe
+  a wash and re-scan.
+- Capital is better spent on the **PSM pressure-control prototype + IP filings** than on a
+  $5–15K sensor whose extra precision we don't need yet.
+- The closed loop (sense → clean → **verify** → re-queue) is self-correcting: if the
+  thermal proxy under-calls a zone, verification catches the residual and re-queues it.
+  **Verification compensates for proxy imprecision** — that's the whole point of the loop.
+
+**What "lean into thermal" concretely means for the build:**
+- Invest in the **thermal pipeline quality** — good radiometric calibration, the
+  reflection-rejection filter (`reflection_filter.py`), multi-frame per-face averaging.
+  Getting *more* out of the thermal we already have beats adding a band we don't need.
+- Keep the **honesty discipline**: `grime_confidence` stays labeled **PROXY**; the
+  `ZoneSignature.source` validator stays locked to thermal/rgb/sfm. No spectral claims.
+- **Leave the multispectral door open, cheaply:** design the `SpectralSource` seam (§8)
+  now so that *if* a future job type ever needs real biofilm indices, adding a DJI Mavic
+  3M later is a drop-in — not a re-architecture.
+
+**Net:** Year 1 = thermal-forward, proxy-honest, no new sensor. Multispectral (§4) becomes
+a **documented, ready-to-execute upgrade** we pull the trigger on only if a customer
+segment (e.g., utility-scale solar soiling quantification) ever demands measured indices.
+
+---
+
 ## 6. How this resolves CLAUDE.md §5
 
 CLAUDE.md §5 left an **OPEN DECISION**: (A) accept thermal+RGB proxy for Year 1, or (B)
@@ -213,7 +253,8 @@ is a core requirement. Consequences to propagate when the purchase is made:
 
 | Date | Decision | By | Notes |
 |---|---|---|---|
-| 2026-07-06 | Recommend CLAUDE.md §5 → **Option B (add multispectral)**; lean = M3M + Autel now, Sentera 6X Thermal Pro later | Claude (advisory) | Awaiting Kevin's capital call — status OPEN |
+| 2026-07-06 | Initial analysis surfaced Option B (multispectral) as the max-capability path | Claude (advisory) | Superseded by Kevin's steer same day |
+| 2026-07-06 | **Kevin's steer: thermal-forward, "doesn't need to be exact" → CLAUDE.md §5 Option A** (stay Autel thermal+RGB proxy; multispectral = future upgrade) | Kevin | See §5a. Recommend closing §5 as **Option A** once confirmed |
 
 ---
 
