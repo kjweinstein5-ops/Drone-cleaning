@@ -110,6 +110,14 @@ Even independent of memory, the upgrade speeds up exactly what this box does:
 
 There is no sensible PROPWASH build on the 14/32 bin.
 
+> ⚠️ **Photogrammetry-speed caveat (see `3D_DATA_PIPELINE.md` §2b).** The Mac Studio runs
+> **Agisoft Metashape** (native Apple-Silicon GPU accel) fast enough for building-scale
+> models (~30 min–2 h each). But the *fastest* engines — **RealityCapture, DJI Terra** —
+> are **Windows + NVIDIA only** and **cannot run on the Mac Studio at all.** If job volume
+> or near-real-time turnaround ever demands max speed, that's a **separate small NVIDIA GPU
+> box** (RTX 4090/5090-class, ~$2–3K) for the reconstruction step only — not a Mac upgrade.
+> Start Mac-only with Metashape; add the NVIDIA box later if speed becomes the constraint.
+
 ### Memory sizing
 - Unified memory is soldered — **you cannot upgrade it later.** Buy the right amount once.
 - **Get 64 GB, not 36 GB.** The 36→64 GB jump is the single most important AI upgrade here.

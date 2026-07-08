@@ -171,6 +171,67 @@ buy the geometry, build the intelligence.
 
 ---
 
+## 2b. ⚡ Speed & the "seamless, fast" engine choice (READ if turnaround matters)
+
+The §2 default (OpenDroneMap) is **free but slow** — it's the most CPU-bound option. If the
+priority is a **fast, seamless survey→model turnaround** (survey in the morning, clean plan
+by afternoon — or eventually near-real-time), the engine choice changes, and it collides
+with the Mac Studio decision (`COMPUTE_INFRASTRUCTURE.md`). Here's the honest picture.
+
+### The hard tension: the fastest engines are NVIDIA/Windows, the Mac Studio is not
+
+| Engine | Speed | Platform | Runs on Mac Studio? |
+|---|---|---|---|
+| **RealityCapture** (Epic) | ⭐ Fastest — **5–20× faster** than Metashape | **Windows + NVIDIA GPU only** | ❌ No |
+| **DJI Terra** | Fast; ~30–40% faster than Metashape on DJI data | **Windows + NVIDIA only** | ❌ No |
+| **Agisoft Metashape** | Good; **native Apple-Silicon GPU accel (M1–M4)** | Win / Mac / Linux | ✅ **Yes** |
+| **OpenDroneMap** | Slowest (free) | Win / Mac / Linux (Docker) | ✅ Yes |
+
+Reference point: a 1,000-photo project ≈ RealityCapture **2–4 h** vs Metashape **6–12 h** on
+comparable hardware. **But a single house/small commercial is only ~150–400 photos**, so
+Metashape does one building in roughly **30 min–2 h** depending on quality settings — which
+is *plenty* for a same-day workflow. The huge RealityCapture gap matters at *volume*.
+
+### The decision, tied to the Mac Studio
+
+**→ Path 1 (recommended start): Mac Studio + Metashape.** One box, everything stays in-house
+(data-sovereignty moat intact), Metashape is the *only* pro engine with native Apple-Silicon
+GPU acceleration, and it's **fast enough for building-scale**. Swap it in as the Stage-1
+engine (buy the ~$3.5K perpetual license — no copyleft either, which also solves the AGPL
+concern in §2). This is the simplest seamless pipeline.
+
+**→ Path 2 (if speed becomes the constraint): add a small NVIDIA GPU box for Stage 1 only.**
+If you scale to many buildings/day or want near-real-time, a dedicated NVIDIA workstation
+(RTX 4090/5090-class, ~$2–3K) running **RealityCapture** or **DJI Terra** does the SfM in
+minutes, then hands the mesh to the Mac Studio for our Stage 2–5 (thermal overlay,
+segmentation, twin). Data still never leaves your hardware. This is the **max-speed** path;
+CUDA simply beats Apple Silicon at photogrammetry. It's a second machine, not a Mac upgrade —
+the Mac Studio can't run these engines at all.
+
+> **Net:** start Path 1 (Mac Studio + Metashape) — fast enough, one box, data at home.
+> Add Path 2's NVIDIA+RealityCapture box **only when job volume or near-real-time demands
+> it.** Don't buy the NVIDIA box on day one. (This revises the §2 "OpenDroneMap primary"
+> default: **Metashape is the better pick once speed matters** — keep ODM only as the
+> free fallback.)
+
+### Gaussian Splatting / NeRF — a visual layer, NOT the measurement engine
+Neural reconstruction (3D Gaussian Splatting) trains in **minutes** and looks
+photorealistic — tempting for speed. **But its geometric error is ~7.8 cm vs 1–3 cm for
+photogrammetry.** That's too loose for standoff distance, area, and prescription math, and
+it needs an NVIDIA RTX 4090. **Verdict:** optionally use GS later as a gorgeous
+*customer-facing* twin visualization, but **not** as the measurement/geometry source that
+feeds Stages 3–5. Measurement stays photogrammetry.
+
+### Where "seamless" actually comes from (this part is ours to build)
+No off-the-shelf tool chains capture → reconstruction → thermal overlay → surface
+segmentation → cleaning plan into **one automated job.** That orchestration glue — kick the
+engine via its CLI/API, auto-ingest the mesh, run our Stage 2–3, emit the twin, no manual
+handoffs — **is our code, and it's where the "seamless, fast pipeline" is won or lost.** The
+engine is bought; the *seamlessness* is built. See `propwash/backend/geometry/` +
+`fusion/` in §11.
+
+---
+
 ## 3. Stage 2 — Thermal registration (BUILD — this is ours)
 
 The SfM tool used only the **RGB** frames (thermal isn't good for feature matching). So
