@@ -151,6 +151,26 @@ async def list_twins():
     ]
 
 
+@router.get("/scan/demo")
+async def get_scan_demo():
+    """Run the drone-scan pipeline on the synthetic building and return the
+    Twin Viewer payload (surface types + grime proxy + exclusion zones), derived
+    live from the pipeline — same data the visor renders."""
+    from propwash.backend.geometry.source import SyntheticBuildingSource
+    from propwash.backend.fusion.scan_pipeline import run_scan_pipeline
+    from propwash.backend.fusion.twin_export import scanned_zones_to_view
+    from sim.scan_demo import synth_thermal_samples
+
+    source = SyntheticBuildingSource(property_id="sim_carlsbad_bldg_c")
+    recon = source.load()
+    zones = run_scan_pipeline(source, synth_thermal_samples(recon.faces))
+    return scanned_zones_to_view(
+        recon, zones,
+        property_label="Carlsbad Commerce Center — Bldg C",
+        address="2200 Faraday Ave, Carlsbad, CA",
+    )
+
+
 @router.get("/{property_id}", response_model=DigitalTwin)
 async def get_twin(property_id: str):
     twin = _twins.get(property_id)

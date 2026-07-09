@@ -220,6 +220,32 @@ const DEMO_TWIN = {
   ],
 };
 
+// ── SCAN_TWIN: emitted by the drone-scan pipeline (sim/export_twin.py) ─────────
+// Surface types, grime PROXY, temps, exclusion flags and the plan-view layout
+// are all produced by propwash/backend/fusion/scan_pipeline.py — not hand-placed.
+const SCAN_TWIN = {
+  property:"Carlsbad Commerce Center — Bldg C",
+  address:"2200 Faraday Ave, Carlsbad, CA",
+  captured:"2026-07-06",
+  source:"drone-scan pipeline",
+  cleanable:9, excluded:2,
+  zones:[
+    { id:"SOL-ROOF", label:"Rooftop solar array",  surface:"solar_panel",  solar:true,  excl:false, gPre:0.474, gPost:0.05, temp:38.0, moisture:0.098, pitch:31, conf:0.70, reason:"Conservative pick among viable ['solar_panel'].", x:0.40, y:0.167, w:0.20, h:0.10 },
+    { id:"RF-S",     label:"Roof — south slope",    surface:"clay_tile",    solar:false, excl:false, gPre:0.271, gPost:0.05, temp:53.6, moisture:0.0,   pitch:31, conf:0.30, reason:"Conservative pick among viable ['clay_tile','composite_shingle'].", x:0.333, y:0.167, w:0.333, h:0.167 },
+    { id:"RF-N",     label:"Roof — north slope",    surface:"clay_tile",    solar:false, excl:false, gPre:0.271, gPost:0.05, temp:53.6, moisture:0.0,   pitch:31, conf:0.30, reason:"Conservative pick among viable ['clay_tile','composite_shingle'].", x:0.333, y:0.667, w:0.333, h:0.167 },
+    { id:"WALL-S",   label:"Façade — south",        surface:"stucco",       solar:false, excl:false, gPre:0.224, gPost:0.05, temp:31.1, moisture:0.447, pitch:90, conf:0.75, reason:"Conservative pick among viable ['stucco'].", x:0.333, y:0.0,   w:0.333, h:0.09 },
+    { id:"WALL-N",   label:"Façade — north",        surface:"stucco",       solar:false, excl:false, gPre:0.224, gPost:0.05, temp:31.1, moisture:0.447, pitch:90, conf:0.75, reason:"Conservative pick among viable ['stucco'].", x:0.333, y:0.91,  w:0.333, h:0.09 },
+    { id:"WALL-E",   label:"Façade — east",         surface:"stucco",       solar:false, excl:false, gPre:0.224, gPost:0.05, temp:31.1, moisture:0.447, pitch:90, conf:0.75, reason:"Conservative pick among viable ['stucco'].", x:0.91,  y:0.333, w:0.09,  h:0.333 },
+    { id:"WALL-W",   label:"Façade — west",         surface:"stucco",       solar:false, excl:false, gPre:0.224, gPost:0.05, temp:31.1, moisture:0.447, pitch:90, conf:0.75, reason:"Conservative pick among viable ['stucco'].", x:0.0,   y:0.333, w:0.09,  h:0.333 },
+    { id:"WIN-S1",   label:"Window — south 1",      surface:"window_glass", solar:false, excl:false, gPre:0.488, gPost:0.05, temp:30.7, moisture:0.465, pitch:90, conf:0.60, reason:"Conservative pick among viable ['window_glass'].", x:0.267, y:0.0,  w:0.09, h:0.09 },
+    { id:"WIN-S2",   label:"Window — south 2",      surface:"window_glass", solar:false, excl:false, gPre:0.488, gPost:0.05, temp:30.7, moisture:0.465, pitch:90, conf:0.60, reason:"Conservative pick among viable ['window_glass'].", x:0.667, y:0.0,  w:0.09, h:0.09 },
+    { id:"CHIMNEY",  label:"Chimney",               surface:"exclusion",    solar:false, excl:true,  gPre:0.198, gPost:null, temp:45.3, moisture:0.0,   pitch:90, conf:0.90, reason:"Protrusion above roofline (6.5 m) — no spray.", x:0.733, y:0.45, w:0.10, h:0.10 },
+    { id:"HVAC",     label:"HVAC unit",             surface:"exclusion",    solar:false, excl:true,  gPre:0.365, gPost:null, temp:45.3, moisture:0.0,   pitch:0,  conf:0.75, reason:"Warm (45.3°C), uniform, flat, equipment-like — likely HVAC. Excluded from spray.", x:0.14, y:0.64, w:0.10, h:0.10 },
+  ],
+};
+
+const prettySurface = s => s.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+
 const DEMO_HUB = {
   summary:{ jobs:3, zones:9, fpr:0.72, dataPoints:1847, revenueYTD:28400, roiYTD:141200 },
   zones: DEMO_TWIN.zones,
@@ -420,19 +446,26 @@ function Verdict({zone,pass,isLast,onNext,onRetry}) {
 }
 
 /* ══ TWIN VIEWER ════════════════════════════════════════════════════════════ */
-const CELL=100;
+const MAP_W=300, MAP_H=224;      // plan-view canvas (px)
+const EXCL_GREY="#5a6b82";
 function TwinViewer() {
   const [mode,setMode]=useState("pre");
   const [sel,setSel]=useState(null);
-  const zones=DEMO_TWIN.zones;
+  const twin=SCAN_TWIN;
+  const zones=twin.zones;
   const toggle=z=>setSel(s=>s?.id===z.id?null:z);
+  // grime value shown for a zone under the current mode (exclusions never "clean")
+  const gv=z=>z.excl?z.gPre:(mode==="pre"?z.gPre:(z.gPost??z.gPre));
   return (
     <div className="content">
       <div className="twin-wrap">
         <div className="twin-hdr">
           <div>
-            <div className="twin-prop">{DEMO_TWIN.property}</div>
-            <div className="muted">{DEMO_TWIN.address} · {DEMO_TWIN.captured}</div>
+            <div className="twin-prop">{twin.property}</div>
+            <div className="muted">{twin.address} · scanned {twin.captured}</div>
+            <div style={{fontSize:10,color:"var(--cyan)",marginTop:3,fontWeight:700,letterSpacing:.3}}>
+              ▲ FROM DRONE-SCAN PIPELINE · {twin.cleanable} cleanable · {twin.excluded} excluded
+            </div>
           </div>
           <div className="mode-switch">
             <button className={"mode-btn"+(mode==="pre"?" active":"")} onClick={()=>setMode("pre")}>Pre</button>
@@ -440,28 +473,31 @@ function TwinViewer() {
           </div>
         </div>
 
-        {/* 3D MAP */}
+        {/* PLAN-VIEW MAP (geometry from the scan) */}
         <div className="stage-wrap">
           <div className="stage">
-            <div className="map3d" style={{width:3*CELL+4,height:2*CELL+4}}>
+            <div className="map3d" style={{width:MAP_W+4,height:MAP_H+4}}>
               {zones.map(z=>{
-                const v=mode==="pre"?z.gPre:(z.gPost??z.gPre);
-                const bg=tc(v);
-                const glow=tc(v,.4);
+                const v=gv(z);
+                const bg = z.excl ? EXCL_GREY : `linear-gradient(135deg,${tc(v,.92)},${tc(v+.1,.72)})`;
+                const glow = z.excl ? "rgba(90,107,130,.35)" : tc(v,.4);
                 return (
                   <div key={z.id}
                     className={"zone-tile"+(sel?.id===z.id?" sel":"")}
                     onClick={()=>toggle(z)}
                     style={{
-                      left:z.col*CELL+2, top:z.row*CELL+2,
-                      width:z.cs*CELL-4, height:z.rs*CELL-4,
-                      background:`linear-gradient(135deg,${tc(v,.9)},${tc(v+.1,.7)})`,
-                      boxShadow:`0 0 22px ${glow}, inset 0 1px 0 rgba(255,255,255,.12)`,
+                      left:z.x*MAP_W+2, top:z.y*MAP_H+2,
+                      width:Math.max(18,z.w*MAP_W-4), height:Math.max(18,z.h*MAP_H-4),
+                      background:bg,
+                      border: z.excl ? "2px dashed rgba(255,255,255,.5)" : undefined,
+                      boxShadow:`0 0 20px ${glow}, inset 0 1px 0 rgba(255,255,255,.12)`,
                     }}>
                     <div className="zone-lbl">{z.id}</div>
-                    <div className="zone-pct">{Math.round(v*100)}%</div>
+                    {z.excl
+                      ? <div className="zone-pct" style={{fontSize:15}}>⛔</div>
+                      : <div className="zone-pct">{Math.round(v*100)}%</div>}
                     {z.solar&&<div className="zone-tag">☀ SOLAR</div>}
-                    {!z.humanClear&&<div className="zone-tag">⚠ HUMAN</div>}
+                    {z.excl&&<div className="zone-tag">NO SPRAY</div>}
                   </div>
                 );
               })}
@@ -472,75 +508,85 @@ function TwinViewer() {
         {/* legend */}
         <div className="legend">
           <div className="legend-bar"/>
-          <div className="legend-labels"><span>Clean</span><span>Dirty</span></div>
+          <div className="legend-labels"><span>Clean</span><span>Dirty</span><span style={{color:EXCL_GREY}}>⛔ Exclusion</span></div>
         </div>
 
         {/* Detail or hint */}
         {sel
           ? <ZoneDetail z={sel} mode={mode}/>
-          : <div style={{textAlign:"center",padding:"16px 0",color:"var(--muted)",fontSize:13}}>Tap a zone to inspect</div>
+          : <div style={{textAlign:"center",padding:"16px 0",color:"var(--muted)",fontSize:13}}>Tap a zone to inspect the scan result</div>
         }
       </div>
 
       {/* strip */}
       <div className="zone-strip">
         {zones.map(z=>{
-          const v=mode==="pre"?z.gPre:(z.gPost??z.gPre);
+          const v=gv(z);
           return (
             <div key={z.id} className={"zchip"+(sel?.id===z.id?" sel":"")} onClick={()=>toggle(z)}>
-              <div className="zdot" style={{background:tc(v),boxShadow:`0 0 8px ${tc(v,.5)}`}}/>
+              <div className="zdot" style={{background:z.excl?EXCL_GREY:tc(v),boxShadow:`0 0 8px ${z.excl?"rgba(90,107,130,.5)":tc(v,.5)}`}}/>
               <div>
                 <div className="zchip-id">{z.id}</div>
-                <div className="zchip-surf">{z.surface}</div>
-                <div className="zchip-soil" style={{color:soilColor(z.soilWeeks)}}>↻ ~{z.soilWeeks}w</div>
+                <div className="zchip-surf">{prettySurface(z.surface)}</div>
+                <div className="zchip-soil" style={{color:z.excl?EXCL_GREY:"var(--muted)"}}>
+                  {z.excl?"⛔ no spray":`grime ${Math.round(z.gPre*100)}%`}
+                </div>
               </div>
             </div>
           );
         })}
       </div>
-      <div style={{height:16}}/>
+      <div className="note" style={{padding:"4px 14px 14px"}}>
+        Surface types, grime proxy, temps & exclusion zones classified by the scan pipeline.
+        Grime = PROXY (thermal+RGB, not spectral — CLAUDE.md §5).
+      </div>
     </div>
   );
 }
 
 function ZoneDetail({z,mode}) {
-  const v=mode==="pre"?z.gPre:(z.gPost??z.gPre);
+  const v=z.excl?z.gPre:(mode==="pre"?z.gPre:(z.gPost??z.gPre));
   const delta=z.gPre-(z.gPost??z.gPre);
   return (
     <div className="detail-panel">
       <div className="detail-name">{z.label}</div>
-      <div className="muted" style={{marginBottom:10}}>{z.id} · {z.surface} · {z.pitch}° pitch</div>
+      <div className="muted" style={{marginBottom:10}}>{z.id} · {prettySurface(z.surface)} · {z.pitch}° pitch · conf {Math.round(z.conf*100)}%</div>
 
-      <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:".5px",color:"var(--muted)",marginBottom:4}}>
-        Grime proxy — {mode==="pre"?"pre":"post"}-clean
-      </div>
-      <div className="grime-bar-wrap">
-        <div className="grime-track">
-          <div className="grime-fill" style={{width:`${v*100}%`,background:tc(v)}}/>
-          <div className="grime-thresh" title="Verification threshold 15%"/>
-        </div>
-        <span className="grime-pct" style={{color:tc(v)}}>{Math.round(v*100)}%</span>
-      </div>
-      {z.gPost!=null&&<div style={{fontSize:11,color:"var(--green)",marginBottom:8}}>↓ {Math.round(delta*100)} pts improvement after cleaning</div>}
+      {z.excl ? (
+        <div className="safety solar" style={{marginTop:0}}>⛔ EXCLUSION ZONE — {z.reason}</div>
+      ) : (
+        <>
+          <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:".5px",color:"var(--muted)",marginBottom:4}}>
+            Grime proxy — {mode==="pre"?"pre":"post"}-clean
+          </div>
+          <div className="grime-bar-wrap">
+            <div className="grime-track">
+              <div className="grime-fill" style={{width:`${v*100}%`,background:tc(v)}}/>
+              <div className="grime-thresh" title="Verification threshold 15%"/>
+            </div>
+            <span className="grime-pct" style={{color:tc(v)}}>{Math.round(v*100)}%</span>
+          </div>
+          {z.gPost!=null&&mode==="post"&&<div style={{fontSize:11,color:"var(--green)",marginBottom:8}}>↓ {Math.round(delta*100)} pts improvement after cleaning</div>}
+        </>
+      )}
 
       {[
+        ["Surface type", z.excl?"EXCLUSION (no spray)":prettySurface(z.surface)],
         ["Surface temp",`${z.temp.toFixed(1)} °C`],
         ["Moisture index",`${Math.round(z.moisture*100)}%`],
-        ["Pressure prescribed",`${z.pPres} bar`],
-        ["Pressure actual (PSM)",`${z.pAct} bar`],
-        ["Verdict",z.verdict],
-        ["Human clear",z.humanClear?"✓ Cleared":"⚠ NOT CLEARED"],
+        ["Pitch",`${z.pitch}°`],
+        ["Classifier confidence",`${Math.round(z.conf*100)}%`],
+        ["Solar",z.solar?"☀ Yes — DI water, 2.0 bar ceiling":"No"],
       ].map(([l,vv])=>(
         <div key={l} className="dm">
           <span>{l}</span>
-          <b style={l==="Verdict"?{color:z.verdict==="PASS"?"var(--green)":"var(--red)"}:l==="Human clear"?{color:z.humanClear?"var(--green)":"var(--red)"}:{}}>{vv}</b>
+          <b style={l==="Solar"&&z.solar?{color:"var(--amber)"}:l==="Surface type"&&z.excl?{color:EXCL_GREY}:{}}>{vv}</b>
         </div>
       ))}
 
-      <div className="soil-box" style={{borderColor:soilColor(z.soilWeeks),background:`${soilColor(z.soilWeeks)}12`,marginTop:10}}>
-        <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}}>Predicted re-soil</div>
-        <div style={{fontSize:20,fontWeight:900,color:soilColor(z.soilWeeks)}}>~{z.soilWeeks} weeks</div>
-        <div className="muted" style={{fontSize:10}}>From calibrated soiling rate model · 3 visits</div>
+      <div className="soil-box" style={{borderColor:"var(--border)",background:"rgba(59,126,248,.06)",marginTop:10}}>
+        <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}}>Fusion decision</div>
+        <div className="muted" style={{fontSize:11}}>{z.reason}</div>
       </div>
     </div>
   );
