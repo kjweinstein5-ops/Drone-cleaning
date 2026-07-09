@@ -22,8 +22,15 @@ def scanned_zones_to_view(
     zones: List[ScannedZone],
     property_label: str,
     address: str = "",
+    prescriptions: Dict[str, dict] | None = None,
 ) -> dict:
-    """Build the Twin Viewer payload from pipeline output + geometry."""
+    """Build the Twin Viewer payload from pipeline output + geometry.
+
+    If `prescriptions` is provided (zone_id → prescription dict from the plan
+    stage), each cleanable zone carries its cleaning plan so the visor can show
+    the full scan → plan result.
+    """
+    prescriptions = prescriptions or {}
     faces_by_zone: Dict[str, list] = {}
     for f in recon.faces:
         faces_by_zone.setdefault(_zone_key(f.face_id), []).append(f)
@@ -61,6 +68,8 @@ def scanned_zones_to_view(
             "pitch": z.pitch_deg,
             "confidence": z.confidence,
             "reason": z.reason,
+            # cleaning plan (from the plan stage), if available
+            "plan": prescriptions.get(z.zone_id),
             # normalized plan-view rect (0..1)
             "x": round(min(x0, 1 - w), 3),
             "y": round(min(y0, 1 - h), 3),

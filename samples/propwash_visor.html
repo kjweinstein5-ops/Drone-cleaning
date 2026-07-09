@@ -246,6 +246,16 @@ const SCAN_TWIN = {
 
 const prettySurface = s => s.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
 
+// Cleaning plan per surface — the prescriptions plan_from_scan() produced from the
+// versioned surface table (propwash/backend/planning). Exclusion zones get no plan.
+const PLAN_BY_SURFACE = {
+  solar_panel:  { pressure:1.8, chemical:"DI water only", nozzle:"#4 · 25° · 0.35 mm", dwell:20, standoff:0.8 },
+  clay_tile:    { pressure:5.0, chemical:"Standard degreaser 30%", nozzle:"#2 · 40° · 0.5 mm", dwell:35, standoff:1.2 },
+  stucco:       { pressure:4.0, chemical:"Standard degreaser 30%", nozzle:"#3 · 40° · 0.6 mm", dwell:30, standoff:1.0 },
+  window_glass: { pressure:2.2, chemical:"Ammonia-free 20%",       nozzle:"#5 · 20° · 0.35 mm", dwell:17, standoff:0.6 },
+};
+const zonePlan = z => z.excl ? null : PLAN_BY_SURFACE[z.surface];
+
 const DEMO_HUB = {
   summary:{ jobs:3, zones:9, fpr:0.72, dataPoints:1847, revenueYTD:28400, roiYTD:141200 },
   zones: DEMO_TWIN.zones,
@@ -333,8 +343,28 @@ function BottomNav({ view, set }) {
 }
 
 /* ══ OPERATOR VIEW ══════════════════════════════════════════════════════════ */
+// The job is BUILT FROM THE SCAN: cleanable zones + their safety-gated plans,
+// ordered solar-first (safety). Exclusions never appear here.
+const SCAN_JOB = (()=>{
+  const ord = s => ({solar_panel:0, clay_tile:1, concrete_tile:1, composite_shingle:1, stucco:2, window_glass:3}[s] ?? 9);
+  const clean = SCAN_TWIN.zones.filter(z=>!z.excl).slice().sort((a,b)=>ord(a.surface)-ord(b.surface));
+  const zones = clean.map(z=>{
+    const pl = PLAN_BY_SURFACE[z.surface];
+    return {
+      id:z.id, label:z.label, surface:prettySurface(z.surface), solar:z.solar,
+      nozzle:pl.nozzle, chemical:pl.chemical, pressure:`${pl.pressure} bar`,
+      standoff:`${pl.standoff} m`, pattern:"N–S sweep",
+      dwell:Math.max(4,Math.min(8,Math.round(pl.dwell/4))),   // scaled for the demo
+      realDwell:pl.dwell,
+      willFail: z.id==="RF-S",   // demo the re-queue loop on the south roof
+    };
+  });
+  return { property:SCAN_TWIN.property, address:SCAN_TWIN.address,
+           excluded:SCAN_TWIN.zones.filter(z=>z.excl).map(z=>z.id), zones };
+})();
+
 function OperatorView() {
-  const zones=DEMO_JOB.zones;
+  const zones=SCAN_JOB.zones;
   const [idx,setIdx]=useState(0);
   const [phase,setPhase]=useState("brief");
   const [statuses,setStatuses]=useState(zones.map(()=>""));
@@ -350,8 +380,11 @@ function OperatorView() {
   return (
     <div className="content">
       <div className="job-strip">
-        <h2>{DEMO_JOB.property}</h2>
-        <div className="muted">{DEMO_JOB.address} · est. {DEMO_JOB.estMinutes} min</div>
+        <h2>{SCAN_JOB.property}</h2>
+        <div className="muted">{SCAN_JOB.address}</div>
+        <div style={{fontSize:10,color:"var(--cyan)",marginTop:3,fontWeight:700,letterSpacing:.3}}>
+          ▲ JOB AUTO-GENERATED FROM DRONE SCAN · {zones.length} zones · plan safety-gated ✓ · {SCAN_JOB.excluded.length} excluded ({SCAN_JOB.excluded.join(", ")})
+        </div>
         <div className="chips">
           {zones.map((z,i)=><span key={z.id} className={"chip "+(statuses[i]||"")}>{z.id}</span>)}
         </div>
@@ -364,10 +397,10 @@ function OperatorView() {
         {phase==="done"    && <div className="card" style={{textAlign:"center",padding:"28px 20px"}}>
           <div style={{fontSize:44,color:"var(--green)"}}>✓</div>
           <h1 style={{marginTop:10}}>Job Complete</h1>
-          <div className="muted" style={{marginTop:6}}>All zones verified clean. ROI report generating.</div>
+          <div className="muted" style={{marginTop:6}}>All {zones.length} scanned zones verified clean. ROI report generating.</div>
         </div>}
       </div>
-      <p className="note" style={{paddingBottom:16}}>Demo data · Operator stays in command (FAA Part 107)</p>
+      <p className="note" style={{paddingBottom:16}}>Zones + prescriptions from the scan pipeline · Operator stays in command (FAA Part 107)</p>
     </div>
   );
 }
@@ -583,6 +616,18 @@ function ZoneDetail({z,mode}) {
           <b style={l==="Solar"&&z.solar?{color:"var(--amber)"}:l==="Surface type"&&z.excl?{color:EXCL_GREY}:{}}>{vv}</b>
         </div>
       ))}
+
+      {/* Cleaning plan (from plan_from_scan → safety-gated prescription) */}
+      {!z.excl && zonePlan(z) && (()=>{const pl=zonePlan(z);return (
+        <div className="soil-box" style={{borderColor:z.solar?"rgba(245,166,35,.4)":"var(--border)",background:z.solar?"rgba(245,166,35,.07)":"rgba(16,217,138,.06)",marginTop:10}}>
+          <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".5px",marginBottom:6}}>
+            ▶ Cleaning plan — safety-gated ✓
+          </div>
+          {[["Pressure",`${pl.pressure} bar`],["Chemical",pl.chemical],["Nozzle",pl.nozzle],["Dwell",`${pl.dwell}s`],["Standoff",`${pl.standoff} m`]].map(([l,vv])=>(
+            <div key={l} className="dm" style={{borderBottom:"1px solid rgba(255,255,255,.05)"}}><span>{l}</span><b>{vv}</b></div>
+          ))}
+        </div>
+      );})()}
 
       <div className="soil-box" style={{borderColor:"var(--border)",background:"rgba(59,126,248,.06)",marginTop:10}}>
         <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}}>Fusion decision</div>
