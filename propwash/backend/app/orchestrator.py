@@ -88,6 +88,27 @@ class Orchestrator:
         )
         return safe_orders
 
+    def plan_from_scan(
+        self,
+        scanned_zones: list,
+        job_id: str,
+        property_id: str,
+    ):
+        """Plan directly from drone-scan pipeline output (deterministic path).
+
+        Bridges the geometry+thermal scan pipeline into the cleaning loop without
+        the LLM fusion/supervisor agents: classified zones → table prescriptions →
+        safety gate → work orders. Exclusion zones are never queued. Returns a
+        PlanResult (work_orders / excluded / safety_rejected).
+        """
+        from propwash.backend.planning.scan_to_plan import plan_from_scan
+
+        result = plan_from_scan(
+            scanned_zones, job_id=job_id, property_id=property_id, safety=self._safety
+        )
+        logger.info("Orchestrator.plan_from_scan job=%s: %s", job_id, result.summary)
+        return result
+
     async def dispatch_work_order(self, work_order: WorkOrder) -> str:
         """Phase 4: Execute — dispatch to transport, return operator brief."""
         brief = await self._cleaning_agent.generate_operator_brief(work_order)
