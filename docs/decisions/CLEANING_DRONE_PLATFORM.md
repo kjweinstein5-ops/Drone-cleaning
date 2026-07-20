@@ -141,6 +141,63 @@ where the defensible hardware IP lives.
 
 ---
 
+## 4b. Side-by-side cost model (reproducible)
+
+Modelled in `propwash/backend/reports/drone_platform_cost.py` (`python -m
+propwash.backend.reports.drone_platform_cost`). **Platform cost only** — shared running
+costs (chemicals, water, labor, insurance) are identical across platforms and wash out.
+All figures are **estimates to validate** (CLAUDE.md §15.5); the retrofit payload price is
+the biggest unknown — tune the assumptions and re-run.
+
+| Platform | Year 1 | Year 2 | Year 3 | Cash shape |
+|---|---:|---:|---:|---|
+| **Sherpa subscription** ($2,950/mo) | $35,400 | $70,800 | $106,200 | Pure opex — $0 capex |
+| **Sherpa outright** ($75K + ~$5K/yr) | $80,000 | $85,000 | $90,000 | Heavy capex up front |
+| **DJI retrofit + PSM/IHM** | $47,000 | $50,000 | $53,000 | ~$44K capex + ~$3K/yr |
+| DJI retrofit (base, no PSM/IHM) | $43,000 | $46,000 | $49,000 | ~$40K capex + ~$3K/yr |
+
+**Break-evens (at these estimates):**
+- Owned **retrofit (+PSM/IHM) undercuts the subscription after ~16 months**, and is the
+  cheapest option overall by year 2–3 (~$53K at 3 yrs vs $106K subscription).
+- **Sherpa outright undercuts the subscription after ~30 months** — so if you're confident
+  you'll run 3+ years, buying beats renting; below that, the subscription wins on cash.
+- Retrofit capex (~$44K) is well under Sherpa outright capex ($75K).
+
+**How to read it for a startup:** the subscription's value isn't that it's cheapest — it
+**isn't** past ~1.5 years — it's that it's **$0 capex and de-risked** (maintenance included,
+no integration burden) while you validate the business. The retrofit is cheapest long-run
+*and* the only path that builds hardware IP, but it front-loads ~$44K and all the
+integration/FAA/liability work. The model quantifies exactly what you pay for that de-risking:
+roughly **$35K in year 1** to avoid a $44K capex + integration project.
+
+---
+
+## 4c. Which drone has the most potential?
+
+Two different questions hide in "most potential" — answer both honestly:
+
+- **Most near-term potential (fastest, safest path to revenue): the Lucid Sherpa.**
+  Purpose-built, supported, market-proven (400+ operators, $75M operator revenue), works on
+  day one via Path A. Its ceiling is that Lucid owns the aircraft and the autonomy — you can
+  never deeply integrate your own hardware. It's a great *business* platform with a capped
+  *IP* ceiling.
+
+- **Most ultimate potential (highest ceiling): the owned DJI + third-party retrofit.**
+  It is the **only** platform on which PROPWASH's defensible hardware IP (PSM/IHM) and the
+  deep closed-loop control (Path B/C) can actually exist. It's cheapest long-run, vendor-
+  neutral, and opens a **second revenue line** (selling the pressure/nozzle modules to other
+  operators — `DYNAMIC_PRESSURE_HARDWARE.md`). You earn that ceiling by taking on the
+  integration, FAA-airworthiness, warranty, and liability burden.
+
+**Verdict:** the **retrofit/owned-stack platform has the most potential** — because potential
+means *ceiling*, and it's the only one whose ceiling includes owning the IP and a hardware
+product line. But potential ≠ the right first move. The disciplined play is **Sherpa first to
+capture the business and the data moat cheaply and legally, then graduate to the owned stack**
+once the business is proven and the PSM/IHM is bench-validated. Buy the near-term with the
+Sherpa; build toward the ultimate ceiling with the retrofit.
+
+---
+
 ## 5. Guardrails (do not violate)
 
 1. **Operator stays in command (Part 107).** No covert automation; more flight automation
