@@ -198,6 +198,40 @@ Sherpa; build toward the ultimate ceiling with the retrofit.
 
 ---
 
+## 4d. Payback — when each path turns cash-positive
+
+Modelled in `propwash/backend/reports/platform_payback.py` (`python -m
+propwash.backend.reports.platform_payback`): one crew's ramped revenue vs. each platform's
+cash outlay. Base pricing ($12/kW), utilization ramp 35% → 60% → 75%, contribution margin
+(ex-platform) 55% — **all estimates to validate**. Year-1 crew revenue at 35% util ≈ $252K.
+
+| Platform | Payback | Cum. cash Y1 | Y2 | Y3 |
+|---|:--:|---:|---:|---:|
+| **Sherpa subscription** | ~1 mo | $103K | $305K | $567K |
+| **Sherpa outright** | ~7 mo | $59K | $291K | $583K |
+| **DJI retrofit + PSM/IHM** | ~4 mo | $92K | $326K | **$620K** |
+
+**The finding that actually matters:** once a crew is working, **the drone platform cost is
+small relative to the revenue a crew produces** — every path pays back within months and the
+3-year cash spread between them (~$50K) is a rounding error against ~$1.5M of 3-year crew
+revenue. **So the platform choice is a strategic/IP decision, not a cash-limiting one** — pick
+it for what integration path and IP it unlocks, not to save a few thousand dollars.
+
+Two caveats keep this honest:
+- **Before revenue ramps, capex bites.** The subscription's real value is the pre-launch /
+  early-ramp window: **$0 capex** protects cash while you land the first accounts. That's the
+  one phase where the platform choice touches survival.
+- **Sensitivity.** These revenue numbers are optimistic (from `revenue_model`, all
+  goals-to-validate). At ⅓ the revenue, paybacks roughly triple — still inside ~year 1 for the
+  subscription and ~1.5 years for the retrofit. The *ordering and conclusion hold* across a
+  wide range; don't trust the decimals.
+
+**Net:** the retrofit retains the most cash long-run *and* builds the IP, but the difference is
+small enough that you should choose on strategy — **Sherpa subscription to protect cash through
+launch, graduate to the owned retrofit once revenue is steady and the PSM/IHM is validated.**
+
+---
+
 ## 5. Guardrails (do not violate)
 
 1. **Operator stays in command (Part 107).** No covert automation; more flight automation
