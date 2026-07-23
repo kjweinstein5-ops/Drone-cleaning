@@ -147,6 +147,7 @@ infrastructure — buy or use open source.
 | **Pix4Dmatic / Pix4Dmapper** | Commercial SaaS/desktop | ~$350/mo | Desktop yes | If ODM quality falls short on complex roofs |
 | **DroneDeploy** | Cloud SaaS | ~$330/mo+ | ❌ Data leaves us | Avoid — data sovereignty (§7) |
 | **RealityCapture** | Commercial (Epic) | PPI / sub | ✅ Yes | Fast, Windows-only |
+| **Scanifly** | Cloud SaaS (solar-specialized) | subscription (contact) | ❌ Cloud | ⭐ Fast solar-focused start — see §2c |
 
 **Recommendation: OpenDroneMap self-hosted.** It is Docker-deployable, runs on our own
 GPU box or a cloud instance, keeps sensor data on our infrastructure (critical for the
@@ -229,6 +230,57 @@ engine via its CLI/API, auto-ingest the mesh, run our Stage 2–3, emit the twin
 handoffs — **is our code, and it's where the "seamless, fast pipeline" is won or lost.** The
 engine is bought; the *seamlessness* is built. See `propwash/backend/geometry/` +
 `fusion/` in §11.
+
+---
+
+## 2c. Scanifly as a solar-specialized starting point (worth doing — with eyes open)
+
+**Yes, Scanifly is a reasonable way to START Stage 1** — arguably better-aligned to your
+solar wedge than the generic engines, as long as you understand exactly what it does and
+does NOT do. Here's the honest split.
+
+### What Scanifly gives you (the geometry canvas) ✅
+- **Proprietary photogrammetry + AI → a to-scale 3D model within inches**, from geo-tagged
+  drone photos. This is precisely the Stage-1 reconstruction we said to *buy, not build*.
+- **Works with any drone that shoots geo-tagged images** — your Autel included, no lock-in.
+- **Solar-specialized**: roof planes, pitch/azimuth, obstructions, and the only drone-based
+  **shade analysis approved by US regulators/lenders**. That pedigree matches your market.
+- **Export + API**: 3D models export to CAD; API integrations push data to solar partners
+  (Unirac, IronRidge, Pegasus). So data *can* come out — but see the caveat below.
+
+### What Scanifly does NOT do — this stays PROPWASH's proprietary layer ❌
+- **No dirt / grime / "mold" / condition map.** Scanifly is a solar *design* tool (geometry
+  + shading), not a *condition* tool. The grime layer is **yours** — thermal + RGB fusion
+  (Stages 2–3). Scanifly gives the canvas; you paint the condition on it.
+- **No thermal.** It's RGB photogrammetry. Your thermal registration (Stage 2) is unaffected
+  and still entirely ours.
+- **"Identifies mold" — no, and neither does any RGB tool.** Same honesty rule as everywhere
+  (CLAUDE.md §5): what you produce is a grime/biofilm **PROXY**, not spectral mold detection.
+  Scanifly won't change that; don't let its marketing imply it does.
+- **Material classification beyond roof/obstructions is limited.** It gives roof planes +
+  obstructions + checklist-captured structural data — not a full solar/window/siding/stucco/
+  tile segmentation. Your Stage-3 segmentation still does that classification.
+
+### The two real caveats before committing
+1. **Cloud = data-sovereignty tradeoff (§7).** Imagery and models live in Scanifly's cloud,
+   not on your hardware. Your crown-jewel *condition* data (thermal + grime) never goes there
+   — only the geometry does — but weigh this against the self-hosted OpenDroneMap/Metashape
+   path. Acceptable early for speed; revisit as the data moat grows.
+2. **Confirm you can pull the raw mesh into YOUR pipeline.** Scanifly's export is
+   CAD/partner-oriented (built to feed racking vendors, not a custom cleaning pipeline). You
+   need the **3D mesh / point cloud in a form Stage 2 (thermal_registration) can consume**.
+   Verify this with Scanifly before relying on it — it's the make-or-break integration point.
+   The `GeometrySource` interface (§8) already anticipates a `ScaniflySource` adapter here.
+3. **You're paying for solar-*design* features you won't use** (racking, BOM, plan sets).
+   Fine as a fast start; just know the pricing is built for installers designing new PV
+   systems, not for cleaners assessing existing roofs.
+
+### Verdict
+**Good starting basis — use Scanifly (or OpenDroneMap) as the Stage-1 geometry front-end so
+you don't build SfM, and build your proprietary condition + segmentation layer on top.** It
+does NOT do the dirt/mold/material-condition work — that's the part that's actually yours and
+defensible. Add a `ScaniflySource` behind the `GeometrySource` interface, confirm mesh export,
+and keep everything from Stage 2 onward in-house.
 
 ---
 

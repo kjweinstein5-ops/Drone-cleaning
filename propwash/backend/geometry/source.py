@@ -134,6 +134,33 @@ class SfmSource(GeometrySource):
         )
 
 
+class ScaniflySource(GeometrySource):
+    """Reads a Scanifly-produced 3D model as the Stage-1 geometry (docs §2c).
+
+    Scanifly is a solar-specialized cloud photogrammetry tool — a reasonable
+    starting basis for reconstruction (it gives the geometry canvas; the dirt/
+    condition layer stays ours, Stages 2-3). Two integration facts to confirm
+    before relying on it:
+      1. it is CLOUD — imagery/models leave our infra (data-sovereignty, §7);
+      2. its export is CAD/partner-oriented, so we must confirm we can pull the
+         raw mesh/point cloud into a form thermal_registration can consume.
+
+    TODO(PROPWASH): implement the CAD/mesh export reader once export format is
+    confirmed with Scanifly. Kept as a documented seam.
+    """
+
+    def __init__(self, export_path: str, property_id: str, captured_at: str) -> None:
+        self.export_path = export_path
+        self.property_id = property_id
+        self.captured_at = captured_at
+
+    def load(self) -> ReconstructionOutput:  # pragma: no cover - needs real export/format
+        raise NotImplementedError(
+            "ScaniflySource needs the confirmed Scanifly mesh/CAD export format. "
+            "Use SyntheticBuildingSource for sim. See docs/3D_DATA_PIPELINE.md §2c."
+        )
+
+
 # ── Synthetic source (runs the whole pipeline with no hardware) ───────────────
 
 class SyntheticBuildingSource(GeometrySource):
