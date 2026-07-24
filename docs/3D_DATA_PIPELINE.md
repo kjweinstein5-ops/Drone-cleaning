@@ -275,12 +275,82 @@ does NOT do. Here's the honest split.
    Fine as a fast start; just know the pricing is built for installers designing new PV
    systems, not for cleaners assessing existing roofs.
 
-### Verdict
-**Good starting basis — use Scanifly (or OpenDroneMap) as the Stage-1 geometry front-end so
-you don't build SfM, and build your proprietary condition + segmentation layer on top.** It
-does NOT do the dirt/mold/material-condition work — that's the part that's actually yours and
-defensible. Add a `ScaniflySource` behind the `GeometrySource` interface, confirm mesh export,
-and keep everything from Stage 2 onward in-house.
+### Verdict (revised — see §2d)
+Scanifly is solar-specialized and accurate, but its export is built to feed *racking
+vendors*, not a custom pipeline — which makes it a **worse fit than OpenDroneMap/Metashape
+for the "build geometry → layer our data → pipe it" goal you actually have.** Keep it as a
+possible fast trial, but §2d is the real recommendation for a pipeline front-end.
+
+---
+
+## 2d. ⭐ The right front-end for "scout collects → engine builds → pipeline runs"
+
+Your actual requirement isn't "a solar design tool" — it's an engine that **automatically
+turns scout-drone imagery into clean, exportable geometry your own pipeline consumes.** That
+selection filter has a clear winner.
+
+### The requirement, stated plainly
+```
+Scout drone flies → geotagged RGB (+ thermal) images
+        → [ENGINE builds the 3D geometry, automatically]
+        → standard mesh/point-cloud/ortho export
+        → OUR pipeline layers dirt/mold/material/cleaning data on top (Stages 2–5)
+```
+The engine must: (a) reconstruct accurately, (b) run **hands-off via an API/CLI**, and
+(c) export **open, standard formats** (OBJ/PLY mesh, LAS/LAZ cloud, GeoTIFF ortho/DSM) —
+not lock the geometry inside a design app.
+
+### Best fit: **OpenDroneMap via NodeODM (self-hosted REST API)**
+- **Purpose-built for exactly this loop**: "drone lands → images upload → processing starts
+  → outputs push." NodeODM is a REST API you script; PyODM is the Python client. This is the
+  automated ingest→build→export pipeline you described, out of the box.
+- **Standard open exports** — `odm_texturing/*.obj`, `*.laz` point cloud, `odm_orthophoto/
+  *.tif`, `odm_dem/dsm.tif` — which our Stage 2 (`thermal_registration`) already expects.
+- **Self-hosted → data-sovereignty moat intact** (§7). Imagery never leaves your box.
+- **Free** (AGPL — fine for internal processing; §2 caveat only if you resell processing).
+
+### Premium alternative: **Agisoft Metashape (Python SDK)**
+- **Full batch automation via a Python API/SDK** — scriptable end to end, higher-quality
+  meshes than ODM, native Apple-Silicon GPU (§2b), standard exports. ~$3.5K perpetual, no
+  copyleft. Buy this if ODM's mesh quality isn't good enough on complex roofs.
+
+### Also-ran for a custom pipeline
+- **Pix4Dengine** — real SDK/API, but pricier and more cloud-tied.
+- **RealityCapture / DJI Terra** — fast but Windows+NVIDIA and less pipeline-native (§2b).
+- **Scanifly / DroneDeploy** — cloud, design/partner-oriented export → **not ideal for a
+  custom pipeline** despite being polished.
+
+### ⚠️ The honest limit: glass & solar panels do NOT reconstruct "perfectly"
+No photogrammetry engine — ODM, Metashape, Scanifly, any of them — reconstructs **windows or
+solar panels perfectly.** Smooth glass shows no trackable features; glossy panels throw
+specular reflections; both produce **holes and noise** in the mesh. This is physics
+(optically smooth glass yields no trackable features), not a tool weakness — well-established
+in the photogrammetry literature.
+
+**But you don't need perfect glass geometry — and the pipeline is already designed around
+this:**
+- We don't mesh the reflective *surface*; we **locate and classify the region** (window /
+  panel) from RGB + thermal + the surrounding wall/roof **plane** geometry, then treat it as
+  a **planar classified zone**. Stage 3 (`geometry_rules` + `fusion_decision`) already does
+  exactly this — a window is a planar region in a vertical plane, a panel is a planar region
+  on a roof plane. Their *extent and location* reconstruct fine; only their glossy surface
+  detail doesn't, and we don't need it.
+- **Capture technique mitigates the rest**: shoot at varied angles, avoid direct-sun glare
+  off panels/glass, more overlap. The EVO MAX 4T's **laser rangefinder** (decision note:
+  `SENSOR_PLATFORM_SHORTLIST.md`) also gives hard distances where SfM is weak.
+- Gaussian Splatting looks great on glass but is metrically too loose (~7.8 cm, §2b) — visual
+  only, not the measurement source.
+
+**Takeaway:** "reconstruct everything perfectly" is the wrong bar for glass/panels — the
+right bar is *locate + classify + get the plane*, which photogrammetry does well. Build for
+that, and the reflective-surface problem stops being a problem.
+
+### Recommendation
+Make **OpenDroneMap/NodeODM the Stage-1 front-end** (self-hosted REST API, standard exports,
+data stays yours), with **Metashape's Python SDK** as the paid upgrade if you need better
+meshes. Wire it behind the `GeometrySource` interface as the concrete `SfmSource` (§8, §11);
+everything from Stage 2 on — the dirt/mold/material/cleaning intelligence — stays your
+proprietary, in-house layer.
 
 ---
 
