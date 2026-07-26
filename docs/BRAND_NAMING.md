@@ -184,6 +184,47 @@ descriptors — the space has proven they're taken.
 
 ---
 
+## Round 3 — expanded screened set (coined/evocative)
+
+Preliminary web scan only (not TESS/registrar-authoritative). Grouped by flavor.
+
+### ✅ Apparently clear in-space (worth clearing formally)
+| Name | Root / meaning | Flavor |
+|---|---|---|
+| **NITIDO** ⭐ | Latin/Italian: clean, bright, sharp | clean + premium/techy |
+| **NITOR** | Latin: brightness, splendor (root of nitido) | shine, short/strong |
+| **TERSO** | Latin *tersus*: wiped clean, polished | clean, modern |
+| **TERGO** | Latin *tergere*: to wipe clean | clean, distinctive |
+| **LUSTRO** | lustre / gloss | the shine result |
+| **CLARIA** | *clarus*: clear, bright | clarity + AI feel |
+| **RIVO** | Latin *rivus*: stream | water / flow |
+
+### ⚠️ Deprioritized — adjacency conflicts found
+| Name | Why out |
+|---|---|
+| Lumio | prominent residential **solar** company (your wedge) |
+| Solix | Solinftec **Solix** solar-powered sprayer robot |
+| Renovo | established **car-care** brand |
+| Puravia | too close to "Pura Vida" cleaning companies |
+| Verio | **Verobotics** = facade-cleaning-robot company |
+| Brightwork | multiple exterior cleaners (incl. an OC solar/pressure-wash firm) |
+| Skywash / Aerowash | aircraft-cleaning brands |
+| Propwash | drone company + apparel already own it |
+
+### More ideas to consider (NOT yet screened)
+Clario · Claro · Vitrea (Latin *vitreus* = glassy/clear) · Sereno · Munda (Latin: clean) ·
+Aeris (air) · Onda (wave) · Puro · Niva
+
+### Refined top 3
+1. **NITIDO** — clean/bright, premium, multi-surface, techy. Lead.
+2. **NITOR** — shorter, punchier sibling (same Latin root).
+3. **TERSO** — modern, brandable ("Terso Robotics").
+
+**Competitor names to avoid echoing:** Verobotics, Skyline Robotics, SolarCleano, AX Solar
+Robot, Solavio, Lucid/Sherpa/Lavo, Kärcher, Apellix.
+
+---
+
 ## Next steps
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
