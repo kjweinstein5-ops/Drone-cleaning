@@ -225,6 +225,48 @@ Robot, Solavio, Lucid/Sherpa/Lavo, Kärcher, Apellix.
 
 ---
 
+## Round 4 — the company's *character* (identity-driven names)
+
+Instead of "clean" words, these embody what PROPWASH *is*. All ✅ appear clear in the
+cleaning/drone space (but several are common in defense/tech broadly → class-42 may be
+crowded; class-37 cleaning looks open). Preliminary scan, not TESS/registrar.
+
+### The Seer — all-seeing intelligence that maps + verifies (the moat)
+| Name | Why it fits the character |
+|---|---|
+| **ARGUS** ⭐ | Argus Panoptes, the hundred-eyed all-seeing guardian of myth — the company's whole edge is *seeing* every surface and *verifying* the clean. Mythic, memorable, ownable |
+| **KESTREL** ⭐ | The falcon that *hovers* dead-still while scanning with extraordinary sight, then strikes with precision — literally a cleaning drone: hover → see → act. Aerial + precision |
+| Vantage | Commanding view / oversight |
+
+### The Guardian — protects & restores the building envelope
+| Name | Why |
+|---|---|
+| **AEGIS** | The shield of Athena — protection; caretaker of the building's surfaces (common in defense, but clear in-space) |
+| Halcyon | Calm/clear; the mythical bird that stilled the seas — premium, serene |
+
+### The aerial / coastal spirit (San Diego, flight, water)
+| Name | Why |
+|---|---|
+| **TERN** | Coastal seabird that dives cleanly to the water — aerial + water + San Diego coast; short, brandable |
+| **ZEPHYR** | The gentle west wind — light, aerial, clean, motion |
+
+### Refined standouts (this round)
+1. **ARGUS** — captures the intelligence/verification character better than any name so far.
+2. **KESTREL** — the perfect metaphor for the drone itself: hover, see, strike with precision.
+3. **TERN** — clean, coastal, aerial, short; strong if you want lighter/friendlier.
+4. **AEGIS** — if you want to lean "guardian/protection."
+
+**Note on breadth:** Argus/Aegis/Zephyr/Vantage are widely used in defense & tech — great in
+the cleaning class, but budget for a crowded software class-42 search. Kestrel and Tern are
+less crowded overall.
+
+### Cross-round finalists to compare
+- **Character lane:** ARGUS · KESTREL · TERN · AEGIS
+- **Clean/Latin lane:** NITIDO · NITOR · TERSO · LUSTRO
+- **Ground line pairing (if family):** e.g., KESTREL (air) + ??? — or a single brand over both.
+
+---
+
 ## Next steps
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
