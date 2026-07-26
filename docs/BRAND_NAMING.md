@@ -74,6 +74,41 @@
 
 ---
 
+## Brand architecture — multi-surface (air + ground)
+
+PROPWASH is expanding beyond aerial: **ground robots (Lucid Lavo Bot, CLAUDE.md §4) for
+concrete floors / parking decks / warehouses**, alongside the aerial cleaning drones. The
+moat (the intelligence layer) is **surface-agnostic**, so one parent brand can span both.
+Problem: "PROP" = propeller = *aerial only*, so it doesn't naturally cover a wheeled floor
+robot. Solution — a **"—WASH" brand family** with PROPWASH kept as the flagship:
+
+- **Company / parent:** **PROPWASH Robotics** (robotics = air + ground; extensible; keeps the name)
+- **Aerial line:** **PROPWASH** — drones: exteriors, roofs, solar (unchanged)
+- **Ground / concrete line:** a "—WASH" sibling (below)
+
+### Ground / concrete-floor line candidates
+| Name | Why |
+|---|---|
+| **SLABWASH** ⭐ | Concrete *slab* — floors, parking structures, warehouses; pairs perfectly with PROPWASH |
+| DECKWASH | Parking decks, floors, patios |
+| PAVEWASH | Pavement / hardscape |
+| GROUNDWASH | Direct air-vs-ground contrast with PROPWASH |
+| TERRAWASH | "Terra" = ground/earth |
+
+**Recommended pairing: PROPWASH (air) + SLABWASH (ground)** under **PROPWASH Robotics** —
+same cadence, signals a platform not a one-trick service, keeps the name you like.
+
+### Alternative: surface-agnostic parent
+Keep PROPWASH as just the air line, with a neutral parent: **Facet** / **Vantage** (platform)
+over PROPWASH + SlabWash; or an umbrella "—WASH" (**OmniWash**, **ApexWash**).
+
+### Trademark note
+A **family of "—WASH" marks** is a recognized strategy, but "wash" is descriptive for
+cleaning — protectability rides on the **distinctive prefix** (PROP-, SLAB-). Each is
+registrable on its prefix in classes 37 + 42; still needs a real USPTO/counsel search (§11).
+
+---
+
 ## Next steps
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
