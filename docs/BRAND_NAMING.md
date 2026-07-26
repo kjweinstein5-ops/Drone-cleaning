@@ -109,6 +109,30 @@ registrable on its prefix in classes 37 + 42; still needs a real USPTO/counsel s
 
 ---
 
+## Availability — preliminary web check (2026-07-06)
+
+⚠️ **Preliminary web scan only — NOT a USPTO/TESS search and NOT authoritative domain checks.**
+Existing use ≠ a registered mark, and absence from search ≠ available. Counsel + TESS + a
+registrar still required before adopting anything.
+
+| Name | Web finding | Read |
+|---|---|---|
+| **PROPWASH** | ⚠️ **Crowded** — Propwash Drone Solutions LLC (drone!), PropWash Co (apparel, propwash.co), PropWash Simulation, Propwash Aviation LLC | Real likelihood-of-confusion risk (drone-adjacent) + good domains gone. Usable maybe as "PROPWASH Robotics" + counsel opinion + alt domain |
+| **DOWNWASH** | ✅ No cleaning/drone company found | ⭐ Same aviation cleverness as Propwash, apparently open — strongest air-line candidate |
+| **SLABWASH** | ✅ No cleaning/concrete company found | ⭐ Strong ground/concrete line; pairs with Downwash or Propwash |
+| **FACET** | ✅/⚠️ No direct cleaning/robotics competitor, but very common word (Facet Wealth, etc.) | .com gone, class-42 crowded; usable with a modifier |
+| (context) **Drone Wash, LLC** | Registered TMs for building/facade/solar cleaning | The descriptive "—wash" cleaning space has active filings — distinctiveness matters |
+
+**Revised recommendation:** you love PROPWASH for its aviation wordplay — **DOWNWASH gives the
+same cleverness but appears actually available.** Consider the clear family **DOWNWASH (air) +
+SLABWASH (ground)** under a "…Robotics" parent, or proceed with PROPWASH knowing it needs a
+modifier, an alternate domain, and a counsel opinion on the existing drone company.
+
+**Still required before adopting:** USPTO TESS + common-law search (counsel, classes 37+42),
+registrar domain check, social handles.
+
+---
+
 ## Next steps
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
