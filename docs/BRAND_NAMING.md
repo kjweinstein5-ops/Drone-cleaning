@@ -131,6 +131,24 @@ modifier, an alternate domain, and a counsel opinion on the existing drone compa
 **Still required before adopting:** USPTO TESS + common-law search (counsel, classes 37+42),
 registrar domain check, social handles.
 
+### Landscape scan (what's already out there)
+- **Aerial drone-washing operators — crowded & descriptive (weak marks):** Drone Force USA,
+  Drone Clean USA, **Drone Wash LLC (registered TMs)**, Droneworx Pro Washing, Pressure
+  Doctor, RayAccess, Window Hero, Sun Brite, **Skywash Innovations (drone cleaning)**.
+- **"Sky-/Aero-wash" — crowded (aircraft cleaning):** ❌ **SKYWASH** (Skywash International +
+  skyVac skyWash + Sky Power Wash + Skywash Innovations), ❌ **AEROWASH** (Aerowash AB, aircraft
+  washing robots). Avoid both.
+- **Manufacturer product names — distinctive but taken:** Sherpa, **Lavo / Lavo Bot** (Lucid,
+  the ground robot you'll use; "lavo" = Latin "I wash"), Apellix, Neo (Avidbots), KIRA (Kärcher).
+- **Ground robotic washing:** Lucid **Lavo AI / Lavo Bot** is the first fully autonomous
+  ground pressure-washing robot — the concrete-floor unit in the plan (CLAUDE.md §4).
+- **Open-ish "—wash" prefixes found:** ✅ **DOWNWASH**, ✅ **SLABWASH**, ~ **DECKWASH** /
+  **WASHBOT** (no strong brand, but generic/descriptive).
+
+**Takeaway:** the operator space is saturated with descriptive "Drone/Sky/Aero + Wash/Clean"
+names (weak, crowded). The distinctive, ownable lane is a clever/coined mark — **DOWNWASH (air)
++ SLABWASH (ground)** is the clear, distinctive family; avoid sky-/aero-/drone-wash entirely.
+
 ---
 
 ## Next steps
