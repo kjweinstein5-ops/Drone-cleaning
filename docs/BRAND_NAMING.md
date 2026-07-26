@@ -151,6 +151,39 @@ names (weak, crowded). The distinctive, ownable lane is a clever/coined mark —
 
 ---
 
+## Round 2 — fresh direction (catchy + ownable, not "—wash")
+
+Kevin ruled out Downwash/Slabwash. The honest naming truth this space keeps proving:
+**purely descriptive names are taken or weak** (Brightwork = taken by exterior cleaners incl.
+an OC solar/pressure-wash firm; Drone/Sky/Aero-Wash all crowded). The win is a **distinctive,
+suggestive/coined brand + a descriptive tagline** — the name is ownable, the tagline does the
+describing. This is also how the robotics players name themselves (Lucid, Verobotics, Kite).
+
+### Preliminary-clear coined candidates (✅ no cleaning/robotics conflict found)
+| Name | Root / meaning | Feel | Forms |
+|---|---|---|---|
+| **NITIDO** ⭐ | Latin/Italian *nitido* = clean, bright, sharp | Premium, techy, memorable | Nitido · Nitido Robotics |
+| **TERSO** | Latin *tersus* = wiped clean, polished | Short, modern, brandable | Terso · Terso Robotics |
+| **LUSTRO** | *lustre/gloss* (IT/ES/PL) | Evokes the shine/result | Lustro · Lustro Robotics |
+
+Tagline carries the "what": e.g., **"NITIDO — robotic exterior cleaning, verified."** or
+**"NITIDO Robotics — map. clean. prove."** (the sense→clean→verify loop).
+
+### Why coined beats descriptive here
+- **Trademark strength:** suggestive/coined marks are the strongest and most ownable; generic
+  descriptors ("Drone Wash") are weak or unregistrable and, as shown, already taken.
+- **Multi-surface:** a coined name isn't locked to "aerial" (unlike Propwash) — it covers the
+  air drone AND the ground robot cleanly.
+- **Domain reality:** short coined words are far likelier to have an affordable `.com`
+  (or `getX`/`Xrobotics.com` fallback) than common English words (Facet/Vertex/Cascade `.com` gone).
+
+### Verdict
+Lead candidate: **NITIDO (Robotics)** + descriptive tagline. Alternates: **TERSO**, **LUSTRO**.
+All three appear clear in-space (still need TESS/counsel + registrar checks). Avoid English
+descriptors — the space has proven they're taken.
+
+---
+
 ## Next steps
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
