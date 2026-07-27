@@ -266,7 +266,7 @@ Checking the exact company form killed the character-lane favorites:
 |---|---|
 | **Argus / Argus Robotics** | ❌ ARGUS Robotics (defense) + Argus Systems / Dynamic / Industry / OS — crowded in robotics/AI |
 | **Kestrel** | ❌ American Robotics "Kestrel" (C-UAS) + Autel "Kestrel" VTOL drone + Kestrel Drone & Mapping |
-| **Halcyon** | ❌ Halcyon Robotics (SF humanoid) + Halcyon.ai / Technologies / .io |
+| **Halcyon** | ❌ **Contested in ALL 3 classes** — cleaning (Halcyon Solar Panel Cleaners + Halcyon Pressure Washing, Oceano CA + Halcyon Home Services), robotics (Halcyon Robotics), software (Halcyon.ai/Technologies/.io). Also a CA place name (Oceano); domains gone. Beautiful word, but unownable here. |
 
 **Pattern (the real lesson):** evocative real-word/mythic names are *already claimed* across
 robotics/AI/drones — popular words are both unavailable AND weak trademarks. **Coined words
