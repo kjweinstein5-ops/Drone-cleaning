@@ -471,6 +471,30 @@ CANDOR (shine + clarity) · NITIDO (Latin "clean").
 
 **Decision gate:** pick 1–2, then (a) registrar check for a workable domain, (b) USPTO
 TESS + counsel in classes 37 (cleaning) + 9/42 (robotics/software). That clears it — not more names.
+
+---
+
+## Pressure test — SEIKA (⚠️ FAILS)
+
+- **Linguistic trap:** romaji "Seika" maps to many kanji; the **dominant company-name reading
+  is 製菓 "confectionery"** (Meiji Seika, Kameda Seika, Marukawa Seika, Imuraya Seika all =
+  "○○ Confectionery Co."), and 青果 = "produce." Intended 成果 "results" is NOT the default —
+  "Seika Robotics" could read as *"Confectionery Robotics"* to a Japanese speaker.
+- **Crowded + domain gone:** Seika Corporation (TSE-Prime machinery co) owns **seika.com**;
+  also Sumitomo Seika (chemicals), Meiji Seika Pharma. "Seika" ≈ generic Japanese biz suffix.
+- **Verdict:** drop. Clever acronym, shaky word.
+
+### Meaning-integrity re-rank of the Japanese finalists (romaji-homophone check)
+| Name | Reads reliably as intended? |
+|---|---|
+| **TAKUMI** 匠 master craftsman | ✅ unambiguous, positive — **survives** |
+| **MIGAKU** 磨く to polish/refine | ✅ clear verb — **survives** (migaku.com taken) |
+| KAISEI | ⚠️ 快晴 "clear sky" but also 改正 "legal revision" / 改姓 "surname change" |
+| SUMI | ⚠️ 澄み "clarity" but also 墨 "ink" / 隅 "corner" |
+| NAMI | ⚠️ "wave" but common name + NAMI nonprofit |
+
+**Revised Japanese lead: TAKUMI** (unambiguous "master craftsman"), with **MIGAKU** as the
+poetic alternate. Non-Japanese hedge with no meaning-risk: **CANDOR** (shine + clarity) or **NITIDO**.
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
 - [ ] Confirm `.com` (short one-words like Facet/Lustre are often taken/expensive).
