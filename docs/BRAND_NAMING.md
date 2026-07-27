@@ -316,6 +316,34 @@ inspection UAVs + Orca Security).
 
 ---
 
+## Round 6 — fresh batch (all ✅ clear in-space)
+
+Preliminary scan, not TESS/registrar. Broad-usage caveats noted.
+
+| Name | Story / meaning | Caveat |
+|---|---|---|
+| **ALCYONE** ⭐ | The nymph turned into the **halcyon** bird (kingfisher) — the *actual myth behind "halcyon."* Same serene-coastal feeling Kevin loved, but ownable | astronomy/minor use; clear in-space |
+| **CANDOR** ⭐ | Latin *candeo* = "to shine, be bright-white" (root of incandescent/candid) **and** English *candor* = clarity/honesty — shine + transparency (fits the verify ethos) | Candrone (drone co) phonetically near-ish; real word = check distinctiveness |
+| **SEQUANA** | Gaulish goddess of the river Seine — water, healing, cleansing; elegant deep-cut | Sequana Medical exists (pharma, diff. class) |
+| **NIVEO** | Latin *niveus* = "snow-white, bright" — clean-white | Nivea (skincare) phonetic proximity |
+| **VELA** | Constellation "the Sails" — nautical/coastal; also acronym-able | some tech use (Vela Games/fusion) |
+| **AETHER** | The pure upper air/light the gods breathe — clarity + sky | crypto/tech use → class-42 crowded |
+
+### Two brilliant standouts
+- **ALCYONE** — if you loved *Halcyon*, this **is** Halcyon's origin myth, and it's open. Keeps
+  the calm/coastal/premium feeling with a name you can actually own.
+- **CANDOR** — a rare double: it means both **bright/clean** (Latin root) and **clarity/
+  honesty** (English) — literally your product (a bright clean) and your ethos (verified,
+  transparent results). Memorable, real word, easy to say/spell.
+
+### Running finalist pool (getting strong — time to converge soon)
+- **Myth:** ALCYONE · KATHAROS · ALPHEUS · SEQUANA
+- **Coined-clean:** NITIDO · NITOR · TERSO · NIVEO
+- **Meaningful real-word:** CANDOR
+- **Myth + acronym:** VESTA · NAIAD
+
+---
+
 ## Next steps
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
