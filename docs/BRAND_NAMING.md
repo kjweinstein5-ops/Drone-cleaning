@@ -322,7 +322,7 @@ Preliminary scan, not TESS/registrar. Broad-usage caveats noted.
 
 | Name | Story / meaning | Caveat |
 |---|---|---|
-| **ALCYONE** ⭐ | The nymph turned into the **halcyon** bird (kingfisher) — the *actual myth behind "halcyon."* Same serene-coastal feeling Kevin loved, but ownable | astronomy/minor use; clear in-space |
+| **ALCYONE** ⭐ | The nymph turned into the **halcyon** bird (kingfisher) — the *actual myth behind "halcyon."* Same serene-coastal feeling Kevin loved | ✅ **clear in-space** (no cleaning/robotics/drone use). ⚠️ used in OTHER classes: Alcyone Consulting (defense), Alcyone Technologies (IT — nearest to software), Alcyone Therapeutics (biotech) — coexists across classes but clear the IT one w/ counsel. `.com` likely gone; spelling/pronunciation friction (al-SY-uh-nee). Still cleaner than Halcyon (whose conflicts were IN cleaning+robotics+software) |
 | **CANDOR** ⭐ | Latin *candeo* = "to shine, be bright-white" (root of incandescent/candid) **and** English *candor* = clarity/honesty — shine + transparency (fits the verify ethos) | Candrone (drone co) phonetically near-ish; real word = check distinctiveness |
 | **SEQUANA** | Gaulish goddess of the river Seine — water, healing, cleansing; elegant deep-cut | Sequana Medical exists (pharma, diff. class) |
 | **NIVEO** | Latin *niveus* = "snow-white, bright" — clean-white | Nivea (skincare) phonetic proximity |
