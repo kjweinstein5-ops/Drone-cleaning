@@ -260,10 +260,23 @@ crowded; class-37 cleaning looks open). Preliminary scan, not TESS/registrar.
 the cleaning class, but budget for a crowded software class-42 search. Kestrel and Tern are
 less crowded overall.
 
-### Cross-round finalists to compare
-- **Character lane:** ARGUS · KESTREL · TERN · AEGIS
-- **Clean/Latin lane:** NITIDO · NITOR · TERSO · LUSTRO
-- **Ground line pairing (if family):** e.g., KESTREL (air) + ??? — or a single brand over both.
+### ⚠️ "-Robotics" form check — the mythic/real-words are TAKEN in robotics
+Checking the exact company form killed the character-lane favorites:
+| Name | Finding |
+|---|---|
+| **Argus / Argus Robotics** | ❌ ARGUS Robotics (defense) + Argus Systems / Dynamic / Industry / OS — crowded in robotics/AI |
+| **Kestrel** | ❌ American Robotics "Kestrel" (C-UAS) + Autel "Kestrel" VTOL drone + Kestrel Drone & Mapping |
+| **Halcyon** | ❌ Halcyon Robotics (SF humanoid) + Halcyon.ai / Technologies / .io |
+
+**Pattern (the real lesson):** evocative real-word/mythic names are *already claimed* across
+robotics/AI/drones — popular words are both unavailable AND weak trademarks. **Coined words
+keep coming back clear** (and are the strongest marks). Steer to the coined lane.
+
+### Cross-round finalists (revised)
+- **Clean/Latin lane (RELIABLE — still clear):** **NITIDO · NITOR · TERSO · TERGO · LUSTRO · CLARIA · RIVO**
+- **Character lane:** mostly taken (Argus/Kestrel/Halcyon ❌); Tern/Aegis remain but are common.
+- **Takeaway:** commit to a coined name + descriptive tagline; it's the only lane that's both
+  available and ownable.
 
 ---
 
