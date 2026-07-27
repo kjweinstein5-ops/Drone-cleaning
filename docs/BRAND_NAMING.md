@@ -377,6 +377,34 @@ Washing NE + Vertex C80 facade drone), **Vantage** ❌ (Vantage Robotics UAV), *
 
 ---
 
+## Round 8 — Japanese-origin (clean, precise, respected, forward)
+
+Japan's brand of *cleanliness (seiketsu), precision craft (takumi), and continuous improvement
+(kaizen)* maps perfectly to this company. Simple 2–3-syllable words travel well. Preliminary
+scan; broad-usage caveats noted. (Note: authenticity/pronunciation matter when a US brand uses
+a Japanese word — keep meanings accurate.)
+
+### ✅ Clear in-space + on-theme
+| Name | 漢字 | Meaning | Say it | Why it fits |
+|---|---|---|---|---|
+| **MIGAKU** ⭐ | 磨く | to polish / shine / **refine** | mee-GAH-koo | double meaning: polish a surface **and** hone/improve (the learning loop). Clear (a language app uses it, diff. class) |
+| **TAKUMI** ⭐ | 匠 | master artisan / craftsman | tah-KOO-mee | precision, mastery, best-in-class — the "respected craft" feeling. Clear in-space |
+| **AKARI** | 明かり | light / brightness | ah-KAH-ree | clean, bright, elegant. Clear (Noguchi Akari lamps = design, diff. class) |
+| **SUMI** | 澄み | clarity / clearness (of water & air) | SOO-mee | short, clean, purity of a clear result. Clear in-space |
+
+### Also on-theme (NOT yet screened)
+Kiyo (清, pure/clean) · Yuki (雪, snow-white) · Haku (白, white/pure) · Hikari (光, light) ·
+Hare (晴れ, clear sky) · Sae (冴, clear/sharp) · Sora (空, sky — ⚠️ OpenAI "Sora" conflict).
+❌ **Kirei** (綺麗, clean) — taken by cleaning companies (Kirei Cleaning + Kao KireiKirei soap).
+
+### Top Japanese picks
+1. **MIGAKU** — "to polish & refine": the shine you deliver **and** the self-improving loop. Poetic + on-theme.
+2. **TAKUMI** — master craftsman: precision, respect, best-in-class. Strong, simple, cool.
+3. **SUMI** — clarity/purity; shortest and cleanest to say.
+4. **AKARI** — light/brightness; elegant, premium.
+
+---
+
 ## Next steps
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
