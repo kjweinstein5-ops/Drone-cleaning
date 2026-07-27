@@ -344,6 +344,39 @@ Preliminary scan, not TESS/registrar. Broad-usage caveats noted.
 
 ---
 
+## Round 7 — catchy + descriptive + acronym (broadened)
+
+Preliminary scan; broad-usage caveats noted. Killed this round: **Vertex** ❌ (Vertex Drone
+Washing NE + Vertex C80 facade drone), **Vantage** ❌ (Vantage Robotics UAV), **Verity** ❌
+(Verity AG drones).
+
+### ⭐ Acronym-words (a catchy word that ALSO encodes the company)
+| Name | Acronym | Why it's catchy/descriptive | Availability |
+|---|---|---|---|
+| **VISTA** ⭐ | **V**erified **I**ntelligent **S**urface **T**reatment & **A**nalysis | "vista" = a commanding **view** — the drone's-eye, see-everything intelligence | ✅ clear in-space; common word broadly (class-42 software crowded) |
+| **RIVA** | **R**obotic **I**nspection, **V**erification & **A**utonomy | also Italian *riva* = "shore/coast" (San Diego) | ✅ clear in-space (Riva yachts diff. class) |
+| **SOLV** | **S**urface **O**bservation, **L**earning & **V**erification | sounds like "solve" — *we solve your cleaning* | ✅ clear in-space (Solv Health diff. class) |
+| **CLARI** | **CL**eaning **A**nalysis, **R**obotics & **I**ntelligence | reads as "clarity" | ✅ clear in-space (Clari software diff. class) |
+| **VESTA** | **V**erified **E**xterior **S**urface **T**reatment & **A**nalysis | myth (purity goddess) + acronym | ⚠️ Vestas (wind) proximity |
+
+### ✅ Catchy descriptive real-words (clear in-space)
+| Name | Why |
+|---|---|
+| **SPRUCE** ⭐ | "spruce up" = to clean/tidy — literally what you do; friendly, easy to spell/say; also a tree (exterior/nature). Clear in-space (some home-svc/software use elsewhere) |
+| **VISTA** | (above) — view/oversight |
+| **CANDOR** | shine (Latin *candeo*) + clarity/honesty |
+
+### Top picks for "catchy + descriptive + ownable"
+1. **VISTA** — real, catchy word (a commanding view) **and** a clean acronym of the abilities **and** clear in-space. Best all-rounder.
+2. **SPRUCE** — the most literally descriptive + friendly ("we spruce up your building"); great consumer-facing service brand.
+3. **RIVA** / **SOLV** — coined acronym-words, coastal/benefit-driven, ownable.
+4. **CANDOR** — shine + transparency (the verify ethos).
+
+> **Pool is now large (7 rounds).** Recommend converging: pick 3–5 favorites, then decide on
+> **domain + trademark** — that's what actually narrows it, not more names.
+
+---
+
 ## Next steps
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
