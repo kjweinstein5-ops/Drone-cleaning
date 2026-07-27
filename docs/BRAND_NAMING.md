@@ -495,6 +495,31 @@ TESS + counsel in classes 37 (cleaning) + 9/42 (robotics/software). That clears 
 
 **Revised Japanese lead: TAKUMI** (unambiguous "master craftsman"), with **MIGAKU** as the
 poetic alternate. Non-Japanese hedge with no meaning-risk: **CANDOR** (shine + clarity) or **NITIDO**.
+
+---
+
+## Pressure test — TAKUMI (⚠️ partial pass)
+
+- **✅ Meaning holds up:** 匠 reliably = "master craftsman" — no homophone trap (passes where
+  Seika failed). Easy to say.
+- **⚠️ Crowded, worst conflict in-lane:** **Takumi Precision / Takumi CNC** — global CNC
+  machine-tool maker (Taiwan/Hurco, since 1988; aerospace/automotive/semiconductor; owns
+  takumi.com.tw, takumiusa.com, takumicnc.eu). Precision industrial automation = **adjacent to
+  robotics** → real likelihood-of-confusion risk in machinery/hardware classes (7/9), exactly
+  where PROPWASH's identity/IP sit. Also common broadly (knives, steakhouses, golf; Initial D).
+- **Verdict:** usable for the cleaning-**service** brand (class 37 clearer), **risky for the
+  robotics/tech identity**. Domain gone. Counsel must weigh the Takumi CNC conflict.
+
+### What two pressure tests reveal
+Seika ❌ (linguistic trap), Takumi ⚠️ (robotics-adjacent conflict) — **real-word/common names
+keep cracking under scrutiny.** The pressure-resistant options are **coined / less-common**:
+- **MIGAKU** (磨く "polish/refine") — clean meaning, a *verb* rarely used as a company name →
+  least crowded Japanese option; only ding = migaku.com (edtech, diff class).
+- **NITIDO** (Latin "clean") — coined; no meaning trap; clear in-space; coined = strongest,
+  least-crowded trademark. **Likely most defensible overall.**
+
+**Emerging conclusion:** if you want a name that *survives* legal scrutiny, favor a coined
+name (NITIDO) or the low-crowding Japanese verb (MIGAKU) over the popular real-words.
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
 - [ ] Confirm `.com` (short one-words like Facet/Lustre are often taken/expensive).
