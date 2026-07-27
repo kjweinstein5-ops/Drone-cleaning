@@ -280,6 +280,42 @@ keep coming back clear** (and are the strongest marks). Steer to the coined lane
 
 ---
 
+## Round 5 — mythological + acronym (deep cuts that fit)
+
+Famous myths are taken (Atlas/Apollo/Argus/Talos ❌). The **deep-cut myths tied to
+purification, water, and the first robot** screen clear — and several double as acronyms of
+the company's capabilities. Preliminary scan, not TESS/registrar.
+
+### ✅ Mythological — clear in-space, on-theme
+| Name | The story (why it fits) | Notes |
+|---|---|---|
+| **KATHAROS** ⭐ | Greek *katharós* = "pure, clean" — the root of **catharsis** (a cleansing). The essence of clean, made a name | clear; distinctive, ownable |
+| **ALPHEUS** ⭐ | The river Heracles diverted to wash out the **Augean stables** — myth's legendary "impossible clean made effortless by redirecting water" | clear; a built-in brand story |
+| **VESTA** | Roman goddess of the hearth & **purity** (the Vestals kept the sacred flame pure) — AND a clean acronym (below) | ⚠️ clear in-space, but **Vestas** (wind-energy giant) is phonetically close — flag for counsel |
+| **NAIAD** | Greek water-nymphs of springs & streams — water, freshness, cleansing | clear; uncommon, elegant |
+
+### ✅ Acronym angle — a coined word that encodes the abilities
+| Name | Expansion | Notes |
+|---|---|---|
+| **VESTA** | **V**erified **E**xterior **S**urface **T**reatment & **A**nalysis | myth + acronym in one (see Vestas caveat) |
+| **NAIAD** | **N**etworked **A**utonomous **I**nspection & **A**nalysis **D**rone | myth + acronym; ties to water |
+| **VAST** | **V**erified **A**utonomous **S**urface **T**reatment | memorable, speaks to scale of buildings |
+| **AVES** | **A**erial & **V**erified **E**xterior **S**ervices (aves = Latin "birds") | aerial-feel; screen it |
+| **VERA** | **V**ision-**E**nabled **R**obotic **A**utonomy | clean, human-feel; common-ish, screen it |
+
+### ❌ Killed this round
+Talos (talosmgt.com — direct AI robotic-cleaning competitor + PAL humanoid), Hygeia (Hygeia
+Robotics, home cleaning), Aeris (iRobot's Aeris Cleantec air purifier), Orca (ORCA Hub
+inspection UAVs + Orca Security).
+
+### Refined finalists (all lanes)
+1. **KATHAROS** — literally "clean"; deep, ownable, on-theme.
+2. **ALPHEUS** — the cleaning myth; a story baked into the name.
+3. **VESTA** — myth **and** capability-acronym (mind the Vestas wind proximity).
+4. Clean-Latin lane still standing: **NITIDO · NITOR · TERSO**.
+
+---
+
 ## Next steps
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
