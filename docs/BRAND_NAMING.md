@@ -436,7 +436,41 @@ first; the domain is a solvable, secondary step.
 
 ---
 
-## Next steps
+## ★ THE FINAL 3 (feel them as real brands)
+
+Three distinct directions — pick the *feeling*, then clear it with counsel + a registrar.
+
+### 1. SEIKA — *"the proof is in the clean"*
+- **成果 (SAY-kah)** = results · achievement · fruition. Acronym: **S**urface **E**xterior
+  **I**nspection, **K**leaning & **A**nalysis.
+- **Positioning:** We don't just clean — we *prove* it. The name literally means "results,"
+  which is your verify-and-show-the-ROI edge.
+- **Taglines:** "Results you can see." / "Cleaning, measured." / "The proof is in the clean."
+- **Family:** Seika Air (drones) · Seika Ground (concrete/Lavo) · Seika Robotics (parent).
+- **Domain path:** getseika.com · seika.ai · seikarobotics.com. **TM:** clear in-space; screen software class.
+
+### 2. TAKUMI — *"precision, perfected"*
+- **匠 (tah-KOO-mee)** = master craftsman / artisan.
+- **Positioning:** The mastery of a lifelong craftsman — delivered by robots. Precision,
+  respect, best-in-class. Premium, confident, forward.
+- **Taglines:** "Precision, perfected." / "The master's clean." / "Mastery, at altitude."
+- **Family:** Takumi Air · Takumi Ground · Takumi Robotics.
+- **Domain path:** takumirobotics.com · gettakumi.com · takumi.ai. **TM:** clear in-space; common word (screen).
+
+### 3. VISTA — *"every surface, in view"*
+- **VIS-ta** = a commanding view. Acronym: **V**erified **I**ntelligent **S**urface
+  **T**reatment & **A**nalysis.
+- **Positioning:** The intelligence that *sees* every surface — a commanding view of your
+  building's condition. Catchy English word + full-capability acronym.
+- **Taglines:** "Every surface, in view." / "See it clean." / "The whole picture, spotless."
+- **Family:** Vista Air · Vista Ground.
+- **Domain path:** vistarobotics.com · flyvista.com. **TM:** clear in-space; software class crowded (Vista Equity etc.).
+
+**Strong alternates if none click:** KAISEI (clear-sky + acronym) · MIGAKU (polish/refine) ·
+CANDOR (shine + clarity) · NITIDO (Latin "clean").
+
+**Decision gate:** pick 1–2, then (a) registrar check for a workable domain, (b) USPTO
+TESS + counsel in classes 37 (cleaning) + 9/42 (robotics/software). That clears it — not more names.
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
 - [ ] Confirm `.com` (short one-words like Facet/Lustre are often taken/expensive).
