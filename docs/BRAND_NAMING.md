@@ -403,6 +403,37 @@ Hare (晴れ, clear sky) · Sae (冴, clear/sharp) · Sora (空, sky — ⚠️ 
 3. **SUMI** — clarity/purity; shortest and cleanest to say.
 4. **AKARI** — light/brightness; elegant, premium.
 
+Kiyo / Yuki / Haku / Hikari also screened ✅ clear in-space.
+
+### Domain probes (fetched the .com — 2026-07-06)
+| Domain | Result |
+|---|---|
+| migaku.com | ❌ taken — active language-learning SaaS (diff. industry; exact-name co + domain gone) |
+| akari.com | ❌ taken — active massage-therapy practice (CA) |
+| takumi.com | ⚠️ no content returned — almost certainly registered/premium |
+| sumi.com | ⚠️ no content returned — almost certainly registered/premium |
+
+**Takeaway:** the clean single-word `.com` is gone for all of these (true of nearly every
+short real-word name we've hit). That does **not** kill a name — **trademark in your industry
+(class 37/9) ≠ owning the exact .com.** Modern startups just use a modified domain:
+`get<name>.com`, `<name>robotics.com`, `<name>.ai`, `fly<name>.com`. Decide on the *mark*
+first; the domain is a solvable, secondary step.
+
+### ⭐ Japanese names that ALSO work as acronyms (all ✅ clear in-space)
+| Name | 漢字 / meaning | Say it | Acronym of the company |
+|---|---|---|---|
+| **SEIKA** ⭐ | 成果 "results / achievement / fruition" | SAY-kah | **S**urface **E**xterior **I**nspection, **K**leaning & **A**nalysis — the meaning ("results") = your **verified-results** edge |
+| **KAISEI** ⭐ | 快晴 "perfectly clear blue sky / fine weather" | kai-SAY | **K**leaning **A**utonomy, **I**nspection, **S**urface **E**xterior **I**ntelligence — clarity/clean-air |
+| **NAMI** | 波 "wave" (water, coast) | NAH-mee | **N**etworked **A**erial **M**aintenance & **I**nspection — water + coastal (⚠️ NAMI = a mental-health nonprofit, diff. sector) |
+| **SUMI** | 澄み "clarity" | SOO-mee | **S**urface **U**tility, **M**apping & **I**nspection |
+| **HIKARI** | 光 "light" | hee-KAH-ree | **H**igh-altitude **I**nspection, **K**leaning, **A**nalysis, **R**obotics & **I**ntelligence |
+
+❌ **Mirai** (未来 "future") — MiraiKikai makes autonomous window/solar-panel cleaning robots
+(direct competitor) + Mirai Robotics; also the "Mirai" botnet association. Avoid.
+
+**Best Japanese-acronym picks:** **SEIKA** ("results" + full pipeline acronym) and **KAISEI**
+("clear sky" + acronym) — meaning *and* mechanics aligned.
+
 ---
 
 ## Next steps
