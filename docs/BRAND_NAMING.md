@@ -520,6 +520,31 @@ keep cracking under scrutiny.** The pressure-resistant options are **coined / le
 
 **Emerging conclusion:** if you want a name that *survives* legal scrutiny, favor a coined
 name (NITIDO) or the low-crowding Japanese verb (MIGAKU) over the popular real-words.
+
+---
+
+## Pressure test — CANDOR (⚠️ partial pass)
+
+- **✅ Meaning clean:** honesty/transparency + Latin *candeo* "to shine/be bright-white" — no
+  trap, easy to say/spell, fits the verify-ethos.
+- **✅ Clear in cleaning/robotics-hardware space.**
+- **⚠️ Crowded in software/AI (class 42):** Candor Technology (AI mortgage underwriting),
+  Candor Cloud (AI governance), Candor (YC 2025, AI gov-funding), Candor.co (careers). Since
+  PROPWASH *is* an AI company, real likelihood-of-confusion in the software class — mirror of
+  Takumi (whose conflict was hardware/robotics). Domain candor.com/.co gone.
+- **Verdict:** easy, meaningful, clear in cleaning — but crowded in AI/software. Partial pass.
+
+### Three pressure tests, three cracks — the pattern is decisive
+| Name | Result | The crack |
+|---|---|---|
+| SEIKA | ❌ | reads as "confectionery"; seika.com = Seika Corp |
+| TAKUMI | ⚠️ | Takumi CNC — conflict in hardware/robotics (your IP class 7/9) |
+| CANDOR | ⚠️ | multiple Candor AI/software brands (your class 42) |
+
+**Every popular real-word cracks on an adjacent class.** Survivors = low-crowding:
+**MIGAKU** (rare-as-company-name JP verb) and **NITIDO** (coined = strongest mark).
+**Recommendation:** converge on **NITIDO** (most defensible) or **MIGAKU** (meaningful +
+low-crowding); take the top 2 to a trademark attorney — preliminary web scanning has done its job.
 - [ ] Pick 2–3 finalists.
 - [ ] USPTO TESS + common-law search (counsel) in classes 37 + 42.
 - [ ] Confirm `.com` (short one-words like Facet/Lustre are often taken/expensive).
