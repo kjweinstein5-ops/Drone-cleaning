@@ -8,6 +8,37 @@
 
 ## Part 1 — Questions to ask every vendor
 
+### ⭐ 1.0 THE INTEGRATION QUALIFICATION QUESTIONNAIRE (send this to EVERY manufacturer, before buying anything)
+
+**The governing principle: integration capability matters more than PSI.** A drone that sprays
+at 4,500 PSI but can't accept our flight paths or expose telemetry is a dead end for PROPWASH;
+a weaker drone with an open SDK is a platform. Ask these *first*, of every vendor, in writing.
+
+| # | Question | Why it decides the deal |
+|---|---|---|
+| 1 | **Do you provide a public SDK or API?** | Gate zero. No SDK = Path A work-orders only, forever. |
+| 2 | **Can an external application upload custom 3D flight paths or waypoint missions?** | This is literally what our Stage-5 `coverage_path.py` emits. If they can't consume it, our flight-path IP can't reach their aircraft. |
+| 3 | **Can we command velocity, heading, altitude, and standoff distance programmatically?** | Standoff + traverse speed *are* the prescription. Note: real-time flight command is FAA-gated (§7/§10) — ask to know the ceiling, deploy only within the waiver. |
+| 4 | **Is there real-time telemetry — position, IMU, obstacle sensors, range data?** | Feeds verification, the deviation log, and the data flywheel. No telemetry = no learning loop. |
+| 5 | **Can we run an onboard NVIDIA Jetson or companion computer?** | Whether Tier-1/edge logic can live on the aircraft (Path C). |
+| 6 | **Can our software control the spray pump/nozzle based on location?** | The core of the closed loop + where PSM/IHM lives. The single most important hardware-IP question. |
+| 7 | **Can we use ROS 2, MAVLink, PX4, or Auterion APIs?** | Open standards = portable, vendor-neutral integration (our `MavlinkPayloadTransport`). Proprietary-only = lock-in. |
+| 8 | **Is the interface available to customers, or only internal/engineering partners?** | ⭐ The flush-out question. Many "yes we have an API" answers die here. |
+| 9 | **Will custom software void the warranty or certification?** | Ask before spending $75K, not after. Ties to airworthiness + liability. |
+| 10 | **Is there a supported developer or OEM partnership program?** | Whether this becomes a partnership or a fight. |
+
+**Scoring (use it as a go/no-go):**
+- **Open platform** — yes to 1, 2, 4, 7, 8 → viable for the full closed loop; hardware IP possible.
+- **Semi-open** — yes to 1, 2, 4; no/partner-gated on 6–7 → good scout, limited cleaner.
+- **Closed** — no to 1/2/8 → **Path A work orders only** (Lucid Sherpa sits here today).
+
+> Send this verbatim. Get answers **in writing** — a sales "yes, we support integration" is not
+> an answer to Q8. Record each vendor's replies in `docs/decisions/CLEANING_DRONE_PLATFORM.md`.
+
+---
+
+### Vendor-specific follow-ups (after the Q1–10 baseline)
+
 ### 1A. Lucid Bots (cleaning drone — Path A first)
 Full list in `docs/LUCID_OUTREACH.md`. The five that matter most:
 1. Does **Lucid Refresh** expose an API (REST/GraphQL/webhooks)? Can we **read** job status/
