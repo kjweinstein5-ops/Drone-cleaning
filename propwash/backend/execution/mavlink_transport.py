@@ -16,12 +16,24 @@ rules as every execution path (CLAUDE.md §7, §10):
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING, Dict, Optional
 
 from propwash.backend.execution.transport import (
     DispatchResult,
     ExecutionTransport,
 )
+from propwash.backend.execution.mavlink_mission import (
+    GeoPoint,
+    MavlinkMission,
+    translate_flight_plan,
+)
+from propwash.backend.models.prescription import Prescription
 from propwash.backend.models.work_order import WorkOrder
+from propwash.backend.models.zone import SurfaceType
+from propwash.backend.safety.checks import SafetyChecker
+
+if TYPE_CHECKING:  # avoid a runtime import cycle
+    from propwash.backend.planning.coverage_path import FlightPlan
 
 _FLAG = "PROPWASH_ENABLE_PATH_B"
 
@@ -37,6 +49,40 @@ class MavlinkPayloadTransport(ExecutionTransport):
     def is_available(self) -> bool:
         return os.environ.get(_FLAG, "").lower() in ("1", "true", "yes")
 
+    def build_mission(
+        self,
+        plan: "FlightPlan",
+        prescriptions: Dict[str, Prescription],
+        surface_types: Dict[str, SurfaceType],
+        datum: GeoPoint,
+        safety: Optional[SafetyChecker] = None,
+    ) -> MavlinkMission:
+        """Translate a FlightPlan into a MAVLink mission — safety-gated.
+
+        Runs the deterministic Tier-1 safety check on EVERY prescription before any
+        actuator setpoint is emitted (CLAUDE.md §2). This is pure translation and is
+        allowed with the feature flag off, so missions can be reviewed on the ground
+        before any hardware is connected.
+        """
+        safety = safety or SafetyChecker()
+
+        for zone_id, presc in prescriptions.items():
+            surface = surface_types.get(zone_id)
+            if surface is None:
+                raise ValueError(f"No surface type for zone '{zone_id}' — cannot safety-check")
+            result = safety.check_prescription(presc, surface)
+            if not result.passed:
+                rules = "; ".join(v.rule for v in result.violations)
+                raise RuntimeError(
+                    f"SAFETY BLOCK zone={zone_id}: {rules}. No mission emitted."
+                )
+
+        ceilings = {
+            s.value: safety.hard_ceiling_bar(s)
+            for s in {surface_types[z] for z in prescriptions if z in surface_types}
+        }
+        return translate_flight_plan(plan, prescriptions, ceilings, datum)
+
     async def dispatch(self, work_order: WorkOrder) -> DispatchResult:
         if not self.is_available:
             raise RuntimeError(
@@ -44,14 +90,20 @@ class MavlinkPayloadTransport(ExecutionTransport):
                 "airframe, with the safety layer gating setpoints and an FAA pathway for any "
                 "flight automation. Operator stays in command. See CLAUDE.md §7."
             )
-        # TODO(PROPWASH): implement MAVSDK payload control (pump/nozzle setpoints).
-        # Flight remains operator-commanded; this drives the payload only.
+        # TODO(PROPWASH): MAVSDK connection seam. Translation is implemented in
+        # build_mission(); this uploads it and streams ActuatorServos setpoints.
+        #   from mavsdk import System
+        #   drone = System(); await drone.connect(system_address=self.address)
+        #   await drone.mission_raw.upload_mission(items)
+        #   await drone.action.set_actuator(channel, value)
+        # Flight remains operator-commanded; this drives the PAYLOAD only.
         raise NotImplementedError(
-            "MAVLink payload control not implemented — build against MAVSDK on owned "
-            "hardware after FAA/liability review. See OPEN_PLATFORM_INTEGRATION.md."
+            "MAVSDK connection not implemented — build against MAVSDK-Python on owned "
+            "hardware after FAA/liability review. Mission translation is available via "
+            "build_mission(). See docs/FLIGHT_SOFTWARE_STACK.md."
         )
 
     async def get_status(self, job_id: str) -> WorkOrder:
         if not self.is_available:
             raise RuntimeError("MAVLink transport is disabled.")
-        raise NotImplementedError("MAVLink payload control not implemented.")
+        raise NotImplementedError("MAVLink telemetry read not implemented.")

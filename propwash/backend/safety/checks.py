@@ -68,6 +68,19 @@ class SafetyChecker:
     def __init__(self) -> None:
         self._table = _load_surface_table()
 
+    def hard_ceiling_bar(self, surface_type: SurfaceType) -> float:
+        """Authoritative hard pressure ceiling for a surface, from the versioned table.
+
+        Single source of truth for anything that needs the ceiling (e.g. normalizing
+        an actuator setpoint). Raises for surfaces with no safety profile.
+        """
+        table_key = _SURFACE_TYPE_TO_TABLE_KEY.get(surface_type)
+        if table_key is None:
+            raise ValueError(
+                f"Surface type '{surface_type}' has no safety profile — no ceiling defined."
+            )
+        return float(self._table["surfaces"][table_key]["pressure_bar_hard_ceiling"])
+
     def check_prescription(self, prescription: Prescription, surface_type: SurfaceType) -> SafetyCheckResult:
         violations: List[SafetyViolation] = []
 
