@@ -22,7 +22,33 @@ thermal camera* (RGB/photogrammetry quality, obstacle avoidance, mission automat
 
 ## Shortlist (ranked for PROPWASH's survey role)
 
-### 1. Autel EVO MAX 4T — *recommended if buying fresh*
+### 1. Autel EVO MAX 4T **V2** — *recommended if buying fresh* (verified specs, July 2026)
+
+**V2 confirmed specs:** 48MP 1/2" CMOS wide camera · 8K zoom (10× optical / 160× hybrid) ·
+**thermal 640×512 radiometric**, 13mm lens, 16× digital zoom, −4°F to 1022°F · **laser
+rangefinder 5–1200 m, ±1 m** · **RTK module option** · 42 min flight · 720° obstacle avoidance ·
+SkyLink 3.0 (20 km).
+
+**Why it fits PROPWASH specifically:** thermal and RGB are on the **same gimbal**, so they are
+**co-registered** — same pose, same instant. That materially simplifies Stage-2 thermal
+registration (no cross-flight alignment), which is the hardest part of painting temperature
+onto the mesh. With the RTK option the mesh gains survey-grade georeferencing, improving
+standoff accuracy and the area math behind the ROI report.
+
+**⚠️ Correction — Autel is NOT an NDAA hedge.** Autel Robotics is Shenzhen-based and faces
+broadly similar US regulatory scrutiny to DJI. Do **not** buy Autel to diversify away from the
+DJI concentration risk flagged in `DJI_TWO_DRONE_ARCHITECTURE.md` §6 — it does not achieve
+that. (Freefly / Skydio are the genuine US/NDAA hedges.) Buy Autel on sensor merit.
+
+**⚠️ SDK is the open question.** Autel's developer ecosystem is thinner than DJI's. Lower risk
+for a *scout* (we mainly need geotagged imagery + poses out), but send the Integration
+Qualification Questionnaire — especially **Q1, Q2, Q4, Q8** — before buying. If imagery and
+telemetry can't be pulled programmatically, the "seamless pipeline" degrades to manual SD-card
+transfers.
+
+---
+
+### 1b. Autel EVO MAX 4T (original) — *superseded by V2*
 - **Thermal:** 640×512 radiometric (same as EVO II).
 - **RGB:** 50 MP wide (larger sensor) + up to ~160× hybrid zoom.
 - **4th sensor:** **Laser rangefinder** (single-point, ~5–1200 m) — **NOT LiDAR** (§0b).
@@ -97,7 +123,10 @@ thermal camera* (RGB/photogrammetry quality, obstacle avoidance, mission automat
 
 ## Open items before locking the decision
 
-- [ ] Confirm current Autel pricing + availability (EVO MAX 4T, EVO II Dual 640T V3).
+- [ ] Confirm current Autel pricing + availability (EVO MAX 4T **V2**, EVO II Dual 640T V3).
+- [ ] **Send Autel the Integration Qualification Questionnaire (Q1/Q2/Q4/Q8)** — confirm
+      programmatic export of imagery + telemetry before purchase.
+- [ ] Price the **RTK module** — survey-grade georeferencing materially improves mesh accuracy.
 - [ ] Confirm the MAX 4T laser rangefinder is exposed in the SDK (for live-standoff use).
 - [ ] Decide: are we already committed to / do we already own the EVO II Dual 640T?
 - [ ] If MAX 4T is chosen → update `CLAUDE.md §4` hardware inventory to match.
