@@ -30,6 +30,7 @@ from propwash.backend.execution.mavlink_mission import (
 from propwash.backend.models.prescription import Prescription
 from propwash.backend.models.work_order import WorkOrder
 from propwash.backend.models.zone import SurfaceType
+from propwash.backend.safety.audit_log import AuditLog, EventType
 from propwash.backend.safety.checks import SafetyChecker
 
 if TYPE_CHECKING:  # avoid a runtime import cycle
@@ -56,6 +57,8 @@ class MavlinkPayloadTransport(ExecutionTransport):
         surface_types: Dict[str, SurfaceType],
         datum: GeoPoint,
         safety: Optional[SafetyChecker] = None,
+        audit: Optional[AuditLog] = None,
+        job_id: str = "",
     ) -> MavlinkMission:
         """Translate a FlightPlan into a MAVLink mission — safety-gated.
 
@@ -73,6 +76,16 @@ class MavlinkPayloadTransport(ExecutionTransport):
             result = safety.check_prescription(presc, surface)
             if not result.passed:
                 rules = "; ".join(v.rule for v in result.violations)
+                if audit is not None:
+                    audit.record(
+                        EventType.SAFETY_VIOLATION, job_id=job_id, zone_id=zone_id,
+                        detail=f"Mission build blocked by safety layer: {rules}",
+                        data={
+                            "surface_type": surface.value,
+                            "requested_pressure_bar": presc.pressure_bar,
+                            "stage": "mission_build",
+                        },
+                    )
                 raise RuntimeError(
                     f"SAFETY BLOCK zone={zone_id}: {rules}. No mission emitted."
                 )
@@ -81,7 +94,22 @@ class MavlinkPayloadTransport(ExecutionTransport):
             s.value: safety.hard_ceiling_bar(s)
             for s in {surface_types[z] for z in prescriptions if z in surface_types}
         }
-        return translate_flight_plan(plan, prescriptions, ceilings, datum)
+        mission = translate_flight_plan(plan, prescriptions, ceilings, datum)
+        if audit is not None:
+            audit.record(
+                EventType.MISSION_DISPATCHED, job_id=job_id,
+                detail=(
+                    f"Mission built and safety-validated — {len(mission.items)} items, "
+                    f"{len(mission.geofence_exclusions)} keep-out volumes"
+                ),
+                data={
+                    "items": len(mission.items),
+                    "spray_items": mission.spray_items,
+                    "geofence_exclusions": len(mission.geofence_exclusions),
+                    "zones": sorted(prescriptions.keys()),
+                },
+            )
+        return mission
 
     async def dispatch(self, work_order: WorkOrder) -> DispatchResult:
         if not self.is_available:

@@ -17,6 +17,7 @@ from typing import List, Optional, Tuple
 from propwash.backend.fusion.scan_pipeline import ScannedZone
 from propwash.backend.models.work_order import WorkOrder
 from propwash.backend.planning.prescriber import TablePrescriber, scanned_zone_to_signature
+from propwash.backend.safety.audit_log import AuditLog, EventType
 from propwash.backend.safety.checks import SafetyChecker
 
 logger = logging.getLogger(__name__)
@@ -42,8 +43,14 @@ def plan_from_scan(
     property_id: str,
     prescriber: Optional[TablePrescriber] = None,
     safety: Optional[SafetyChecker] = None,
+    audit: Optional[AuditLog] = None,
 ) -> PlanResult:
-    """Bridge scan output → safety-gated work orders."""
+    """Bridge scan output → safety-gated work orders.
+
+    When an `audit` log is supplied, every exclusion and every safety rejection is
+    recorded to the tamper-evident chain — the evidence trail an FAA waiver package
+    relies on (docs/WAIVER_107_35.md §3).
+    """
     prescriber = prescriber or TablePrescriber()
     safety = safety or SafetyChecker()
     result = PlanResult()
@@ -53,6 +60,12 @@ def plan_from_scan(
         if z.is_exclusion:
             result.excluded.append((z.zone_id, z.reason))
             logger.info("EXCLUDED zone=%s: %s", z.zone_id, z.reason)
+            if audit is not None:
+                audit.record(
+                    EventType.KEEPOUT_BREACH, job_id=job_id, zone_id=z.zone_id,
+                    detail=f"Zone excluded from cleaning: {z.reason}",
+                    data={"surface_type": z.surface_type, "confidence": z.confidence},
+                )
             continue
 
         # Guarantee 2: prescription from the versioned table.
@@ -66,6 +79,19 @@ def plan_from_scan(
             result.safety_rejected.append((z.zone_id, rules))
             for v in check.violations:
                 logger.error("SAFETY REJECT zone=%s rule=%s: %s", z.zone_id, v.rule, v.message)
+            if audit is not None:
+                audit.record(
+                    EventType.SAFETY_VIOLATION, job_id=job_id, zone_id=z.zone_id,
+                    detail=f"Prescription rejected by safety layer: {rules}",
+                    data={
+                        "surface_type": signature.surface_type.value,
+                        "requested_pressure_bar": prescription.pressure_bar,
+                        "chemical": prescription.chemical.value,
+                        "violations": [
+                            {"rule": v.rule, "message": v.message} for v in check.violations
+                        ],
+                    },
+                )
             continue
 
         result.work_orders.append(WorkOrder(
@@ -75,4 +101,15 @@ def plan_from_scan(
         ))
 
     logger.info("plan_from_scan job=%s: %s", job_id, result.summary)
+    if audit is not None:
+        audit.record(
+            EventType.MISSION_DISPATCHED, job_id=job_id,
+            detail=f"Plan generated — {result.summary}",
+            data={
+                "queued": len(result.work_orders),
+                "excluded": len(result.excluded),
+                "safety_rejected": len(result.safety_rejected),
+                "property_id": property_id,
+            },
+        )
     return result
