@@ -26,9 +26,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 from propwash.backend.models.prescription import ChemicalType, Prescription
+
+if TYPE_CHECKING:
+    from propwash.backend.planning.deconfliction import ConflictMap
 
 
 class TreatmentPhase(str, Enum):
@@ -147,6 +150,7 @@ class Schedule:
 def schedule_phases(
     phase_plans: List[List[PhaseStep]],
     aircraft_count: int = 1,
+    conflicts: Optional["ConflictMap"] = None,
 ) -> Schedule:
     """Schedule zone phase-plans across N aircraft, pipelining through dwell.
 
@@ -154,7 +158,10 @@ def schedule_phases(
       * a zone's phases run strictly in order (can't rinse before you soak);
       * an aircraft does one thing at a time;
       * DWELL blocks its own zone but occupies NO aircraft — so other zones can
-        be worked during it. That overlap is the entire throughput gain.
+        be worked during it. That overlap is the entire throughput gain;
+      * **spatial deconfliction (safety):** when a `ConflictMap` is supplied, two
+        aircraft are never scheduled into zones that are too close together.
+        Deconfliction can only *delay* work, never create an unsafe overlap.
 
     Greedy earliest-start assignment: good schedules, no solver dependency.
     """
@@ -166,21 +173,49 @@ def schedule_phases(
     # (plan, next step index, when that zone is ready to continue)
     pending: List[Tuple[List[PhaseStep], int, float]] = [(p, 0, 0.0) for p in phase_plans]
 
+    def _airborne_conflict(zone_id: str, start: float, end: float) -> bool:
+        """Would this zone be worked concurrently with a conflicting zone?"""
+        if conflicts is None:
+            return False
+        for s in scheduled:
+            if s.aircraft is None:            # dwell occupies no airspace
+                continue
+            if s.zone_id == zone_id:
+                continue
+            if s.start_s < end and s.end_s > start and conflicts.conflicts(zone_id, s.zone_id):
+                return True
+        return False
+
     while pending:
-        # Pick the step that can start earliest; tie-break on longer duration first.
         best_i = 0
         best_start = float("inf")
         best_ac: Optional[int] = None
+
         for i, (plan, idx, ready) in enumerate(pending):
             step = plan[idx]
             if step.needs_aircraft:
                 ac = min(range(aircraft_count), key=lambda a: free_at[a])
                 start = max(ready, free_at[ac])
+                # Push later until it no longer conflicts with concurrent work.
+                guard = 0
+                while _airborne_conflict(step.zone_id, start, start + step.duration_s):
+                    blocking = [
+                        s.end_s for s in scheduled
+                        if s.aircraft is not None
+                        and s.end_s > start
+                        and conflicts.conflicts(step.zone_id, s.zone_id)
+                    ]
+                    if not blocking:
+                        break
+                    start = max(start, min(blocking))
+                    guard += 1
+                    if guard > len(scheduled) + 1:
+                        break
             else:
                 ac, start = None, ready
-            if start < best_start or (
-                start == best_start and step.duration_s > pending[best_i][0][pending[best_i][1]].duration_s
-            ):
+
+            cur = pending[best_i][0][pending[best_i][1]]
+            if start < best_start or (start == best_start and step.duration_s > cur.duration_s):
                 best_i, best_start, best_ac = i, start, ac
 
         plan, idx, _ = pending[best_i]
