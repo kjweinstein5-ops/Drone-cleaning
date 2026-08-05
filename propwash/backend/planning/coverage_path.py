@@ -77,6 +77,14 @@ class ZonePath:
     approach_normal: Vec3            # outward surface normal (approach direction)
     waypoints: List[Waypoint] = field(default_factory=list)
     keepout_violations: int = 0
+    # Treatment phase this pass belongs to (None = single-pass legacy plan).
+    phase: Optional[str] = None
+    phase_pressure_bar: Optional[float] = None
+    phase_chemical: Optional[str] = None
+
+    @property
+    def label(self) -> str:
+        return f"{self.zone_id}:{self.phase}" if self.phase else self.zone_id
 
     @property
     def path_length_m(self) -> float:
@@ -265,3 +273,68 @@ def build_flight_plan(
         ))
 
     return FlightPlan(property_id=recon.property_id, zone_paths=zone_paths, keep_outs=keep_outs)
+
+
+def build_phased_flight_plan(
+    recon: ReconstructionOutput,
+    work_orders: List[WorkOrder],
+    exclusions: Optional[List[Tuple[str, str]]] = None,
+) -> FlightPlan:
+    """Flight plan with one coverage pass PER TREATMENT PHASE.
+
+    Real cleaning is pre-soak → chemical → dwell → rinse
+    (docs/planning/treatment_phases.py). Each *active* phase gets its own pass
+    over the same geometry at that phase's pressure and chemistry:
+
+        PRE_SOAK  water only, gentlest  — wets the surface, protects substrate
+        CHEMICAL  prescribed detergent  — applies the mix
+        DWELL     (no pass — no aircraft needed)
+        RINSE     water only            — washes down
+
+    Passes are emitted in phase order within each zone, and zones remain ordered
+    solar-first / top-down. Safety: pre-soak and rinse are water-only by
+    construction, and every phase pressure is <= the prescribed cleaning
+    pressure, so a phased plan can never exceed what the safety layer approved.
+    """
+    from propwash.backend.planning.treatment_phases import (
+        ACTIVE_PHASES,
+        build_phase_plan,
+    )
+
+    base = build_flight_plan(recon, work_orders, exclusions)
+    presc_by_zone = {wo.zone.zone_id: wo.prescription for wo in work_orders}
+
+    phased: List[ZonePath] = []
+    for zp in base.zone_paths:
+        presc = presc_by_zone.get(zp.zone_id)
+        if presc is None:
+            phased.append(zp)
+            continue
+
+        steps = {
+            s.phase: s
+            for s in build_phase_plan(zp.zone_id, presc, zp.est_seconds)
+            if s.phase in ACTIVE_PHASES
+        }
+        for phase in ACTIVE_PHASES:
+            step = steps.get(phase)
+            if step is None:
+                continue
+            phased.append(ZonePath(
+                zone_id=zp.zone_id,
+                surface_type=zp.surface_type,
+                solar=zp.solar,
+                standoff_m=zp.standoff_m,
+                spray_width_m=zp.spray_width_m,
+                traverse_speed_mps=zp.traverse_speed_mps,
+                approach_normal=zp.approach_normal,
+                waypoints=list(zp.waypoints),
+                keepout_violations=zp.keepout_violations,
+                phase=phase.value,
+                phase_pressure_bar=step.pressure_bar,
+                phase_chemical=step.chemical.value,
+            ))
+
+    return FlightPlan(
+        property_id=recon.property_id, zone_paths=phased, keep_outs=base.keep_outs
+    )

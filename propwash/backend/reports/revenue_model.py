@@ -45,6 +45,84 @@ def crew_annual_capacity_revenue(a: Assumptions) -> float:
     return a.crew_kw_per_day * a.price_per_kw_per_clean * a.crew_working_days_per_year
 
 
+# ── Multi-aircraft throughput (requires a 107.35 waiver) ──────────────────────
+#
+# Measured from the phase scheduler on the 9-zone reference building
+# (propwash/backend/planning/treatment_phases.py): a second aircraft nearly
+# halves job time because dwell and repositioning pipeline across zones.
+#
+# ⚠️ Two hard gates on realising this:
+#   1. **FAA 107.35 waiver** — one RPIC may not operate multiple aircraft
+#      without it (docs/WAIVER_107_35.md). No waiver ⇒ multiplier is 1.0.
+#   2. **Site geometry** — zones must be far enough apart to fly concurrently
+#      (planning/deconfliction.py). A small house may only support ONE aircraft
+#      regardless of fleet size, so the multiplier is capped by the job mix.
+#
+# These are goals to validate, not facts (CLAUDE.md §15.5).
+_THROUGHPUT_BY_AIRCRAFT = {1: 1.00, 2: 1.91, 3: 2.79}
+
+#: Fraction of jobs whose geometry actually supports concurrent aircraft.
+#: Small residential rarely does; commercial/solar usually does. VALIDATE.
+DEFAULT_CONCURRENCY_ELIGIBLE_FRACTION = 0.60
+
+
+def throughput_multiplier(
+    aircraft_per_crew: int,
+    waiver_107_35: bool,
+    eligible_fraction: float = DEFAULT_CONCURRENCY_ELIGIBLE_FRACTION,
+) -> float:
+    """Effective crew throughput multiplier from flying multiple aircraft.
+
+    Blends the geometry-eligible share of jobs at the multi-aircraft rate with
+    the remainder at 1.0. Returns 1.0 without a 107.35 waiver — legally, extra
+    aircraft cannot be flown concurrently by one RPIC.
+    """
+    if aircraft_per_crew < 1:
+        raise ValueError("aircraft_per_crew must be >= 1")
+    if not waiver_107_35 or aircraft_per_crew == 1:
+        return 1.0
+    if not 0.0 <= eligible_fraction <= 1.0:
+        raise ValueError("eligible_fraction must be in [0, 1]")
+
+    capped = min(aircraft_per_crew, max(_THROUGHPUT_BY_AIRCRAFT))
+    gain = _THROUGHPUT_BY_AIRCRAFT[capped]
+    return eligible_fraction * gain + (1.0 - eligible_fraction) * 1.0
+
+
+def crew_annual_capacity_revenue_multi(
+    a: Assumptions,
+    aircraft_per_crew: int = 1,
+    waiver_107_35: bool = False,
+    eligible_fraction: float = DEFAULT_CONCURRENCY_ELIGIBLE_FRACTION,
+) -> float:
+    """Crew capacity with multi-aircraft throughput applied."""
+    return crew_annual_capacity_revenue(a) * throughput_multiplier(
+        aircraft_per_crew, waiver_107_35, eligible_fraction
+    )
+
+
+def crews_needed_for_target(
+    target_revenue: float,
+    a: Assumptions,
+    aircraft_per_crew: int = 1,
+    waiver_107_35: bool = False,
+    eligible_fraction: float = DEFAULT_CONCURRENCY_ELIGIBLE_FRACTION,
+) -> int:
+    """How many crews to hit a revenue target — the waiver's real payoff.
+
+    Fewer crews for the same revenue means less hiring, less management, less
+    operational sprawl — the biggest constraint in the owner-operated plan.
+    """
+    import math
+
+    per_crew = crew_annual_capacity_revenue_multi(
+        a, aircraft_per_crew, waiver_107_35, eligible_fraction
+    )
+    # Services revenue is uplifted by multi-surface bundling, as in ScaleScenario.
+    per_crew_total = per_crew * (1.0 + a.upsell_uplift_fraction)
+    return max(1, math.ceil(target_revenue / per_crew_total))
+
+
 def capex_per_crew(a: Assumptions) -> float:
     return a.sherpa_unit_cost + a.autel_unit_cost + a.truck_and_kit_per_crew
 
