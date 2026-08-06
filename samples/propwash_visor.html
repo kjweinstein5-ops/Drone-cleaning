@@ -256,6 +256,21 @@ const PLAN_BY_SURFACE = {
 };
 const zonePlan = z => z.excl ? null : PLAN_BY_SURFACE[z.surface];
 
+// ── Treatment phases + fleet scheduling (from the pipeline) ───────────────────
+const PHASES = {"SOL-ROOF":[{"ph":"pre_soak","p":0.99,"c":"di_water_only"},{"ph":"chemical","p":1.26,"c":"di_water_only"},{"ph":"rinse","p":1.53,"c":"di_water_only"}],"RF-N":[{"ph":"pre_soak","p":2.75,"c":"di_water_only"},{"ph":"chemical","p":3.5,"c":"standard_degreaser"},{"ph":"rinse","p":4.25,"c":"di_water_only"}],"RF-S":[{"ph":"pre_soak","p":2.75,"c":"di_water_only"},{"ph":"chemical","p":3.5,"c":"standard_degreaser"},{"ph":"rinse","p":4.25,"c":"di_water_only"}],"WIN-S1":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}],"WIN-S2":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}],"WALL-E":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"WALL-N":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"WALL-S":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"WALL-W":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}]};
+const FLEET = {
+  schedule: {"1":60.6,"2":31.7,"3":21.7},
+  maxConcurrent: 1,
+  separations: [{"zone_a":"RF-N","zone_b":"RF-S","separation_m":-12.98,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"SOL-ROOF","separation_m":-9.51,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-E","separation_m":-10.86,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-N","separation_m":-13.3,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-S","separation_m":-9.13,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-W","separation_m":-10.86,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WIN-S1","separation_m":-4.61,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WIN-S2","separation_m":-4.61,"concurrent_ok":false}]
+};
+const PHASE_META = {
+  pre_soak: ["Pre-soak", "var(--cyan)", "Wet the surface — protects substrate, loosens debris"],
+  chemical: ["Chemical", "var(--amber)", "Apply the prescribed detergent mix"],
+  dwell:    ["Dwell",    "var(--muted)", "Chemical works — no aircraft needed"],
+  rinse:    ["Rinse",    "var(--green)", "Wash down — water only"],
+};
+const prettyChem = c => c.replace(/_/g," ");
+
 const DEMO_HUB = {
   summary:{ jobs:3, zones:9, fpr:0.72, dataPoints:1847, revenueYTD:28400, roiYTD:141200 },
   zones: DEMO_TWIN.zones,
@@ -418,6 +433,11 @@ function ZoneCard({zone,onConfirm}) {
           <li key={i}><span className="num">{i+1}</span><div><div className="step-lbl">{l}</div><div className="step-val">{v}</div></div></li>
         ))}
       </ol>
+      {PHASES[zone.id] && (
+        <div className="muted" style={{fontSize:11,margin:"2px 0 8px"}}>
+          {PHASES[zone.id].length} passes: {PHASES[zone.id].map(p=>PHASE_META[p.ph][0]).join(" → ")}
+        </div>
+      )}
       <button className="btn primary" onClick={onConfirm}>Confirm ready — begin zone</button>
       <p className="note">You remain in command. Abort the moment anything looks wrong.</p>
     </div>
@@ -426,11 +446,26 @@ function ZoneCard({zone,onConfirm}) {
 
 function Executing({zone,onDone,onAbort}) {
   const [left,setLeft]=useState(zone.dwell);
+  const seq=PHASES[zone.id]||[];
+  const idx=seq.length?Math.min(seq.length-1,Math.floor((zone.dwell-left)/Math.max(1,zone.dwell/seq.length))):0;
+  const cur=seq[idx];
   useEffect(()=>{if(left<=0){onDone();return;}const t=setTimeout(()=>setLeft(l=>l-1),1000);return()=>clearTimeout(t);},[left]);
   return (
     <div className="card" style={{marginLeft:0,marginRight:0,marginTop:12}}>
       <h1>Cleaning · {zone.id}</h1>
-      <div className="muted">Executing prescription — monitor overlay</div>
+      {cur ? (
+        <div style={{display:"flex",gap:6,margin:"8px 0 4px"}}>
+          {seq.map((p,i)=>{const m=PHASE_META[p.ph];return (
+            <div key={p.ph} style={{flex:1,textAlign:"center",padding:"6px 4px",borderRadius:7,
+              background:i===idx?m[1]:"var(--card2)",color:i===idx?"#04121f":"var(--muted)",
+              fontSize:10,fontWeight:800,border:"1px solid var(--border)"}}>{m[0]}</div>
+          );})}
+        </div>
+      ) : null}
+      <div className="muted">
+        {cur ? `${PHASE_META[cur.ph][0]} — ${cur.p} bar · ${prettyChem(cur.c)}`
+             : "Executing prescription — monitor overlay"}
+      </div>
       <div className="overlay">
         <div className="thermal-grid"/>
         <div className="scan-line"/>
@@ -629,6 +664,27 @@ function ZoneDetail({z,mode}) {
         </div>
       );})()}
 
+      {/* Treatment passes — one per active phase, from the phased flight plan */}
+      {!z.excl && PHASES[z.id] && (
+        <div className="soil-box" style={{borderColor:"var(--border)",background:"rgba(6,192,216,.05)",marginTop:10}}>
+          <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".5px",marginBottom:6}}>
+            ▶ Treatment passes — {PHASES[z.id].length} passes
+          </div>
+          {PHASES[z.id].map(p=>{const m=PHASE_META[p.ph];return (
+            <div key={p.ph} className="dm" style={{borderBottom:"1px solid rgba(255,255,255,.05)"}}>
+              <span style={{display:"flex",alignItems:"center",gap:6}}>
+                <span style={{width:7,height:7,borderRadius:"50%",background:m[1],display:"inline-block"}}/>
+                {m[0]}
+              </span>
+              <b style={{fontSize:11}}>{p.p} bar · {prettyChem(p.c)}</b>
+            </div>
+          );})}
+          <div className="muted" style={{fontSize:10,marginTop:6}}>
+            Pre-soak &amp; rinse are water-only by construction.
+          </div>
+        </div>
+      )}
+
       <div className="soil-box" style={{borderColor:"var(--border)",background:"rgba(59,126,248,.06)",marginTop:10}}>
         <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}}>Fusion decision</div>
         <div className="muted" style={{fontSize:11}}>{z.reason}</div>
@@ -638,7 +694,7 @@ function ZoneDetail({z,mode}) {
 }
 
 /* ══ DATA HUB ═══════════════════════════════════════════════════════════════ */
-const HUB_TABS=["Overview","Zones","Jobs","Pressure","Alerts"];
+const HUB_TABS=["Overview","Fleet","Zones","Jobs","Pressure","Alerts"];
 function DataHub() {
   const [tab,setTab]=useState("Overview");
   return (
@@ -650,6 +706,7 @@ function DataHub() {
           {HUB_TABS.map(t=><button key={t} className={"htab"+(tab===t?" active":"")} onClick={()=>setTab(t)}>{t}</button>)}
         </div>
         {tab==="Overview"  && <HubOverview d={DEMO_HUB}/>}
+        {tab==="Fleet"     && <HubFleet/>}
         {tab==="Zones"     && <HubZones d={DEMO_HUB}/>}
         {tab==="Jobs"      && <HubJobs d={DEMO_HUB}/>}
         {tab==="Pressure"  && <HubPressure d={DEMO_HUB}/>}
@@ -689,6 +746,68 @@ function HubOverview({d}) {
           <div className="resoil-wks" style={{color:soilColor(z.soilWeeks)}}>~{z.soilWeeks}w</div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function HubFleet() {
+  const rows = Object.keys(FLEET.schedule).map(k=>({n:+k, min:FLEET.schedule[k]}));
+  const base = rows[0].min;
+  return (
+    <div>
+      <div className="note" style={{marginBottom:12,paddingTop:0}}>
+        Job time falls as aircraft are added, because chemical <b>dwell</b> pipelines across
+        zones. Realising it needs an FAA <b>107.35 waiver</b> — one pilot may not fly multiple
+        aircraft without one.
+      </div>
+
+      <div className="section-ttl">Job time by fleet size</div>
+      {rows.map(r=>(
+        <div key={r.n} className="resoil-row">
+          <div style={{minWidth:78}}>
+            <div style={{fontWeight:700,fontSize:12}}>{r.n} aircraft</div>
+            <div className="muted" style={{fontSize:10}}>{(base/r.min).toFixed(2)}× speed-up</div>
+          </div>
+          <div className="resoil-track">
+            <div className="resoil-fill" style={{width:`${(r.min/base)*100}%`,background:"var(--blue)"}}/>
+          </div>
+          <div style={{fontWeight:800,fontSize:13,minWidth:56,textAlign:"right"}}>{r.min} min</div>
+        </div>
+      ))}
+
+      <div className="section-ttl">Deconfliction</div>
+      <div className="hz-card" style={{borderColor:"rgba(245,166,35,.3)",background:"rgba(245,166,35,.06)"}}>
+        <div style={{fontWeight:800,fontSize:13,marginBottom:4}}>
+          ⚠ Max {FLEET.maxConcurrent} aircraft on this building
+        </div>
+        <div className="muted" style={{fontSize:11}}>
+          Zones sit too close to fly more safely. Two aircraft may never work zones whose
+          operating volumes come within the minimum separation — so extra drones add nothing
+          here. Multi-aircraft economics favour <b>large commercial and solar sites</b>.
+        </div>
+      </div>
+
+      <div className="section-ttl">Zone separation</div>
+      <div className="htable-wrap">
+        <table className="htable">
+          <thead><tr><th>Zone A</th><th>Zone B</th><th>Gap</th><th>Concurrent</th></tr></thead>
+          <tbody>
+            {FLEET.separations.map((r,i)=>(
+              <tr key={i}>
+                <td>{r.zone_a}</td><td>{r.zone_b}</td>
+                <td>{r.separation_m} m</td>
+                <td style={{color:r.concurrent_ok?"var(--green)":"var(--red)",fontWeight:700}}>
+                  {r.concurrent_ok?"OK":"BLOCKED"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="note" style={{paddingTop:10}}>
+        Separation is computed volume-to-volume (surface extent + standoff + spray reach),
+        not centre-to-centre. Deconfliction can only delay work, never create an unsafe overlap.
+      </div>
     </div>
   );
 }
