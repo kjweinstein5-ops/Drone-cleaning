@@ -71,6 +71,7 @@ class MissionItem:
     cruise_speed_mps: float
     spraying: bool
     actuators: List[ActuatorCommand] = field(default_factory=list)
+    phase: Optional[str] = None      # pre_soak | chemical | rinse (None = single pass)
 
 
 @dataclass
@@ -169,20 +170,29 @@ def translate_flight_plan(
         if ceiling is None:
             raise ValueError(f"No hard ceiling known for surface '{zp.surface_type}'")
 
-        # Safety: normalize (and validate) once per zone.
-        p_val = normalize_pressure(presc.pressure_bar, ceiling)
+        # Phased plans carry a per-phase pressure (pre-soak/rinse are gentler and
+        # water-only). Fall back to the prescribed pressure on single-pass plans.
+        pass_pressure = (
+            zp.phase_pressure_bar if zp.phase_pressure_bar is not None
+            else presc.pressure_bar
+        )
+        # Safety: normalize (and validate) once per pass. A phase pressure above
+        # the ceiling raises exactly as a prescription would.
+        p_val = normalize_pressure(pass_pressure, ceiling)
         n_val = normalize_nozzle(presc.nozzle_id)
 
         prev_spraying: Optional[bool] = None
         for wi, wp in enumerate(zp.waypoints):
             acts: List[ActuatorCommand] = []
 
-            # At the first waypoint of a zone: set nozzle + pressure before spraying.
+            # At the first waypoint of a pass: set nozzle + pressure before spraying.
             if wi == 0:
                 acts.append(ActuatorCommand(
                     NOZZLE_CHANNEL, n_val, "nozzle", f"slot {presc.nozzle_id}"))
-                acts.append(ActuatorCommand(
-                    PRESSURE_CHANNEL, p_val, "pressure", f"{presc.pressure_bar:.2f} bar"))
+                eng = f"{pass_pressure:.2f} bar"
+                if zp.phase:
+                    eng += f" ({zp.phase}, {zp.phase_chemical})"
+                acts.append(ActuatorCommand(PRESSURE_CHANNEL, p_val, "pressure", eng))
 
             # Pump toggles only when the spray state changes (fewer commands).
             if prev_spraying is None or wp.spraying != prev_spraying:
@@ -198,6 +208,7 @@ def translate_flight_plan(
                 cruise_speed_mps=zp.traverse_speed_mps,
                 spraying=wp.spraying,
                 actuators=acts,
+                phase=zp.phase,
             ))
             seq += 1
 
@@ -211,6 +222,7 @@ def translate_flight_plan(
                 cruise_speed_mps=zp.traverse_speed_mps,
                 spraying=False,
                 actuators=[ActuatorCommand(PUMP_CHANNEL, pump_value(False), "pump", "off")],
+                phase=zp.phase,
             ))
             seq += 1
 

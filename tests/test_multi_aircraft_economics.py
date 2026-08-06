@@ -139,3 +139,65 @@ def test_waiver_reduces_the_crews_needed_for_10m():
     without = crews_needed_for_target(10_000_000, a, 1, waiver_107_35=False)
     with_waiver = crews_needed_for_target(10_000_000, a, 2, waiver_107_35=True)
     assert with_waiver < without
+
+
+# ── phased plans through the MAVLink translator ───────────────────────────────
+
+def test_phased_plan_translates_to_a_phase_tagged_mission():
+    from propwash.backend.execution.mavlink_mission import GeoPoint
+    from propwash.backend.execution.mavlink_transport import MavlinkPayloadTransport
+
+    recon, plan = _plan()
+    phased = build_phased_flight_plan(recon, plan.work_orders, exclusions=plan.excluded)
+    presc = {wo.zone.zone_id: wo.prescription for wo in plan.work_orders}
+    surfaces = {wo.zone.zone_id: wo.zone.surface_type for wo in plan.work_orders}
+
+    mission = MavlinkPayloadTransport().build_mission(
+        phased, presc, surfaces, GeoPoint(33.1281, -117.3506, 30.0)
+    )
+    phases = {i.phase for i in mission.items}
+    assert phases == {p.value for p in ACTIVE_PHASES}
+
+
+def test_actuator_pressure_follows_the_phase_not_the_prescription():
+    """Pre-soak must actuate gentler than the full cleaning pressure."""
+    from propwash.backend.execution.mavlink_mission import GeoPoint
+    from propwash.backend.execution.mavlink_transport import MavlinkPayloadTransport
+
+    recon, plan = _plan()
+    phased = build_phased_flight_plan(recon, plan.work_orders, exclusions=plan.excluded)
+    presc = {wo.zone.zone_id: wo.prescription for wo in plan.work_orders}
+    surfaces = {wo.zone.zone_id: wo.zone.surface_type for wo in plan.work_orders}
+    mission = MavlinkPayloadTransport().build_mission(
+        phased, presc, surfaces, GeoPoint(33.1281, -117.3506, 30.0)
+    )
+
+    def first_pressure(phase):
+        for i in mission.items:
+            if i.phase != phase:
+                continue
+            for a in i.actuators:
+                if a.purpose == "pressure":
+                    return a.value
+        return None
+
+    pre = first_pressure(TreatmentPhase.PRE_SOAK.value)
+    rinse = first_pressure(TreatmentPhase.RINSE.value)
+    assert pre is not None and rinse is not None
+    assert pre < rinse          # pre-soak is the gentlest pass
+
+
+def test_phase_is_recorded_in_the_engineering_value():
+    from propwash.backend.execution.mavlink_mission import GeoPoint
+    from propwash.backend.execution.mavlink_transport import MavlinkPayloadTransport
+
+    recon, plan = _plan()
+    phased = build_phased_flight_plan(recon, plan.work_orders, exclusions=plan.excluded)
+    presc = {wo.zone.zone_id: wo.prescription for wo in plan.work_orders}
+    surfaces = {wo.zone.zone_id: wo.zone.surface_type for wo in plan.work_orders}
+    mission = MavlinkPayloadTransport().build_mission(
+        phased, presc, surfaces, GeoPoint(33.1281, -117.3506, 30.0)
+    )
+    eng = [a.engineering_value for i in mission.items for a in i.actuators
+           if a.purpose == "pressure"]
+    assert any("pre_soak" in e and "di_water_only" in e for e in eng)
