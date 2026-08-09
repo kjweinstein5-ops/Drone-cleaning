@@ -94,20 +94,21 @@ body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg
 .mode-switch { display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
 .mode-btn { border:0; background:none; padding:6px 14px; font-size:11px; font-weight:800; color:var(--muted); cursor:pointer; text-transform:uppercase; letter-spacing:.5px; }
 .mode-btn.active { background:var(--blue); color:#fff; }
-/* 3D stage */
-.stage-wrap { display:flex; justify-content:center; margin-bottom:14px; }
-.stage { perspective:700px; }
-.map3d { transform:rotateX(46deg) rotateZ(-12deg); transform-style:preserve-3d; position:relative; width:310px; height:208px; }
-.zone-tile { position:absolute; border-radius:7px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; transition:filter .2s,transform .15s; border:2px solid rgba(255,255,255,.08); user-select:none; }
-.zone-tile:hover { filter:brightness(1.25); transform:translateZ(6px); }
-.zone-tile.sel { border-color:rgba(255,255,255,.6); }
-.zone-lbl { font-size:9px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing:.5px; text-shadow:0 1px 4px rgba(0,0,0,.8); }
-.zone-pct { font-size:17px; font-weight:900; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.9); }
-.zone-tag { font-size:8px; color:rgba(255,255,255,.65); text-shadow:0 1px 4px rgba(0,0,0,.8); }
+/* Reconstructed structure — canvas 3D */
+.mode-row { display:flex; gap:6px; margin-bottom:10px; }
+.mode-row .mode-btn { flex:1; border:1px solid var(--border); border-radius:8px; background:var(--bg2); padding:8px 4px; }
+.model-wrap { margin-bottom:12px; }
+.model3d { display:block; width:100%; border-radius:12px; border:1px solid var(--border);
+  background:linear-gradient(180deg,#081226,#040a14); cursor:grab; touch-action:none; }
+.model3d:active { cursor:grabbing; }
+.model-hint { text-align:center; font-size:11px; color:var(--muted); margin-top:7px; }
 /* Legend */
 .legend { display:flex; flex-direction:column; align-items:stretch; margin:0 14px 12px; gap:4px; }
 .legend-bar { height:8px; border-radius:4px; background:linear-gradient(to right,rgb(30,64,175),rgb(6,182,212),rgb(16,185,129),rgb(234,179,8),rgb(249,115,22),rgb(239,68,68)); }
 .legend-labels { display:flex; justify-content:space-between; font-size:10px; color:var(--muted); }
+.surf-legend { display:flex; flex-wrap:wrap; gap:6px 12px; margin:0 14px 12px; }
+.surf-key { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--muted); }
+.surf-key i { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
 /* Detail panel */
 .detail-panel { background:var(--card); border:1px solid var(--border); border-radius:14px; margin:0 14px 12px; padding:14px; }
 .detail-name { font-size:16px; font-weight:800; margin-bottom:2px; }
@@ -144,7 +145,8 @@ body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg
 .section-ttl { font-size:10px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); font-weight:700; margin:14px 0 6px; }
 /* resoil bars */
 .resoil-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
-.resoil-track { flex:1; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; }
+.resoil-track { flex:1; height:6px; background:var(--bg2); border-radius:3px; position:relative; }
+.resoil-ideal { position:absolute; top:-3px; bottom:-3px; left:0; border-right:2px dashed rgba(255,255,255,.55); }
 .resoil-fill { height:100%; border-radius:3px; }
 .resoil-wks { font-size:12px; font-weight:800; min-width:44px; text-align:right; }
 /* sparkline chart */
@@ -180,7 +182,11 @@ body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+//: Residual grime a verified-clean surface is expected to read (post-clean view).
+//: Matches the Post-Clean agent's PASS band — it is a target, not a measurement.
+const CLEAN_TARGET = 0.05;
 
 /* ══ DATA ═══════════════════════════════════════════════════════════════════ */
 const DEMO_JOB = {
@@ -220,48 +226,50 @@ const DEMO_TWIN = {
   ],
 };
 
-// ── SCAN_TWIN: emitted by the drone-scan pipeline (sim/export_twin.py) ─────────
-// Surface types, grime PROXY, temps, exclusion flags and the plan-view layout
-// are all produced by propwash/backend/fusion/scan_pipeline.py — not hand-placed.
-const SCAN_TWIN = {
-  property:"Carlsbad Commerce Center — Bldg C",
-  address:"2200 Faraday Ave, Carlsbad, CA",
-  captured:"2026-07-06",
-  source:"drone-scan pipeline",
-  cleanable:9, excluded:2,
-  zones:[
-    { id:"SOL-ROOF", label:"Rooftop solar array",  surface:"solar_panel",  solar:true,  excl:false, gPre:0.474, gPost:0.05, temp:38.0, moisture:0.098, pitch:31, conf:0.70, reason:"Conservative pick among viable ['solar_panel'].", x:0.40, y:0.167, w:0.20, h:0.10 },
-    { id:"RF-S",     label:"Roof — south slope",    surface:"clay_tile",    solar:false, excl:false, gPre:0.271, gPost:0.05, temp:53.6, moisture:0.0,   pitch:31, conf:0.30, reason:"Conservative pick among viable ['clay_tile','composite_shingle'].", x:0.333, y:0.167, w:0.333, h:0.167 },
-    { id:"RF-N",     label:"Roof — north slope",    surface:"clay_tile",    solar:false, excl:false, gPre:0.271, gPost:0.05, temp:53.6, moisture:0.0,   pitch:31, conf:0.30, reason:"Conservative pick among viable ['clay_tile','composite_shingle'].", x:0.333, y:0.667, w:0.333, h:0.167 },
-    { id:"WALL-S",   label:"Façade — south",        surface:"stucco",       solar:false, excl:false, gPre:0.224, gPost:0.05, temp:31.1, moisture:0.447, pitch:90, conf:0.75, reason:"Conservative pick among viable ['stucco'].", x:0.333, y:0.0,   w:0.333, h:0.09 },
-    { id:"WALL-N",   label:"Façade — north",        surface:"stucco",       solar:false, excl:false, gPre:0.224, gPost:0.05, temp:31.1, moisture:0.447, pitch:90, conf:0.75, reason:"Conservative pick among viable ['stucco'].", x:0.333, y:0.91,  w:0.333, h:0.09 },
-    { id:"WALL-E",   label:"Façade — east",         surface:"stucco",       solar:false, excl:false, gPre:0.224, gPost:0.05, temp:31.1, moisture:0.447, pitch:90, conf:0.75, reason:"Conservative pick among viable ['stucco'].", x:0.91,  y:0.333, w:0.09,  h:0.333 },
-    { id:"WALL-W",   label:"Façade — west",         surface:"stucco",       solar:false, excl:false, gPre:0.224, gPost:0.05, temp:31.1, moisture:0.447, pitch:90, conf:0.75, reason:"Conservative pick among viable ['stucco'].", x:0.0,   y:0.333, w:0.09,  h:0.333 },
-    { id:"WIN-S1",   label:"Window — south 1",      surface:"window_glass", solar:false, excl:false, gPre:0.488, gPost:0.05, temp:30.7, moisture:0.465, pitch:90, conf:0.60, reason:"Conservative pick among viable ['window_glass'].", x:0.267, y:0.0,  w:0.09, h:0.09 },
-    { id:"WIN-S2",   label:"Window — south 2",      surface:"window_glass", solar:false, excl:false, gPre:0.488, gPost:0.05, temp:30.7, moisture:0.465, pitch:90, conf:0.60, reason:"Conservative pick among viable ['window_glass'].", x:0.667, y:0.0,  w:0.09, h:0.09 },
-    { id:"CHIMNEY",  label:"Chimney",               surface:"exclusion",    solar:false, excl:true,  gPre:0.198, gPost:null, temp:45.3, moisture:0.0,   pitch:90, conf:0.90, reason:"Protrusion above roofline (6.5 m) — no spray.", x:0.733, y:0.45, w:0.10, h:0.10 },
-    { id:"HVAC",     label:"HVAC unit",             surface:"exclusion",    solar:false, excl:true,  gPre:0.365, gPost:null, temp:45.3, moisture:0.0,   pitch:0,  conf:0.75, reason:"Warm (45.3°C), uniform, flat, equipment-like — likely HVAC. Excluded from spray.", x:0.14, y:0.64, w:0.10, h:0.10 },
-  ],
-};
+// ==HOUSE:BEGIN== generated by sim/export_house_3d.py — do not hand-edit
+const HOUSE = {"property":"Ocean Hills residence \u2014 single-family","address":"3412 Seacrest Dr, Carlsbad, CA","captured":"2026-07-06","faces":[{"zone":"RF-S","v":[[0,0,3.0],[12.0,0,3.0],[12.0,4.5,5.4]],"g":0.248,"excl":false,"solar":false,"surf":"clay_tile","temp":53.6},{"zone":"RF-S","v":[[0,0,3.0],[12.0,4.5,5.4],[0,4.5,5.4]],"g":0.248,"excl":false,"solar":false,"surf":"clay_tile","temp":53.6},{"zone":"RF-N","v":[[0,9.0,3.0],[12.0,9.0,3.0],[12.0,4.5,5.4]],"g":0.248,"excl":false,"solar":false,"surf":"clay_tile","temp":53.6},{"zone":"RF-N","v":[[0,9.0,3.0],[12.0,4.5,5.4],[0,4.5,5.4]],"g":0.248,"excl":false,"solar":false,"surf":"clay_tile","temp":53.6},{"zone":"GABLE-W","v":[[0,0,3.0],[0,9.0,3.0],[0,4.5,5.4]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"GABLE-E","v":[[12.0,0,3.0],[12.0,9.0,3.0],[12.0,4.5,5.4]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"WALL-S","v":[[0,0,0],[12.0,0,0],[12.0,0,3.0]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"WALL-S","v":[[0,0,0],[12.0,0,3.0],[0,0,3.0]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"WALL-N","v":[[0,9.0,0],[12.0,9.0,0],[12.0,9.0,3.0]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"WALL-N","v":[[0,9.0,0],[12.0,9.0,3.0],[0,9.0,3.0]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"WALL-W","v":[[0,0,0],[0,9.0,0],[0,9.0,3.0]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"WALL-W","v":[[0,0,0],[0,9.0,3.0],[0,0,3.0]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"DOOR","v":[[5.2,-0.03,0],[6.4,-0.03,0],[6.4,-0.03,2.1]],"g":0.522,"excl":false,"solar":false,"surf":"window_glass","temp":31.1},{"zone":"DOOR","v":[[5.2,-0.03,0],[6.4,-0.03,2.1],[5.2,-0.03,2.1]],"g":0.522,"excl":false,"solar":false,"surf":"window_glass","temp":31.1},{"zone":"WIN-S1","v":[[1.4,-0.03,1.0],[3.2,-0.03,1.0],[3.2,-0.03,2.3]],"g":0.485,"excl":false,"solar":false,"surf":"window_glass","temp":30.7},{"zone":"WIN-S1","v":[[1.4,-0.03,1.0],[3.2,-0.03,2.3],[1.4,-0.03,2.3]],"g":0.485,"excl":false,"solar":false,"surf":"window_glass","temp":30.7},{"zone":"WIN-S2","v":[[8.0,-0.03,1.0],[9.8,-0.03,1.0],[9.8,-0.03,2.3]],"g":0.485,"excl":false,"solar":false,"surf":"window_glass","temp":30.7},{"zone":"WIN-S2","v":[[8.0,-0.03,1.0],[9.8,-0.03,2.3],[8.0,-0.03,2.3]],"g":0.485,"excl":false,"solar":false,"surf":"window_glass","temp":30.7},{"zone":"WIN-W","v":[[-0.03,3.0,1.0],[-0.03,5.2,1.0],[-0.03,5.2,2.3]],"g":0.485,"excl":false,"solar":false,"surf":"window_glass","temp":30.7},{"zone":"WIN-W","v":[[-0.03,3.0,1.0],[-0.03,5.2,2.3],[-0.03,3.0,2.3]],"g":0.485,"excl":false,"solar":false,"surf":"window_glass","temp":30.7},{"zone":"WIN-N","v":[[4.0,9.03,1.0],[7.2,9.03,1.0],[7.2,9.03,2.3]],"g":0.485,"excl":false,"solar":false,"surf":"window_glass","temp":30.7},{"zone":"WIN-N","v":[[4.0,9.03,1.0],[7.2,9.03,2.3],[4.0,9.03,2.3]],"g":0.485,"excl":false,"solar":false,"surf":"window_glass","temp":30.7},{"zone":"GAR-RF-S","v":[[12.0,0,2.7],[18.0,0,2.7],[18.0,3.0,4.4]],"g":0.248,"excl":false,"solar":false,"surf":"clay_tile","temp":53.6},{"zone":"GAR-RF-S","v":[[12.0,0,2.7],[18.0,3.0,4.4],[12.0,3.0,4.4]],"g":0.248,"excl":false,"solar":false,"surf":"clay_tile","temp":53.6},{"zone":"GAR-RF-N","v":[[12.0,6.0,2.7],[18.0,6.0,2.7],[18.0,3.0,4.4]],"g":0.248,"excl":false,"solar":false,"surf":"clay_tile","temp":53.6},{"zone":"GAR-RF-N","v":[[12.0,6.0,2.7],[18.0,3.0,4.4],[12.0,3.0,4.4]],"g":0.248,"excl":false,"solar":false,"surf":"clay_tile","temp":53.6},{"zone":"GAR-WALL-S","v":[[12.0,0,0],[18.0,0,0],[18.0,0,2.7]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"GAR-WALL-S","v":[[12.0,0,0],[18.0,0,2.7],[12.0,0,2.7]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"GAR-WALL-E","v":[[18.0,0,0],[18.0,6.0,0],[18.0,6.0,2.7]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"GAR-WALL-E","v":[[18.0,0,0],[18.0,6.0,2.7],[18.0,0,2.7]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"GAR-WALL-N","v":[[12.0,6.0,0],[18.0,6.0,0],[18.0,6.0,2.7]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"GAR-WALL-N","v":[[12.0,6.0,0],[18.0,6.0,2.7],[12.0,6.0,2.7]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"GAR-GABLE-E","v":[[18.0,0,2.7],[18.0,6.0,2.7],[18.0,3.0,4.4]],"g":0.224,"excl":false,"solar":false,"surf":"stucco","temp":31.1},{"zone":"GAR-DOOR","v":[[12.6,-0.03,0],[17.4,-0.03,0],[17.4,-0.03,2.2]],"g":0.576,"excl":false,"solar":false,"surf":"window_glass","temp":31.1},{"zone":"GAR-DOOR","v":[[12.6,-0.03,0],[17.4,-0.03,2.2],[12.6,-0.03,2.2]],"g":0.576,"excl":false,"solar":false,"surf":"window_glass","temp":31.1},{"zone":"SOL-ROOF","v":[[2.5,1.2,3.72],[9.0,1.2,3.72],[9.0,3.4,4.68]],"g":0.474,"excl":false,"solar":true,"surf":"solar_panel","temp":38.0},{"zone":"SOL-ROOF","v":[[2.5,1.2,3.72],[9.0,3.4,4.68],[2.5,3.4,4.68]],"g":0.474,"excl":false,"solar":true,"surf":"solar_panel","temp":38.0},{"zone":"CHIMNEY","v":[[9.6,4.0,5.2],[10.5,4.0,5.2],[10.5,4.0,6.800000000000001]],"g":0.194,"excl":true,"solar":false,"surf":"exclusion","temp":45.3},{"zone":"CHIMNEY","v":[[9.6,4.0,5.2],[10.5,4.0,6.800000000000001],[9.6,4.0,6.800000000000001]],"g":0.194,"excl":true,"solar":false,"surf":"exclusion","temp":45.3},{"zone":"HVAC","v":[[0.8,9.6,0],[1.9,9.6,0],[1.9,10.7,0]],"g":0.352,"excl":true,"solar":false,"surf":"exclusion","temp":45.3},{"zone":"HVAC","v":[[0.8,9.6,0],[1.9,10.7,0],[0.8,10.7,0]],"g":0.352,"excl":true,"solar":false,"surf":"exclusion","temp":45.3}],"zones":{"CHIMNEY":{"label":"Chimney","surf":"exclusion","g":0.194,"excl":true,"solar":false,"temp":45.3,"moisture":0.0,"pitch":90.0,"conf":0.9,"reason":"Protrusion above roofline (5.73 m) \u2014 no spray.","p":null,"chem":null,"nozzle":null,"dwell":null,"standoff":null,"mix":null},"DOOR":{"label":"Front door","surf":"window_glass","g":0.522,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.3,"reason":"RGB/geometry disagree \u2014 conservative geometry fallback.","p":2.2,"chem":"ammonia_free","nozzle":5,"dwell":17,"standoff":0.6,"mix":0.2},"GABLE-E":{"label":"Gable end \u2014 east","surf":"stucco","g":0.224,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.75,"reason":"Conservative pick among viable ['stucco'].","p":4.0,"chem":"standard_degreaser","nozzle":3,"dwell":30,"standoff":1.0,"mix":0.3},"GABLE-W":{"label":"Gable end \u2014 west","surf":"stucco","g":0.224,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.75,"reason":"Conservative pick among viable ['stucco'].","p":4.0,"chem":"standard_degreaser","nozzle":3,"dwell":30,"standoff":1.0,"mix":0.3},"GAR-DOOR":{"label":"Garage door","surf":"window_glass","g":0.576,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.6,"reason":"Conservative pick among viable ['window_glass'].","p":2.2,"chem":"ammonia_free","nozzle":5,"dwell":17,"standoff":0.6,"mix":0.2},"GAR-GABLE-E":{"label":"Garage gable end \u2014 east","surf":"stucco","g":0.224,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.75,"reason":"Conservative pick among viable ['stucco'].","p":4.0,"chem":"standard_degreaser","nozzle":3,"dwell":30,"standoff":1.0,"mix":0.3},"GAR-RF-N":{"label":"Garage roof \u2014 north slope","surf":"clay_tile","g":0.248,"excl":false,"solar":false,"temp":53.6,"moisture":0.0,"pitch":29.5,"conf":0.3,"reason":"Conservative pick among viable ['clay_tile', 'composite_shingle'].","p":5.0,"chem":"standard_degreaser","nozzle":2,"dwell":35,"standoff":1.2,"mix":0.3},"GAR-RF-S":{"label":"Garage roof \u2014 south slope","surf":"clay_tile","g":0.248,"excl":false,"solar":false,"temp":53.6,"moisture":0.0,"pitch":29.5,"conf":0.3,"reason":"Conservative pick among viable ['clay_tile', 'composite_shingle'].","p":5.0,"chem":"standard_degreaser","nozzle":2,"dwell":35,"standoff":1.2,"mix":0.3},"GAR-WALL-E":{"label":"Garage wall \u2014 east","surf":"stucco","g":0.224,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.75,"reason":"Conservative pick among viable ['stucco'].","p":4.0,"chem":"standard_degreaser","nozzle":3,"dwell":30,"standoff":1.0,"mix":0.3},"GAR-WALL-N":{"label":"Garage wall \u2014 north","surf":"stucco","g":0.224,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.75,"reason":"Conservative pick among viable ['stucco'].","p":4.0,"chem":"standard_degreaser","nozzle":3,"dwell":30,"standoff":1.0,"mix":0.3},"GAR-WALL-S":{"label":"Garage wall \u2014 south","surf":"stucco","g":0.224,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.75,"reason":"Conservative pick among viable ['stucco'].","p":4.0,"chem":"standard_degreaser","nozzle":3,"dwell":30,"standoff":1.0,"mix":0.3},"HVAC":{"label":"HVAC condenser","surf":"exclusion","g":0.352,"excl":true,"solar":false,"temp":45.3,"moisture":0.0,"pitch":0.0,"conf":0.75,"reason":"Warm (45.34\u00b0C), uniform, flat, equipment-like \u2014 likely HVAC. Excluded from spray.","p":null,"chem":null,"nozzle":null,"dwell":null,"standoff":null,"mix":null},"RF-N":{"label":"Roof \u2014 north slope","surf":"clay_tile","g":0.248,"excl":false,"solar":false,"temp":53.6,"moisture":0.0,"pitch":28.1,"conf":0.3,"reason":"Conservative pick among viable ['clay_tile', 'composite_shingle'].","p":5.0,"chem":"standard_degreaser","nozzle":2,"dwell":35,"standoff":1.2,"mix":0.3},"RF-S":{"label":"Roof \u2014 south slope","surf":"clay_tile","g":0.248,"excl":false,"solar":false,"temp":53.6,"moisture":0.0,"pitch":28.1,"conf":0.3,"reason":"Conservative pick among viable ['clay_tile', 'composite_shingle'].","p":5.0,"chem":"standard_degreaser","nozzle":2,"dwell":35,"standoff":1.2,"mix":0.3},"SOL-ROOF":{"label":"Rooftop solar array","surf":"solar_panel","g":0.474,"excl":false,"solar":true,"temp":38.0,"moisture":0.098,"pitch":23.6,"conf":0.7,"reason":"Conservative pick among viable ['solar_panel'].","p":1.8,"chem":"di_water_only","nozzle":4,"dwell":20,"standoff":0.8,"mix":0.0},"WALL-N":{"label":"Fa\u00e7ade \u2014 north (rear)","surf":"stucco","g":0.224,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.75,"reason":"Conservative pick among viable ['stucco'].","p":4.0,"chem":"standard_degreaser","nozzle":3,"dwell":30,"standoff":1.0,"mix":0.3},"WALL-S":{"label":"Fa\u00e7ade \u2014 south (front)","surf":"stucco","g":0.224,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.75,"reason":"Conservative pick among viable ['stucco'].","p":4.0,"chem":"standard_degreaser","nozzle":3,"dwell":30,"standoff":1.0,"mix":0.3},"WALL-W":{"label":"Fa\u00e7ade \u2014 west","surf":"stucco","g":0.224,"excl":false,"solar":false,"temp":31.1,"moisture":0.447,"pitch":90.0,"conf":0.75,"reason":"Conservative pick among viable ['stucco'].","p":4.0,"chem":"standard_degreaser","nozzle":3,"dwell":30,"standoff":1.0,"mix":0.3},"WIN-N":{"label":"Window \u2014 rear","surf":"window_glass","g":0.485,"excl":false,"solar":false,"temp":30.7,"moisture":0.465,"pitch":90.0,"conf":0.6,"reason":"Conservative pick among viable ['window_glass'].","p":2.2,"chem":"ammonia_free","nozzle":5,"dwell":17,"standoff":0.6,"mix":0.2},"WIN-S1":{"label":"Window \u2014 front left","surf":"window_glass","g":0.485,"excl":false,"solar":false,"temp":30.7,"moisture":0.465,"pitch":90.0,"conf":0.6,"reason":"Conservative pick among viable ['window_glass'].","p":2.2,"chem":"ammonia_free","nozzle":5,"dwell":17,"standoff":0.6,"mix":0.2},"WIN-S2":{"label":"Window \u2014 front right","surf":"window_glass","g":0.485,"excl":false,"solar":false,"temp":30.7,"moisture":0.465,"pitch":90.0,"conf":0.6,"reason":"Conservative pick among viable ['window_glass'].","p":2.2,"chem":"ammonia_free","nozzle":5,"dwell":17,"standoff":0.6,"mix":0.2},"WIN-W":{"label":"Window \u2014 west","surf":"window_glass","g":0.485,"excl":false,"solar":false,"temp":30.7,"moisture":0.465,"pitch":90.0,"conf":0.6,"reason":"Conservative pick among viable ['window_glass'].","p":2.2,"chem":"ammonia_free","nozzle":5,"dwell":17,"standoff":0.6,"mix":0.2}},"phases":{"SOL-ROOF":[{"ph":"pre_soak","p":0.99,"c":"di_water_only"},{"ph":"chemical","p":1.26,"c":"di_water_only"},{"ph":"rinse","p":1.53,"c":"di_water_only"}],"RF-N":[{"ph":"pre_soak","p":2.75,"c":"di_water_only"},{"ph":"chemical","p":3.5,"c":"standard_degreaser"},{"ph":"rinse","p":4.25,"c":"di_water_only"}],"RF-S":[{"ph":"pre_soak","p":2.75,"c":"di_water_only"},{"ph":"chemical","p":3.5,"c":"standard_degreaser"},{"ph":"rinse","p":4.25,"c":"di_water_only"}],"GAR-RF-N":[{"ph":"pre_soak","p":2.75,"c":"di_water_only"},{"ph":"chemical","p":3.5,"c":"standard_degreaser"},{"ph":"rinse","p":4.25,"c":"di_water_only"}],"GAR-RF-S":[{"ph":"pre_soak","p":2.75,"c":"di_water_only"},{"ph":"chemical","p":3.5,"c":"standard_degreaser"},{"ph":"rinse","p":4.25,"c":"di_water_only"}],"GABLE-E":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"GABLE-W":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"GAR-GABLE-E":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"WIN-N":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}],"WIN-S1":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}],"WIN-S2":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}],"WIN-W":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}],"WALL-N":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"WALL-S":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"WALL-W":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"GAR-WALL-E":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"GAR-WALL-N":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"GAR-WALL-S":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"GAR-DOOR":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}],"DOOR":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}]},"schedule":{"1":111.3,"2":111.3,"3":111.3},"scheduleIdeal":{"1":111.3,"2":55.9,"3":37.5},"maxConcurrent":1,"separations":[{"zone_a":"DOOR","zone_b":"GABLE-E","separation_m":-2.11,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"GABLE-W","separation_m":-2.41,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"GAR-DOOR","separation_m":0.1,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"GAR-GABLE-E","separation_m":3.95,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"GAR-RF-N","separation_m":0.9,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"GAR-RF-S","separation_m":-0.58,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"GAR-WALL-E","separation_m":3.51,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"GAR-WALL-N","separation_m":1.78,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"GAR-WALL-S","separation_m":-0.97,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"RF-N","separation_m":-4.54,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"RF-S","separation_m":-8.77,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"SOL-ROOF","separation_m":-5.4,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"WALL-N","separation_m":-2.38,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"WALL-S","separation_m":-12.41,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"WALL-W","separation_m":-3.05,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"WIN-N","separation_m":2.1,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"WIN-S1","separation_m":-4.03,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"WIN-S2","separation_m":-4.42,"concurrent_ok":false},{"zone_a":"DOOR","zone_b":"WIN-W","separation_m":0.27,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"GABLE-W","separation_m":-1.33,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"GAR-DOOR","separation_m":-6.59,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"GAR-GABLE-E","separation_m":-7.57,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"GAR-RF-N","separation_m":-12.23,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"GAR-RF-S","separation_m":-10.17,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"GAR-WALL-E","separation_m":-7.15,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"GAR-WALL-N","separation_m":-9.65,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"GAR-WALL-S","separation_m":-7.45,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"RF-N","separation_m":-9.77,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"RF-S","separation_m":-9.77,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"SOL-ROOF","separation_m":-6.22,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"WALL-N","separation_m":-7.55,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"WALL-S","separation_m":-7.55,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"WALL-W","separation_m":-1.16,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"WIN-N","separation_m":-2.64,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"WIN-S1","separation_m":0.74,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"WIN-S2","separation_m":-4.35,"concurrent_ok":false},{"zone_a":"GABLE-E","zone_b":"WIN-W","separation_m":2.31,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"GAR-DOOR","separation_m":4.16,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"GAR-GABLE-E","separation_m":6.28,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"GAR-RF-N","separation_m":1.65,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"GAR-RF-S","separation_m":2.05,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"GAR-WALL-E","separation_m":6.26,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"GAR-WALL-N","separation_m":2.45,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"GAR-WALL-S","separation_m":3.17,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"RF-N","separation_m":-9.77,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"RF-S","separation_m":-9.77,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"SOL-ROOF","separation_m":-6.68,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"WALL-N","separation_m":-7.55,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"WALL-S","separation_m":-7.55,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"WALL-W","separation_m":-12.71,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"WIN-N","separation_m":-3.26,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"WIN-S1","separation_m":-4.78,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"WIN-S2","separation_m":0.04,"concurrent_ok":false},{"zone_a":"GABLE-W","zone_b":"WIN-W","separation_m":-8.93,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"GAR-GABLE-E","separation_m":-5.45,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"GAR-RF-N","separation_m":-5.19,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"GAR-RF-S","separation_m":-8.17,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"GAR-WALL-E","separation_m":-6.21,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"GAR-WALL-N","separation_m":-3.98,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"GAR-WALL-S","separation_m":-11.2,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"RF-N","separation_m":-2.26,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"RF-S","separation_m":-4.81,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"SOL-ROOF","separation_m":-1.16,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"WALL-N","separation_m":-0.52,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"WALL-S","separation_m":-5.44,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"WALL-W","separation_m":3.79,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"WIN-N","separation_m":4.31,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"WIN-S1","separation_m":3.7,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"WIN-S2","separation_m":-2.88,"concurrent_ok":false},{"zone_a":"GAR-DOOR","zone_b":"WIN-W","separation_m":7.17,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"GAR-RF-N","separation_m":-8.17,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"GAR-RF-S","separation_m":-8.17,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"GAR-WALL-E","separation_m":-10.18,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"GAR-WALL-N","separation_m":-6.37,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"GAR-WALL-S","separation_m":-6.37,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"RF-N","separation_m":-2.05,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"RF-S","separation_m":-2.68,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"SOL-ROOF","separation_m":0.97,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"WALL-N","separation_m":-0.42,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"WALL-S","separation_m":-1.57,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"WALL-W","separation_m":6.28,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"WIN-N","separation_m":4.6,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"WIN-S1","separation_m":7.33,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"WIN-S2","separation_m":1.03,"concurrent_ok":false},{"zone_a":"GAR-GABLE-E","zone_b":"WIN-W","separation_m":9.72,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"GAR-RF-S","separation_m":-9.07,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"GAR-WALL-E","separation_m":-7.41,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"GAR-WALL-N","separation_m":-9.25,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"GAR-WALL-S","separation_m":-6.04,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"RF-N","separation_m":-7.15,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"RF-S","separation_m":-6.75,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"SOL-ROOF","separation_m":-3.18,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"WALL-N","separation_m":-5.23,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"WALL-S","separation_m":-4.56,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"WALL-W","separation_m":1.85,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"WIN-N","separation_m":-0.24,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"WIN-S1","separation_m":3.82,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"WIN-S2","separation_m":-1.53,"concurrent_ok":false},{"zone_a":"GAR-RF-N","zone_b":"WIN-W","separation_m":5.33,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"GAR-WALL-E","separation_m":-7.41,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"GAR-WALL-N","separation_m":-6.04,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"GAR-WALL-S","separation_m":-9.25,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"RF-N","separation_m":-5.31,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"RF-S","separation_m":-7.37,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"SOL-ROOF","separation_m":-3.64,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"WALL-N","separation_m":-2.69,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"WALL-S","separation_m":-6.21,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"WALL-W","separation_m":2.24,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"WIN-N","separation_m":2.16,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"WIN-S1","separation_m":2.67,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"WIN-S2","separation_m":-3.51,"concurrent_ok":false},{"zone_a":"GAR-RF-S","zone_b":"WIN-W","separation_m":5.63,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"GAR-WALL-N","separation_m":-7.03,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"GAR-WALL-S","separation_m":-7.03,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"RF-N","separation_m":-1.79,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"RF-S","separation_m":-2.4,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"SOL-ROOF","separation_m":1.19,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"WALL-N","separation_m":-0.77,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"WALL-S","separation_m":-1.93,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"WALL-W","separation_m":5.96,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"WIN-N","separation_m":4.26,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"WIN-S1","separation_m":7.01,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"WIN-S2","separation_m":0.65,"concurrent_ok":false},{"zone_a":"GAR-WALL-E","zone_b":"WIN-W","separation_m":9.41,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"GAR-WALL-S","separation_m":-4.69,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"RF-N","separation_m":-6.22,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"RF-S","separation_m":-4.86,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"SOL-ROOF","separation_m":-1.45,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"WALL-N","separation_m":-6.05,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"WALL-S","separation_m":-3.49,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"WALL-W","separation_m":2.1,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"WIN-N","separation_m":-0.93,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"WIN-S1","separation_m":4.73,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"WIN-S2","separation_m":-0.31,"concurrent_ok":false},{"zone_a":"GAR-WALL-N","zone_b":"WIN-W","separation_m":5.65,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"RF-N","separation_m":-3.16,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"RF-S","separation_m":-5.87,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"SOL-ROOF","separation_m":-2.21,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"WALL-N","separation_m":-1.32,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"WALL-S","separation_m":-6.53,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"WALL-W","separation_m":2.82,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"WIN-N","separation_m":3.5,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"WIN-S1","separation_m":2.62,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"WIN-S2","separation_m":-3.97,"concurrent_ok":false},{"zone_a":"GAR-WALL-S","zone_b":"WIN-W","separation_m":6.19,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"RF-S","separation_m":-13.77,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"SOL-ROOF","separation_m":-10.61,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-N","separation_m":-14.31,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-S","separation_m":-9.77,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-W","separation_m":-9.04,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WIN-N","separation_m":-9.76,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WIN-S1","separation_m":-3.96,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WIN-S2","separation_m":-4.24,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WIN-W","separation_m":-5.41,"concurrent_ok":false},{"zone_a":"RF-S","zone_b":"SOL-ROOF","separation_m":-15.49,"concurrent_ok":false},{"zone_a":"RF-S","zone_b":"WALL-N","separation_m":-9.77,"concurrent_ok":false},{"zone_a":"RF-S","zone_b":"WALL-S","separation_m":-14.31,"concurrent_ok":false},{"zone_a":"RF-S","zone_b":"WALL-W","separation_m":-9.04,"concurrent_ok":false},{"zone_a":"RF-S","zone_b":"WIN-N","separation_m":-5.3,"concurrent_ok":false},{"zone_a":"RF-S","zone_b":"WIN-S1","separation_m":-7.8,"concurrent_ok":false},{"zone_a":"RF-S","zone_b":"WIN-S2","separation_m":-8.29,"concurrent_ok":false},{"zone_a":"RF-S","zone_b":"WIN-W","separation_m":-5.69,"concurrent_ok":false},{"zone_a":"SOL-ROOF","zone_b":"WALL-N","separation_m":-6.72,"concurrent_ok":false},{"zone_a":"SOL-ROOF","zone_b":"WALL-S","separation_m":-10.89,"concurrent_ok":false},{"zone_a":"SOL-ROOF","zone_b":"WALL-W","separation_m":-6.02,"concurrent_ok":false},{"zone_a":"SOL-ROOF","zone_b":"WIN-N","separation_m":-2.26,"concurrent_ok":false},{"zone_a":"SOL-ROOF","zone_b":"WIN-S1","separation_m":-4.55,"concurrent_ok":false},{"zone_a":"SOL-ROOF","zone_b":"WIN-S2","separation_m":-4.73,"concurrent_ok":false},{"zone_a":"SOL-ROOF","zone_b":"WIN-W","separation_m":-2.67,"concurrent_ok":false},{"zone_a":"WALL-N","zone_b":"WALL-S","separation_m":-7.38,"concurrent_ok":false},{"zone_a":"WALL-N","zone_b":"WALL-W","separation_m":-8.04,"concurrent_ok":false},{"zone_a":"WALL-N","zone_b":"WIN-N","separation_m":-12.98,"concurrent_ok":false},{"zone_a":"WALL-N","zone_b":"WIN-S1","separation_m":-1.68,"concurrent_ok":false},{"zone_a":"WALL-N","zone_b":"WIN-S2","separation_m":-1.92,"concurrent_ok":false},{"zone_a":"WALL-N","zone_b":"WIN-W","separation_m":-4.22,"concurrent_ok":false},{"zone_a":"WALL-S","zone_b":"WALL-W","separation_m":-8.04,"concurrent_ok":false},{"zone_a":"WALL-S","zone_b":"WIN-N","separation_m":-2.9,"concurrent_ok":false},{"zone_a":"WALL-S","zone_b":"WIN-S1","separation_m":-9.21,"concurrent_ok":false},{"zone_a":"WALL-S","zone_b":"WIN-S2","separation_m":-10.01,"concurrent_ok":false},{"zone_a":"WALL-S","zone_b":"WIN-W","separation_m":-4.73,"concurrent_ok":false},{"zone_a":"WALL-W","zone_b":"WIN-N","separation_m":-3.74,"concurrent_ok":false},{"zone_a":"WALL-W","zone_b":"WIN-S1","separation_m":-5.39,"concurrent_ok":false},{"zone_a":"WALL-W","zone_b":"WIN-S2","separation_m":-0.35,"concurrent_ok":false},{"zone_a":"WALL-W","zone_b":"WIN-W","separation_m":-11.1,"concurrent_ok":false},{"zone_a":"WIN-N","zone_b":"WIN-S1","separation_m":2.69,"concurrent_ok":false},{"zone_a":"WIN-N","zone_b":"WIN-S2","separation_m":2.69,"concurrent_ok":false},{"zone_a":"WIN-N","zone_b":"WIN-W","separation_m":0.08,"concurrent_ok":false},{"zone_a":"WIN-S1","zone_b":"WIN-S2","separation_m":-0.89,"concurrent_ok":false},{"zone_a":"WIN-S1","zone_b":"WIN-W","separation_m":-2.08,"concurrent_ok":false},{"zone_a":"WIN-S2","zone_b":"WIN-W","separation_m":2.99,"concurrent_ok":false}],"counts":{"faces":41,"zones":22,"clean":20,"excl":2,"passes":60}};
+// ==HOUSE:END==
+
+// Everything below is DERIVED from HOUSE. Geometry, surface classes, the grime
+// proxy, prescriptions, treatment phases and the fleet schedule all come from the
+// pipeline — this file reshapes them for display and invents nothing.
+const SCAN_TWIN = (()=>{
+  const zones = Object.keys(HOUSE.zones).map(id=>{
+    const z = HOUSE.zones[id];
+    return {
+      id, label:z.label, surface:z.surf, solar:z.solar, excl:z.excl,
+      gPre:z.g, gPost:z.excl?null:CLEAN_TARGET,
+      temp:z.temp, moisture:z.moisture, pitch:z.pitch, conf:z.conf, reason:z.reason,
+      plan: z.excl ? null : {
+        pressure:z.p, chemical:z.chem, nozzle:z.nozzle,
+        dwell:z.dwell, standoff:z.standoff, mix:z.mix,
+      },
+    };
+  });
+  return {
+    property:HOUSE.property, address:HOUSE.address, captured:HOUSE.captured,
+    source:"drone-scan pipeline",
+    cleanable:HOUSE.counts.clean, excluded:HOUSE.counts.excl,
+    zones,
+  };
+})();
 
 const prettySurface = s => s.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
 
-// Cleaning plan per surface — the prescriptions plan_from_scan() produced from the
-// versioned surface table (propwash/backend/planning). Exclusion zones get no plan.
-const PLAN_BY_SURFACE = {
-  solar_panel:  { pressure:1.8, chemical:"DI water only", nozzle:"#4 · 25° · 0.35 mm", dwell:20, standoff:0.8 },
-  clay_tile:    { pressure:5.0, chemical:"Standard degreaser 30%", nozzle:"#2 · 40° · 0.5 mm", dwell:35, standoff:1.2 },
-  stucco:       { pressure:4.0, chemical:"Standard degreaser 30%", nozzle:"#3 · 40° · 0.6 mm", dwell:30, standoff:1.0 },
-  window_glass: { pressure:2.2, chemical:"Ammonia-free 20%",       nozzle:"#5 · 20° · 0.35 mm", dwell:17, standoff:0.6 },
-};
-const zonePlan = z => z.excl ? null : PLAN_BY_SURFACE[z.surface];
+// Nozzle catalogue — maps the prescription's nozzle_id to what the operator fits.
+// Kept here because it describes physical kit, not a pipeline decision.
+const NOZZLES = { 2:"#2 · 40° · 0.5 mm", 3:"#3 · 40° · 0.6 mm",
+                  4:"#4 · 25° · 0.35 mm", 5:"#5 · 20° · 0.35 mm" };
+const nozzleLabel = id => NOZZLES[id] || `#${id}`;
+const zonePlan = z => z.plan;
 
-// ── Treatment phases + fleet scheduling (from the pipeline) ───────────────────
-const PHASES = {"SOL-ROOF":[{"ph":"pre_soak","p":0.99,"c":"di_water_only"},{"ph":"chemical","p":1.26,"c":"di_water_only"},{"ph":"rinse","p":1.53,"c":"di_water_only"}],"RF-N":[{"ph":"pre_soak","p":2.75,"c":"di_water_only"},{"ph":"chemical","p":3.5,"c":"standard_degreaser"},{"ph":"rinse","p":4.25,"c":"di_water_only"}],"RF-S":[{"ph":"pre_soak","p":2.75,"c":"di_water_only"},{"ph":"chemical","p":3.5,"c":"standard_degreaser"},{"ph":"rinse","p":4.25,"c":"di_water_only"}],"WIN-S1":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}],"WIN-S2":[{"ph":"pre_soak","p":1.21,"c":"di_water_only"},{"ph":"chemical","p":1.54,"c":"ammonia_free"},{"ph":"rinse","p":1.87,"c":"di_water_only"}],"WALL-E":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"WALL-N":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"WALL-S":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}],"WALL-W":[{"ph":"pre_soak","p":2.2,"c":"di_water_only"},{"ph":"chemical","p":2.8,"c":"standard_degreaser"},{"ph":"rinse","p":3.4,"c":"di_water_only"}]};
+// ── Treatment phases + fleet scheduling — straight from HOUSE ─────────────────
+const PHASES = HOUSE.phases;
 const FLEET = {
-  schedule: {"1":60.6,"2":31.7,"3":21.7},
-  maxConcurrent: 1,
-  separations: [{"zone_a":"RF-N","zone_b":"RF-S","separation_m":-12.98,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"SOL-ROOF","separation_m":-9.51,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-E","separation_m":-10.86,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-N","separation_m":-13.3,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-S","separation_m":-9.13,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WALL-W","separation_m":-10.86,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WIN-S1","separation_m":-4.61,"concurrent_ok":false},{"zone_a":"RF-N","zone_b":"WIN-S2","separation_m":-4.61,"concurrent_ok":false}]
+  schedule: HOUSE.schedule,
+  scheduleIdeal: HOUSE.scheduleIdeal,
+  maxConcurrent: HOUSE.maxConcurrent,
+  separations: HOUSE.separations.slice(0, 8),
 };
 const PHASE_META = {
   pre_soak: ["Pre-soak", "var(--cyan)", "Wet the surface — protects substrate, loosens debris"],
@@ -269,7 +277,10 @@ const PHASE_META = {
   dwell:    ["Dwell",    "var(--muted)", "Chemical works — no aircraft needed"],
   rinse:    ["Rinse",    "var(--green)", "Wash down — water only"],
 };
-const prettyChem = c => c.replace(/_/g," ");
+const CHEM_LABELS = { di_water_only:"DI water only", standard_degreaser:"Standard degreaser",
+                      eco_degreaser:"Eco degreaser", ammonia_free:"Ammonia-free",
+                      degreaser_solvent:"Degreaser + solvent" };
+const prettyChem = c => CHEM_LABELS[c] || c.replace(/_/g," ");
 
 const DEMO_HUB = {
   summary:{ jobs:3, zones:9, fpr:0.72, dataPoints:1847, revenueYTD:28400, roiYTD:141200 },
@@ -364,10 +375,12 @@ const SCAN_JOB = (()=>{
   const ord = s => ({solar_panel:0, clay_tile:1, concrete_tile:1, composite_shingle:1, stucco:2, window_glass:3}[s] ?? 9);
   const clean = SCAN_TWIN.zones.filter(z=>!z.excl).slice().sort((a,b)=>ord(a.surface)-ord(b.surface));
   const zones = clean.map(z=>{
-    const pl = PLAN_BY_SURFACE[z.surface];
+    const pl = z.plan;
     return {
       id:z.id, label:z.label, surface:prettySurface(z.surface), solar:z.solar,
-      nozzle:pl.nozzle, chemical:pl.chemical, pressure:`${pl.pressure} bar`,
+      nozzle:nozzleLabel(pl.nozzle),
+      chemical:prettyChem(pl.chemical)+(pl.mix?` ${Math.round(pl.mix*100)}%`:""),
+      pressure:`${pl.pressure} bar`,
       standoff:`${pl.standoff} m`, pattern:"N–S sweep",
       dwell:Math.max(4,Math.min(8,Math.round(pl.dwell/4))),   // scaled for the demo
       realDwell:pl.dwell,
@@ -514,16 +527,183 @@ function Verdict({zone,pass,isLast,onNext,onRetry}) {
 }
 
 /* ══ TWIN VIEWER ════════════════════════════════════════════════════════════ */
-const MAP_W=300, MAP_H=224;      // plan-view canvas (px)
 const EXCL_GREY="#5a6b82";
+
+// Surface-type palette for the "Surface" render mode.
+const SURF_RGB = { solar_panel:[56,120,200], window_glass:[90,170,210], stucco:[200,190,170],
+                   clay_tile:[190,110,80], composite_shingle:[130,110,95], exclusion:[90,107,130] };
+
+// ── Model3D: the reconstructed structure, rendered from the scan's own faces ──
+// Painter's-algorithm canvas renderer. Not decorative — these are the triangles
+// the fusion pipeline classified, coloured by whatever the current mode measures.
+const RAMP_RGB = RAMP;
+function rampRgb(v){
+  const c=Math.max(0,Math.min(1,v));
+  for(let i=1;i<RAMP_RGB.length;i++){
+    if(c<=RAMP_RGB[i][0]){
+      const t=(c-RAMP_RGB[i-1][0])/(RAMP_RGB[i][0]-RAMP_RGB[i-1][0]);
+      const a=RAMP_RGB[i-1][1], b=RAMP_RGB[i][1];
+      return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+    }
+  }
+  return [239,68,68];
+}
+
+function Model3D({ mode, sel, onPick }) {
+  const ref = useRef(null);
+  const cam = useRef({ az:-0.72, el:0.42 });
+  const drag = useRef(null);
+
+  // Model centroid — computed once; the camera orbits it.
+  const centre = useMemo(()=>{
+    let x=0,y=0,z=0,n=0;
+    HOUSE.faces.forEach(f=>f.v.forEach(p=>{x+=p[0];y+=p[1];z+=p[2];n++;}));
+    return [x/n,y/n,z/n];
+  },[]);
+
+  const draw = useCallback(()=>{
+    const C=ref.current; if(!C) return;
+    const X=C.getContext("2d"), w=C.width, h=C.height, s=Math.min(w,h)/14.2;
+    const {az,el}=cam.current;
+    const ca=Math.cos(az), sa=Math.sin(az), ce=Math.cos(el), se=Math.sin(el);
+    const camDir=[-sa*ce,-ca*ce,se];
+
+    const proj = p => {
+      const x=p[0]-centre[0], y=p[1]-centre[1], z=p[2]-centre[2];
+      const rx=x*ca-y*sa, ry=x*sa+y*ca;
+      return { x:w/2+rx*s, y:h*0.56-(ry*se+z*ce)*s, d:ry*ce-z*se };
+    };
+    const outward = v => {
+      const a=[v[1][0]-v[0][0],v[1][1]-v[0][1],v[1][2]-v[0][2]];
+      const b=[v[2][0]-v[0][0],v[2][1]-v[0][1],v[2][2]-v[0][2]];
+      let n=[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+      const L=Math.hypot(n[0],n[1],n[2])||1; n=[n[0]/L,n[1]/L,n[2]/L];
+      const mid=[(v[0][0]+v[1][0]+v[2][0])/3,(v[0][1]+v[1][1]+v[2][1])/3,(v[0][2]+v[1][2]+v[2][2])/3];
+      const away=[mid[0]-centre[0],mid[1]-centre[1],mid[2]-centre[2]];
+      return (n[0]*away[0]+n[1]*away[1]+n[2]*away[2]<0) ? [-n[0],-n[1],-n[2]] : n;
+    };
+
+    const tris = HOUSE.faces.map(f=>{
+      const pts=f.v.map(proj), nm=outward(f.v);
+      return { f, pts, nm, d:(pts[0].d+pts[1].d+pts[2].d)/3 };
+    }).filter(t=> t.nm[0]*camDir[0]+t.nm[1]*camDir[1]+t.nm[2]*camDir[2] > -0.02);
+
+    X.clearRect(0,0,w,h);
+    tris.slice().sort((a,b)=>b.d-a.d).forEach(t=>{
+      const f=t.f;
+      let c;
+      if(mode==="surface")      c = SURF_RGB[f.surf] || [120,120,120];
+      else if(mode==="thermal") c = rampRgb((f.temp-28)/32);
+      else if(f.excl)           c = [90,107,130];
+      else                      c = rampRgb(mode==="post" ? CLEAN_TARGET : f.g);
+
+      const L=[0.4,-0.5,0.75];
+      const sh=0.55+0.45*Math.abs(t.nm[0]*L[0]+t.nm[1]*L[1]+t.nm[2]*L[2]);
+      X.beginPath();
+      X.moveTo(t.pts[0].x,t.pts[0].y);
+      X.lineTo(t.pts[1].x,t.pts[1].y);
+      X.lineTo(t.pts[2].x,t.pts[2].y);
+      X.closePath();
+      X.fillStyle=`rgb(${c[0]*sh|0},${c[1]*sh|0},${c[2]*sh|0})`;
+      X.fill();
+      const isSel = sel===f.zone;
+      X.strokeStyle = isSel ? "rgba(255,255,255,.95)" : "rgba(255,255,255,.10)";
+      X.lineWidth   = isSel ? 3 : 1;
+      X.stroke();
+    });
+
+    // One label per zone, on its largest visible face, skipping collisions.
+    const best={};
+    tris.forEach(t=>{
+      const p=t.pts;
+      const ar=Math.abs((p[1].x-p[0].x)*(p[2].y-p[0].y)-(p[2].x-p[0].x)*(p[1].y-p[0].y))/2;
+      if(!best[t.f.zone] || ar>best[t.f.zone].ar) best[t.f.zone]={t,ar};
+    });
+    const placed=[];
+    Object.values(best).sort((a,b)=>b.ar-a.ar).forEach(({t})=>{
+      const m={ x:(t.pts[0].x+t.pts[1].x+t.pts[2].x)/3, y:(t.pts[0].y+t.pts[1].y+t.pts[2].y)/3 };
+      if(placed.some(q=>Math.abs(q.x-m.x)<112 && Math.abs(q.y-m.y)<28)) return;
+      placed.push(m);
+      X.font="700 15px -apple-system,sans-serif";
+      X.textAlign="center";
+      X.fillStyle="rgba(0,0,0,.7)";
+      X.fillText(t.f.zone, m.x+1.5, m.y+1.5);
+      X.fillStyle = t.f.excl ? "#ffb3b3" : "#ffffff";
+      X.fillText(t.f.zone, m.x, m.y);
+      if(t.f.excl){
+        X.font="700 11px -apple-system,sans-serif";
+        X.fillStyle="#ff8080";
+        X.fillText("NO SPRAY", m.x, m.y+15);
+      }
+    });
+
+    // Stash the projected triangles for hit-testing (front-to-back).
+    C._tris = tris.slice().sort((a,b)=>a.d-b.d);
+  },[mode,sel,centre]);
+
+  useEffect(()=>{ draw(); },[draw]);
+
+  const at = e => {
+    const C=ref.current, r=C.getBoundingClientRect(), t=e.touches?e.touches[0]:e;
+    return { x:(t.clientX-r.left)/r.width*C.width, y:(t.clientY-r.top)/r.height*C.height };
+  };
+  const start = e => { const p=at(e); drag.current={...p, ...cam.current, moved:0}; };
+  const moveTo = e => {
+    if(!drag.current) return;
+    if(e.cancelable) e.preventDefault();
+    const p=at(e), dx=p.x-drag.current.x, dy=p.y-drag.current.y;
+    drag.current.moved += Math.abs(dx)+Math.abs(dy);
+    cam.current = { az:drag.current.az+dx*0.006,
+                    el:Math.max(0.12,Math.min(1.45,drag.current.el+dy*0.005)) };
+    draw();
+  };
+  const end = e => {
+    const d=drag.current; drag.current=null;
+    if(!d || d.moved>=6) return;
+    const p = e.changedTouches ? at({touches:e.changedTouches}) : at(e);
+    const C=ref.current, tris=C._tris||[];
+    const side=(a,b)=>(p.x-b.x)*(a.y-b.y)-(a.x-b.x)*(p.y-b.y);
+    for(const t of tris){
+      const [A,B,D]=t.pts;
+      const d1=side(A,B), d2=side(B,D), d3=side(D,A);
+      if(!((d1<0||d2<0||d3<0) && (d1>0||d2>0||d3>0))) { onPick(t.f.zone); return; }
+    }
+    onPick(null);
+  };
+
+  useEffect(()=>{
+    const mm=e=>moveTo(e), mu=e=>end(e);
+    window.addEventListener("mousemove",mm);
+    window.addEventListener("mouseup",mu);
+    return ()=>{ window.removeEventListener("mousemove",mm); window.removeEventListener("mouseup",mu); };
+  });
+
+  return (
+    <canvas ref={ref} className="model3d" width={760} height={520}
+      onMouseDown={start}
+      onTouchStart={start} onTouchMove={moveTo} onTouchEnd={end}/>
+  );
+}
+
+const TWIN_MODES = [
+  ["pre",     "Dirt map"],
+  ["post",    "After clean"],
+  ["surface", "Surface"],
+  ["thermal", "Thermal"],
+];
+
 function TwinViewer() {
   const [mode,setMode]=useState("pre");
   const [sel,setSel]=useState(null);
   const twin=SCAN_TWIN;
   const zones=twin.zones;
+  const byId=useMemo(()=>Object.fromEntries(zones.map(z=>[z.id,z])),[zones]);
   const toggle=z=>setSel(s=>s?.id===z.id?null:z);
-  // grime value shown for a zone under the current mode (exclusions never "clean")
-  const gv=z=>z.excl?z.gPre:(mode==="pre"?z.gPre:(z.gPost??z.gPre));
+  const pick=id=>setSel(s=>(!id||s?.id===id)?null:byId[id]);
+  // Surface/thermal are render modes, not clean states — only "post" shows the
+  // post-clean figure. Exclusions are never cleaned, so they always read pre.
+  const dirt = mode==="post" ? "post" : "pre";
+  const gv=z=>(z.excl||dirt==="pre")?z.gPre:(z.gPost??z.gPre);
   return (
     <div className="content">
       <div className="twin-wrap">
@@ -532,56 +712,47 @@ function TwinViewer() {
             <div className="twin-prop">{twin.property}</div>
             <div className="muted">{twin.address} · scanned {twin.captured}</div>
             <div style={{fontSize:10,color:"var(--cyan)",marginTop:3,fontWeight:700,letterSpacing:.3}}>
-              ▲ FROM DRONE-SCAN PIPELINE · {twin.cleanable} cleanable · {twin.excluded} excluded
-            </div>
-          </div>
-          <div className="mode-switch">
-            <button className={"mode-btn"+(mode==="pre"?" active":"")} onClick={()=>setMode("pre")}>Pre</button>
-            <button className={"mode-btn"+(mode==="post"?" active":"")} onClick={()=>setMode("post")}>Post</button>
-          </div>
-        </div>
-
-        {/* PLAN-VIEW MAP (geometry from the scan) */}
-        <div className="stage-wrap">
-          <div className="stage">
-            <div className="map3d" style={{width:MAP_W+4,height:MAP_H+4}}>
-              {zones.map(z=>{
-                const v=gv(z);
-                const bg = z.excl ? EXCL_GREY : `linear-gradient(135deg,${tc(v,.92)},${tc(v+.1,.72)})`;
-                const glow = z.excl ? "rgba(90,107,130,.35)" : tc(v,.4);
-                return (
-                  <div key={z.id}
-                    className={"zone-tile"+(sel?.id===z.id?" sel":"")}
-                    onClick={()=>toggle(z)}
-                    style={{
-                      left:z.x*MAP_W+2, top:z.y*MAP_H+2,
-                      width:Math.max(18,z.w*MAP_W-4), height:Math.max(18,z.h*MAP_H-4),
-                      background:bg,
-                      border: z.excl ? "2px dashed rgba(255,255,255,.5)" : undefined,
-                      boxShadow:`0 0 20px ${glow}, inset 0 1px 0 rgba(255,255,255,.12)`,
-                    }}>
-                    <div className="zone-lbl">{z.id}</div>
-                    {z.excl
-                      ? <div className="zone-pct" style={{fontSize:15}}>⛔</div>
-                      : <div className="zone-pct">{Math.round(v*100)}%</div>}
-                    {z.solar&&<div className="zone-tag">☀ SOLAR</div>}
-                    {z.excl&&<div className="zone-tag">NO SPRAY</div>}
-                  </div>
-                );
-              })}
+              ▲ RECONSTRUCTED FROM DRONE SCAN · {HOUSE.counts.faces} faces · {twin.cleanable} cleanable · {twin.excluded} excluded
             </div>
           </div>
         </div>
 
-        {/* legend */}
-        <div className="legend">
-          <div className="legend-bar"/>
-          <div className="legend-labels"><span>Clean</span><span>Dirty</span><span style={{color:EXCL_GREY}}>⛔ Exclusion</span></div>
+        {/* THE RECONSTRUCTED STRUCTURE — real geometry, real classification */}
+        <div className="mode-row">
+          {TWIN_MODES.map(([id,label])=>(
+            <button key={id} className={"mode-btn"+(mode===id?" active":"")}
+              onClick={()=>setMode(id)}>{label}</button>
+          ))}
         </div>
+        <div className="model-wrap">
+          <Model3D mode={mode} sel={sel?.id??null} onPick={pick}/>
+          <div className="model-hint">Drag to orbit · tap a surface to inspect</div>
+        </div>
+
+        {/* legend — reads out whatever the current mode is measuring */}
+        {mode==="surface"
+          ? <div className="surf-legend">
+              {Object.entries(SURF_RGB).map(([k,c])=>(
+                <span key={k} className="surf-key">
+                  <i style={{background:`rgb(${c[0]},${c[1]},${c[2]})`}}/>{prettySurface(k)}
+                </span>
+              ))}
+            </div>
+          : <div className="legend">
+              <div className="legend-bar"/>
+              <div className="legend-labels">
+                {mode==="thermal"
+                  ? <><span>Cool 28 °C</span><span>Hot 60 °C</span></>
+                  : <><span>Clean</span><span>Dirty</span></>}
+              </div>
+              <div className="surf-key" style={{color:EXCL_GREY}}>
+                <i style={{background:EXCL_GREY}}/>Exclusion — not sprayed
+              </div>
+            </div>}
 
         {/* Detail or hint */}
         {sel
-          ? <ZoneDetail z={sel} mode={mode}/>
+          ? <ZoneDetail z={sel} mode={dirt}/>
           : <div style={{textAlign:"center",padding:"16px 0",color:"var(--muted)",fontSize:13}}>Tap a zone to inspect the scan result</div>
         }
       </div>
@@ -658,7 +829,11 @@ function ZoneDetail({z,mode}) {
           <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".5px",marginBottom:6}}>
             ▶ Cleaning plan — safety-gated ✓
           </div>
-          {[["Pressure",`${pl.pressure} bar`],["Chemical",pl.chemical],["Nozzle",pl.nozzle],["Dwell",`${pl.dwell}s`],["Standoff",`${pl.standoff} m`]].map(([l,vv])=>(
+          {[["Pressure",`${pl.pressure} bar`],
+            ["Chemical",prettyChem(pl.chemical)+(pl.mix?` · mix ${Math.round(pl.mix*100)}%`:"")],
+            ["Nozzle",nozzleLabel(pl.nozzle)],
+            ["Dwell",`${pl.dwell}s`],
+            ["Standoff",`${pl.standoff} m`]].map(([l,vv])=>(
             <div key={l} className="dm" style={{borderBottom:"1px solid rgba(255,255,255,.05)"}}><span>{l}</span><b>{vv}</b></div>
           ))}
         </div>
@@ -701,7 +876,7 @@ function DataHub() {
     <div className="content">
       <div className="hub-wrap">
         <div className="hub-title">Data Hub</div>
-        <div className="muted">Carlsbad Commerce Center · All visits · Demo data</div>
+        <div className="muted">{SCAN_TWIN.property} · fleet &amp; deconfliction live · history is demo data</div>
         <div className="htabs">
           {HUB_TABS.map(t=><button key={t} className={"htab"+(tab===t?" active":"")} onClick={()=>setTab(t)}>{t}</button>)}
         </div>
@@ -751,14 +926,20 @@ function HubOverview({d}) {
 }
 
 function HubFleet() {
-  const rows = Object.keys(FLEET.schedule).map(k=>({n:+k, min:FLEET.schedule[k]}));
+  // Two numbers per fleet size: what deconfliction actually permits on THIS site,
+  // and what the phase scheduler could reach if geometry allowed. Showing only the
+  // second would overstate the case for a second aircraft.
+  const rows = Object.keys(FLEET.schedule).map(k=>({
+    n:+k, min:FLEET.schedule[k], ideal:FLEET.scheduleIdeal[k],
+  }));
   const base = rows[0].min;
+  const capped = rows.some(r=>r.ideal < r.min - 0.05);
   return (
     <div>
       <div className="note" style={{marginBottom:12,paddingTop:0}}>
-        Job time falls as aircraft are added, because chemical <b>dwell</b> pipelines across
-        zones. Realising it needs an FAA <b>107.35 waiver</b> — one pilot may not fly multiple
-        aircraft without one.
+        Extra aircraft cut job time by pipelining through chemical <b>dwell</b>. Two gates stand
+        in the way: an FAA <b>107.35 waiver</b> (one pilot may not fly multiple aircraft without
+        one), and the site's own geometry.
       </div>
 
       <div className="section-ttl">Job time by fleet size</div>
@@ -770,10 +951,21 @@ function HubFleet() {
           </div>
           <div className="resoil-track">
             <div className="resoil-fill" style={{width:`${(r.min/base)*100}%`,background:"var(--blue)"}}/>
+            {r.ideal < r.min-0.05 &&
+              <div className="resoil-ideal" style={{width:`${(r.ideal/base)*100}%`}}/>}
           </div>
-          <div style={{fontWeight:800,fontSize:13,minWidth:56,textAlign:"right"}}>{r.min} min</div>
+          <div style={{fontWeight:800,fontSize:13,minWidth:74,textAlign:"right"}}>
+            {r.min} min
+            {r.ideal < r.min-0.05 &&
+              <div className="muted" style={{fontSize:10,fontWeight:600}}>vs {r.ideal} ideal</div>}
+          </div>
         </div>
       ))}
+      {capped && (
+        <div className="muted" style={{fontSize:10,margin:"2px 0 4px"}}>
+          The marker shows the schedule if zones were far enough apart. This site never reaches it.
+        </div>
+      )}
 
       <div className="section-ttl">Deconfliction</div>
       <div className="hz-card" style={{borderColor:"rgba(245,166,35,.3)",background:"rgba(245,166,35,.06)"}}>

@@ -62,11 +62,15 @@ def fuse_face(
             contributing=["geometry"],
         )
 
-    # 2. HVAC / powered equipment: RGB reads dark-equipment (solar-like), thermal
-    #    is warm + uniform, and it sits flat (not a pitched roof panel).
-    rgb_top = max(rgb_scores, key=rgb_scores.get) if rgb_scores else None
+    # ── Viable classes = RGB candidates permitted by geometry ────────────────
+    viable = {s: p for s, p in rgb_scores.items() if s in geometry.allowed}
+
+    # 2. HVAC / powered equipment: it would otherwise classify as a flat dark
+    #    panel, but thermal reads warm + uniform. Checked against the VIABLE
+    #    class (post-geometry), not the raw RGB guess — dark equipment can read
+    #    as glass or panel depending on its exact colour.
     if (
-        rgb_top == SurfaceType.SOLAR_PANEL
+        SurfaceType.SOLAR_PANEL in viable
         and thermal is not None
         and not thermal.reflection_suspect
         and thermal.sample_count > 0
@@ -83,8 +87,6 @@ def fuse_face(
             contributing=["rgb", "thermal", "geometry"],
         )
 
-    # ── Viable classes = RGB candidates permitted by geometry ────────────────
-    viable = {s: p for s, p in rgb_scores.items() if s in geometry.allowed}
     if not viable:
         # RGB and geometry disagree entirely → fall back to the most conservative
         # class geometry allows, flagged low-confidence for review.

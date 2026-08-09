@@ -213,3 +213,112 @@ class SyntheticBuildingSource(GeometrySource):
             mesh_ref="sim://mesh",
             meta={"synthetic": True},
         )
+
+
+class SyntheticHouseSource(GeometrySource):
+    """A recognisable single-family house — the realistic demo structure.
+
+    Richer than SyntheticBuildingSource: a gable roof with a ridge, an attached
+    garage, a front door, windows on three elevations, a rooftop solar array, a
+    chimney and a ground-level HVAC condenser. Proportions are typical of a
+    coastal-California single-storey home (CLAUDE.md §1 base market).
+
+    Layout (metres, origin at the front-left corner, +y = back, +z = up):
+        main body   12 × 9, walls 3.0 m, gable ridge at 5.4 m running east–west
+        garage       6 × 6 attached on the east side, lower gable at 4.4 m
+    """
+
+    def __init__(self, property_id: str = "sim_house",
+                 captured_at: str = "2026-07-06T08:30:00Z") -> None:
+        self.property_id = property_id
+        self.captured_at = captured_at
+
+    def load(self) -> ReconstructionOutput:
+        faces: List[Face] = []
+
+        def quad(prefix: str, a: Vec3, b: Vec3, c: Vec3, d: Vec3, rgb, label: str) -> None:
+            faces.append(Face(f"{prefix}-0", a, b, c, rgb_hint=rgb, truth_label=label))
+            faces.append(Face(f"{prefix}-1", a, c, d, rgb_hint=rgb, truth_label=label))
+
+        def tri(prefix: str, a: Vec3, b: Vec3, c: Vec3, rgb, label: str) -> None:
+            faces.append(Face(f"{prefix}-0", a, b, c, rgb_hint=rgb, truth_label=label))
+
+        STUCCO = (208, 198, 182)
+        SHINGLE = (96, 78, 68)
+        GLASS = (58, 82, 98)
+        DOOR = (84, 62, 48)
+        PANEL = (20, 22, 30)
+        BRICK = (124, 92, 78)
+        METAL = (44, 46, 52)
+
+        W, D, H = 12.0, 9.0, 3.0          # main body
+        RIDGE = 5.4                        # ridge height
+        MY = D / 2                         # ridge runs along y = D/2
+
+        # ── main roof: south + north slopes ──
+        quad("RF-S", (0, 0, H), (W, 0, H), (W, MY, RIDGE), (0, MY, RIDGE),
+             SHINGLE, "composite_shingle")
+        quad("RF-N", (0, D, H), (W, D, H), (W, MY, RIDGE), (0, MY, RIDGE),
+             SHINGLE, "composite_shingle")
+
+        # ── gable end walls (triangles above the wall line) ──
+        tri("GABLE-W", (0, 0, H), (0, D, H), (0, MY, RIDGE), STUCCO, "stucco")
+        tri("GABLE-E", (W, 0, H), (W, D, H), (W, MY, RIDGE), STUCCO, "stucco")
+
+        # ── main walls ──
+        quad("WALL-S", (0, 0, 0), (W, 0, 0), (W, 0, H), (0, 0, H), STUCCO, "stucco")
+        quad("WALL-N", (0, D, 0), (W, D, 0), (W, D, H), (0, D, H), STUCCO, "stucco")
+        quad("WALL-W", (0, 0, 0), (0, D, 0), (0, D, H), (0, 0, H), STUCCO, "stucco")
+
+        # ── front door + front windows (south elevation) ──
+        quad("DOOR", (5.2, -0.03, 0), (6.4, -0.03, 0), (6.4, -0.03, 2.1), (5.2, -0.03, 2.1),
+             DOOR, "stucco")
+        quad("WIN-S1", (1.4, -0.03, 1.0), (3.2, -0.03, 1.0),
+             (3.2, -0.03, 2.3), (1.4, -0.03, 2.3), GLASS, "window_glass")
+        quad("WIN-S2", (8.0, -0.03, 1.0), (9.8, -0.03, 1.0),
+             (9.8, -0.03, 2.3), (8.0, -0.03, 2.3), GLASS, "window_glass")
+        # ── side + rear windows ──
+        quad("WIN-W", (-0.03, 3.0, 1.0), (-0.03, 5.2, 1.0),
+             (-0.03, 5.2, 2.3), (-0.03, 3.0, 2.3), GLASS, "window_glass")
+        quad("WIN-N", (4.0, D + 0.03, 1.0), (7.2, D + 0.03, 1.0),
+             (7.2, D + 0.03, 2.3), (4.0, D + 0.03, 2.3), GLASS, "window_glass")
+
+        # ── attached garage (east side), lower gable ──
+        GX, GD, GH, GR = W, 6.0, 2.7, 4.4
+        GW = 6.0
+        quad("GAR-RF-S", (GX, 0, GH), (GX + GW, 0, GH),
+             (GX + GW, GD / 2, GR), (GX, GD / 2, GR), SHINGLE, "composite_shingle")
+        quad("GAR-RF-N", (GX, GD, GH), (GX + GW, GD, GH),
+             (GX + GW, GD / 2, GR), (GX, GD / 2, GR), SHINGLE, "composite_shingle")
+        quad("GAR-WALL-S", (GX, 0, 0), (GX + GW, 0, 0),
+             (GX + GW, 0, GH), (GX, 0, GH), STUCCO, "stucco")
+        quad("GAR-WALL-E", (GX + GW, 0, 0), (GX + GW, GD, 0),
+             (GX + GW, GD, GH), (GX + GW, 0, GH), STUCCO, "stucco")
+        quad("GAR-WALL-N", (GX, GD, 0), (GX + GW, GD, 0),
+             (GX + GW, GD, GH), (GX, GD, GH), STUCCO, "stucco")
+        # Gable triangle above the east wall. The WEST gable end is omitted on
+        # purpose — the garage abuts the house there, so no surface exists.
+        tri("GAR-GABLE-E", (GX + GW, 0, GH), (GX + GW, GD, GH),
+            (GX + GW, GD / 2, GR), STUCCO, "stucco")
+        quad("GAR-DOOR", (GX + 0.6, -0.03, 0), (GX + GW - 0.6, -0.03, 0),
+             (GX + GW - 0.6, -0.03, 2.2), (GX + 0.6, -0.03, 2.2), METAL, "stucco")
+
+        # ── rooftop solar array on the south slope ──
+        quad("SOL-ROOF", (2.5, 1.2, 3.72), (9.0, 1.2, 3.72),
+             (9.0, 3.4, 4.68), (2.5, 3.4, 4.68), PANEL, "solar_panel")
+
+        # ── chimney (protrusion — EXCLUSION) ──
+        quad("CHIMNEY", (9.6, 4.0, RIDGE - 0.2), (10.5, 4.0, RIDGE - 0.2),
+             (10.5, 4.0, RIDGE + 1.4), (9.6, 4.0, RIDGE + 1.4), BRICK, "exclusion")
+
+        # ── HVAC condenser at grade (EXCLUSION) ──
+        quad("HVAC", (0.8, D + 0.6, 0), (1.9, D + 0.6, 0),
+             (1.9, D + 1.7, 0), (0.8, D + 1.7, 0), METAL, "exclusion")
+
+        return ReconstructionOutput(
+            property_id=self.property_id,
+            captured_at=self.captured_at,
+            faces=faces,
+            mesh_ref="sim://house",
+            meta={"synthetic": True, "structure": "single_family_house"},
+        )
