@@ -16,7 +16,8 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
-from propwash.backend.fusion.scan_pipeline import run_scan_pipeline
+from propwash.backend.fusion.scan_pipeline import grime_layer, run_scan_pipeline
+from propwash.backend.fusion.thermal_registration import register_thermal
 from propwash.backend.geometry.source import SyntheticHouseSource
 from propwash.backend.planning.coverage_path import (
     build_flight_plan,
@@ -63,27 +64,40 @@ _ZONE_LABELS = {
 def build_view() -> dict:
     source = SyntheticHouseSource(property_id="sim_house_carlsbad")
     recon = source.load()
-    zones = run_scan_pipeline(source, synth_thermal_samples(recon.faces))
+    samples = synth_thermal_samples(recon.faces)
+    thermal = register_thermal(samples)
+    layer = grime_layer(recon, thermal)          # per-face, the zoomable detail
+    zones = run_scan_pipeline(source, samples)
     plan = plan_from_scan(zones, job_id="job_house_001", property_id="sim_house_carlsbad")
 
     by_zone = {z.zone_id: z for z in zones}
     presc = {wo.zone.zone_id: wo.prescription for wo in plan.work_orders}
 
-    # ── per-face geometry, coloured by its zone's scan result ────────────────
+    # ── per-face geometry carrying its OWN grime + temperature ───────────────
+    # `g` is the face's value, not the zone mean, so zooming in resolves real
+    # within-zone structure (eaves, wall bases, shaded elevations) instead of
+    # magnifying a flat fill.
     faces = []
+    spread: Dict[str, list] = {}
     for f in recon.faces:
         zid = f.face_id.rsplit("-", 1)[0]
         z = by_zone.get(zid)
         if z is None:
             continue
+        fg = layer[f.face_id]
+        reading = thermal.get(f.face_id)
+        temp = (reading.temp_c if reading and reading.sample_count else z.temp_c)
+        spread.setdefault(zid, []).append(fg.grime)
         faces.append({
             "zone": zid,
-            "v": [list(f.v0), list(f.v1), list(f.v2)],
-            "g": round(z.grime_proxy, 3),
+            "v": [[round(c, 3) for c in f.v0],
+                  [round(c, 3) for c in f.v1],
+                  [round(c, 3) for c in f.v2]],
+            "g": fg.grime,
             "excl": z.is_exclusion,
             "solar": z.solar,
             "surf": z.surface_type,
-            "temp": round(z.temp_c, 1),
+            "temp": round(temp, 1),
         })
 
     # ── per-zone detail for the inspector panel ──────────────────────────────
@@ -98,6 +112,9 @@ def build_view() -> dict:
             "solar": z.solar,
             "temp": round(z.temp_c, 1),
             "moisture": round(z.moisture_index, 3),
+            "gMin": round(min(spread.get(z.zone_id, [z.grime_proxy])), 3),
+            "gMax": round(max(spread.get(z.zone_id, [z.grime_proxy])), 3),
+            "faces": z.face_count,
             "pitch": round(z.pitch_deg, 1),
             "conf": round(z.confidence, 2),
             "reason": z.reason,

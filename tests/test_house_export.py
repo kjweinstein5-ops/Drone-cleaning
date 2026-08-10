@@ -107,3 +107,73 @@ def test_deconfliction_never_reports_a_gain_it_cannot_deliver(view):
 def test_every_zone_has_a_human_label(view):
     for zid, z in view["zones"].items():
         assert z["label"] and z["label"] != zid, zid
+
+
+# ── per-face grime layer (what zoom resolves) ─────────────────────────────────
+
+def test_faces_carry_their_own_grime_not_the_zone_mean(view):
+    """If every face got the zone average, zooming in would reveal nothing."""
+    by_zone: dict[str, set] = {}
+    for f in view["faces"]:
+        by_zone.setdefault(f["zone"], set()).add(f["g"])
+    varied = [z for z, vals in by_zone.items() if len(vals) > 1]
+    assert varied, "no zone has within-zone grime variation"
+    # The big surfaces are exactly the ones an operator would zoom into.
+    assert {"RF-S", "RF-N", "WALL-S"} <= set(varied)
+
+
+def test_zone_mean_sits_inside_its_own_face_range(view):
+    for zid, z in view["zones"].items():
+        assert z["gMin"] <= z["g"] <= z["gMax"] + 1e-9, zid
+
+
+def test_soiling_concentrates_low_on_a_wall(view):
+    """Runoff pools at the base, so the bottom of a wall must read dirtier."""
+    faces = [f for f in view["faces"] if f["zone"] == "WALL-S"]
+    low = [f for f in faces if max(v[2] for v in f["v"]) <= 1.0]
+    high = [f for f in faces if min(v[2] for v in f["v"]) >= 2.0]
+    assert low and high
+    assert sum(f["g"] for f in low) / len(low) > sum(f["g"] for f in high) / len(high)
+
+
+def test_both_triangles_of_a_patch_agree(view):
+    """A quad's two triangles share a footprint; disagreeing is mesh noise.
+
+    Sampling per triangle centroid instead of the shared patch centre produces a
+    checkerboard that reads as structure but is purely an artefact of how the
+    surface was tessellated.
+    """
+    from propwash.backend.geometry.source import SyntheticHouseSource
+
+    faces = SyntheticHouseSource().load().faces
+    by_sample: dict = {}
+    for f in faces:
+        if f.sample_point is None:
+            continue
+        by_sample.setdefault((f.face_id.rsplit("-", 1)[0], f.sample_point), []).append(f)
+    pairs = [v for v in by_sample.values() if len(v) == 2]
+    assert pairs, "expected tessellated cells to share a sample point"
+    for a, b in pairs:
+        assert a.sample_at == b.sample_at
+
+
+def test_the_solar_array_does_not_overlap_the_roof(view):
+    """A reconstruction returns the panel surface, not the shingle beneath it.
+
+    Overlapping them also makes the depth sort ambiguous, which shows up as
+    roof triangles punching through the array.
+    """
+    panel = [f for f in view["faces"] if f["zone"] == "SOL-ROOF"]
+    roof = [f for f in view["faces"] if f["zone"] == "RF-S"]
+    assert panel and roof
+
+    def bounds(fs):
+        xs = [v[0] for f in fs for v in f["v"]]
+        ys = [v[1] for f in fs for v in f["v"]]
+        return min(xs), max(xs), min(ys), max(ys)
+
+    px0, px1, py0, py1 = bounds(panel)
+    for f in roof:
+        cx = sum(v[0] for v in f["v"]) / 3
+        cy = sum(v[1] for v in f["v"]) / 3
+        assert not (px0 < cx < px1 and py0 < cy < py1), f["v"]

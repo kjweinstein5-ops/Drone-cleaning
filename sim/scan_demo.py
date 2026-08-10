@@ -25,14 +25,67 @@ _THERMAL_BY_TRUTH = {
 }
 
 
+#: Peak evaporative-cooling depression (°C) for each soiling mechanism below.
+#: SIM ONLY — plausible magnitudes, not measured. Field calibration replaces these.
+_RUNOFF_C, _SHADE_C, _EAVE_C = 4.5, 2.5, 3.5
+
+
+def _soiling_offset_c(face: Face) -> float:
+    """How many °C BELOW its class baseline a face reads because water lingers.
+
+    Buildings do not soil uniformly, and the pattern is not random — it follows
+    where water sits and how long it takes to leave. Damp surfaces evaporate and
+    read cooler, which is precisely the signal thermal gives us (CLAUDE.md §5), so
+    the sim encodes the soiling pattern as a temperature depression and lets the
+    pipeline infer grime from it rather than being handed a grime number.
+
+    Three mechanisms, all deterministic from geometry:
+
+      1. **Runoff pooling** — water runs down and lingers at the base of walls;
+         splash-back off hardscape keeps the bottom metre damp longest.
+      2. **Shade** — north elevations (northern hemisphere) never dry fully, which
+         is why biofilm shows up there first.
+      3. **Eaves** — pitched roofs shed toward the lower edge, so debris and
+         biofilm band along the eaves while the field near the ridge stays clean.
+
+    Powered equipment is exempt: an HVAC condenser's thermal signature comes from
+    the compressor, not from surface moisture.
+    """
+    if face.truth_label == "exclusion":
+        return 0.0
+
+    _, _, cz = face.sample_at
+    normal = face.normal
+
+    # 1. Runoff — strongest at grade, gone by ~3.2 m.
+    offset = _RUNOFF_C * max(0.0, 1.0 - cz / 3.2)
+
+    # 2. Shade — scales with how far the face points north (+y).
+    offset += _SHADE_C * max(0.0, normal[1])
+
+    # 3. Eaves — pitched surfaces only, banded toward their lower edge.
+    if 10.0 <= face.pitch_deg <= 60.0:
+        offset += _EAVE_C * max(0.0, min(1.0, (4.8 - cz) / 1.8))
+
+    return offset
+
+
 def synth_thermal_samples(faces: List[Face]) -> Dict[str, List[ThermalSample]]:
-    """Synthesize thermal samples per face from its truth label (sim only)."""
+    """Synthesize thermal samples per face from its truth label (sim only).
+
+    Each face gets its class baseline minus its soiling offset, so faces within
+    one zone differ — which is what makes the per-face grime layer meaningful.
+    """
     out: Dict[str, List[ThermalSample]] = {}
     for f in faces:
         label = f.truth_label or "stucco"
         # The chimney protrusion is caught by geometry, give it wall-like temps.
         key = label if label in _THERMAL_BY_TRUTH else "stucco"
-        out[f.face_id] = [ThermalSample(temp_c=t, view_angle_deg=a) for t, a in _THERMAL_BY_TRUTH[key]]
+        offset = _soiling_offset_c(f)
+        out[f.face_id] = [
+            ThermalSample(temp_c=t - offset, view_angle_deg=a)
+            for t, a in _THERMAL_BY_TRUTH[key]
+        ]
     return out
 
 

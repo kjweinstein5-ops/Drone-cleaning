@@ -54,17 +54,40 @@ def _zone_key(face_id: str) -> str:
     return face_id.rsplit("-", 1)[0] if "-" in face_id else face_id
 
 
-def _grime_proxy(thermal: Optional[ThermalFaceReading], face: Face) -> tuple[float, float]:
+#: Temperature depression (°C) below a zone's dry baseline that reads as fully wet.
+#: A calibration constant — tune from field data, do not treat as measured.
+_MOISTURE_SPAN_C = 8.0
+
+
+def _grime_proxy(
+    thermal: Optional[ThermalFaceReading],
+    face: Face,
+    baseline_c: Optional[float] = None,
+) -> tuple[float, float]:
     """Placeholder grime + moisture PROXY from thermal + RGB darkness.
 
     IMPORTANT (CLAUDE.md §5): this is an inferred PROXY, not spectral biofilm
     detection. The real calibrated scoring model is a trade secret
     (IP_PROTECTION.md §2) and plugs in behind this function.
+
+    Moisture is read DIFFERENTIALLY when a `baseline_c` is supplied: how far this
+    face reads below the driest surface of the same zone. Absolute temperature is
+    dominated by sun load, not wetness — a shingle roof at 55°C and a shaded wall
+    at 30°C tell you about exposure, not moisture. What indicates damp is a patch
+    reading several degrees cooler than the surface around it. Anchoring to an
+    absolute room-temperature point instead makes the proxy saturate to zero on
+    every sun-loaded roof, which is precisely where the grime is.
+
+    Without a baseline (single-face callers) it falls back to the absolute mapping.
     """
-    # Moisture proxy: cooler faces read as wetter (evaporative cooling), mapped
-    # into 0..1 around a 30°C neutral point.
     if thermal is None or thermal.sample_count == 0:
         moisture = 0.5
+    elif baseline_c is not None and baseline_c == baseline_c:  # not NaN
+        # No depression = as dry as anything else of this material = 0. A zone
+        # with one face has no internal contrast and correctly reports 0 here;
+        # the score then rests on the RGB staining term alone.
+        depression = baseline_c - thermal.temp_c
+        moisture = max(0.0, min(1.0, depression / _MOISTURE_SPAN_C))
     else:
         moisture = max(0.0, min(1.0, (30.0 - thermal.temp_c) / 20.0 + 0.5))
     # Staining proxy: darker/greener faces read dirtier (visible staining cue).
@@ -72,6 +95,67 @@ def _grime_proxy(thermal: Optional[ThermalFaceReading], face: Face) -> tuple[flo
     darkness = max(0.0, min(1.0, (160 - (r + g + b) / 3.0) / 160.0))
     grime = max(0.0, min(1.0, 0.5 * moisture + 0.5 * darkness))
     return round(grime, 3), round(moisture, 3)
+
+
+def _zone_baselines(
+    recon: ReconstructionOutput,
+    thermal: Dict[str, ThermalFaceReading],
+) -> Dict[str, float]:
+    """Per-zone dry baseline = the warmest face in the zone.
+
+    The warmest same-material surface is the one that has finished drying, so it
+    is the reference every other face in that zone is measured against.
+    """
+    best: Dict[str, float] = {}
+    for face in recon.faces:
+        r = thermal.get(face.face_id)
+        if r is None or r.sample_count == 0 or r.temp_c != r.temp_c:
+            continue
+        zid = _zone_key(face.face_id)
+        if zid not in best or r.temp_c > best[zid]:
+            best[zid] = r.temp_c
+    return best
+
+
+@dataclass(frozen=True)
+class FaceGrime:
+    """The grime PROXY for ONE face — the layer beneath the zone average.
+
+    A zone's headline grime figure is a mean, and a mean hides exactly what
+    matters operationally: a roof that is clean across the field but heavily
+    soiled along the eaves needs different dwell than one soiled uniformly. The
+    per-face layer is what makes that visible (and, later, plannable).
+
+    PROXY, not a spectral measurement (CLAUDE.md §5).
+    """
+
+    face_id: str
+    zone_id: str
+    grime: float
+    moisture: float
+
+
+def grime_layer(
+    recon: ReconstructionOutput,
+    thermal: Dict[str, ThermalFaceReading],
+) -> Dict[str, FaceGrime]:
+    """Per-face grime + moisture proxy — the full-resolution layer.
+
+    `run_scan_pipeline` averages this into zones; callers that need the detail
+    (the twin viewer, re-queue targeting) read it here instead.
+    """
+    baselines = _zone_baselines(recon, thermal)
+    out: Dict[str, FaceGrime] = {}
+    for face in recon.faces:
+        zid = _zone_key(face.face_id)
+        g, m = _grime_proxy(thermal.get(face.face_id), face, baselines.get(zid))
+        out[face.face_id] = FaceGrime(
+            face_id=face.face_id,
+            zone_id=zid,
+            grime=g,
+            moisture=m,
+        )
+    return out
 
 
 def run_scan_pipeline(
@@ -83,6 +167,7 @@ def run_scan_pipeline(
     classifier = classifier or HeuristicColorClassifier()
     recon: ReconstructionOutput = source.load()
     thermal = register_thermal(samples_by_face)
+    layer = grime_layer(recon, thermal)
 
     # Per-face: geometry rules + RGB classify + conservative fusion.
     faces_by_zone: Dict[str, List[Face]] = {}
@@ -105,7 +190,7 @@ def run_scan_pipeline(
         mean_temp = round(sum(temps) / len(temps), 2) if temps else float("nan")
         mean_pitch = round(sum(f.pitch_deg for f in faces) / len(faces), 1)
 
-        gm = [_grime_proxy(thermal.get(f.face_id), f) for f in faces]
+        gm = [(layer[f.face_id].grime, layer[f.face_id].moisture) for f in faces]
         grime = round(sum(g for g, _ in gm) / len(gm), 3)
         moisture = round(sum(m for _, m in gm) / len(gm), 3)
 

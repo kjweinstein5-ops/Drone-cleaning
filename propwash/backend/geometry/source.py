@@ -60,6 +60,13 @@ class Face:
     rgb_hint: Optional[Tuple[int, int, int]] = None  # coarse mean colour 0..255
     # Optional ground-truth label used only to synthesise sim data / tests.
     truth_label: Optional[str] = None
+    # Where this face's sensor readings are attributed on the surface. A
+    # triangle's barycentre is a mesh artefact, not a measurement location: two
+    # triangles tessellating one physical patch share a footprint but have
+    # centroids offset in opposite directions, which shows up as checkerboard
+    # noise in any field sampled per-triangle. Real pipelines carry the thermal
+    # pixel footprint centre here; None falls back to the centroid.
+    sample_point: Optional[Vec3] = None
 
     @property
     def centroid(self) -> Vec3:
@@ -68,6 +75,11 @@ class Face:
             (self.v0[1] + self.v1[1] + self.v2[1]) / 3.0,
             (self.v0[2] + self.v1[2] + self.v2[2]) / 3.0,
         )
+
+    @property
+    def sample_at(self) -> Vec3:
+        """Where to evaluate surface fields for this face."""
+        return self.sample_point or self.centroid
 
     @property
     def normal(self) -> Vec3:
@@ -236,9 +248,46 @@ class SyntheticHouseSource(GeometrySource):
     def load(self) -> ReconstructionOutput:
         faces: List[Face] = []
 
-        def quad(prefix: str, a: Vec3, b: Vec3, c: Vec3, d: Vec3, rgb, label: str) -> None:
-            faces.append(Face(f"{prefix}-0", a, b, c, rgb_hint=rgb, truth_label=label))
-            faces.append(Face(f"{prefix}-1", a, c, d, rgb_hint=rgb, truth_label=label))
+        def quad(prefix: str, a: Vec3, b: Vec3, c: Vec3, d: Vec3, rgb, label: str,
+                 nu: int = 1, nv: int = 1, skip=None) -> None:
+            """Emit a quad a→b→c→d, optionally tessellated nu × nv.
+
+            Large surfaces are subdivided because grime is not uniform across a
+            roof slope or a wall — the per-face layer only carries information if
+            there are faces to carry it. Every cell keeps the zone prefix, so
+            subdivision changes resolution, never the zone structure.
+
+            `skip(i, j)` omits cells — used to cut the solar array's footprint out
+            of the roof. A reconstruction of a panelled roof returns the panel
+            surface there, not the shingle under it, so the two must not overlap.
+            """
+            n = len(faces)
+
+            def lerp(p: Vec3, q: Vec3, t: float) -> Vec3:
+                return (p[0] + (q[0] - p[0]) * t,
+                        p[1] + (q[1] - p[1]) * t,
+                        p[2] + (q[2] - p[2]) * t)
+
+            for i in range(nu):
+                u0, u1 = i / nu, (i + 1) / nu
+                for j in range(nv):
+                    if skip is not None and skip(i, j):
+                        continue
+                    v0, v1 = j / nv, (j + 1) / nv
+                    # Bilinear corners of this cell (a→b is u, a→d is v).
+                    p00 = lerp(lerp(a, b, u0), lerp(d, c, u0), v0)
+                    p10 = lerp(lerp(a, b, u1), lerp(d, c, u1), v0)
+                    p11 = lerp(lerp(a, b, u1), lerp(d, c, u1), v1)
+                    p01 = lerp(lerp(a, b, u0), lerp(d, c, u0), v1)
+                    mid = ((p00[0] + p11[0]) / 2,
+                           (p00[1] + p11[1]) / 2,
+                           (p00[2] + p11[2]) / 2)
+                    faces.append(Face(f"{prefix}-{len(faces) - n}", p00, p10, p11,
+                                      rgb_hint=rgb, truth_label=label,
+                                      sample_point=mid))
+                    faces.append(Face(f"{prefix}-{len(faces) - n}", p00, p11, p01,
+                                      rgb_hint=rgb, truth_label=label,
+                                      sample_point=mid))
 
         def tri(prefix: str, a: Vec3, b: Vec3, c: Vec3, rgb, label: str) -> None:
             faces.append(Face(f"{prefix}-0", a, b, c, rgb_hint=rgb, truth_label=label))
@@ -256,19 +305,22 @@ class SyntheticHouseSource(GeometrySource):
         MY = D / 2                         # ridge runs along y = D/2
 
         # ── main roof: south + north slopes ──
+        # The solar array occupies roof cells x∈[1,4], y∈[1,2] of the 6×4 grid;
+        # those cells are omitted so panel and shingle never overlap.
+        PANEL_CELLS = lambda i, j: 1 <= i <= 4 and 1 <= j <= 2
         quad("RF-S", (0, 0, H), (W, 0, H), (W, MY, RIDGE), (0, MY, RIDGE),
-             SHINGLE, "composite_shingle")
+             SHINGLE, "composite_shingle", nu=6, nv=4, skip=PANEL_CELLS)
         quad("RF-N", (0, D, H), (W, D, H), (W, MY, RIDGE), (0, MY, RIDGE),
-             SHINGLE, "composite_shingle")
+             SHINGLE, "composite_shingle", nu=6, nv=4)
 
         # ── gable end walls (triangles above the wall line) ──
         tri("GABLE-W", (0, 0, H), (0, D, H), (0, MY, RIDGE), STUCCO, "stucco")
         tri("GABLE-E", (W, 0, H), (W, D, H), (W, MY, RIDGE), STUCCO, "stucco")
 
         # ── main walls ──
-        quad("WALL-S", (0, 0, 0), (W, 0, 0), (W, 0, H), (0, 0, H), STUCCO, "stucco")
-        quad("WALL-N", (0, D, 0), (W, D, 0), (W, D, H), (0, D, H), STUCCO, "stucco")
-        quad("WALL-W", (0, 0, 0), (0, D, 0), (0, D, H), (0, 0, H), STUCCO, "stucco")
+        quad("WALL-S", (0, 0, 0), (W, 0, 0), (W, 0, H), (0, 0, H), STUCCO, "stucco", nu=6, nv=3)
+        quad("WALL-N", (0, D, 0), (W, D, 0), (W, D, H), (0, D, H), STUCCO, "stucco", nu=6, nv=3)
+        quad("WALL-W", (0, 0, 0), (0, D, 0), (0, D, H), (0, 0, H), STUCCO, "stucco", nu=5, nv=3)
 
         # ── front door + front windows (south elevation) ──
         quad("DOOR", (5.2, -0.03, 0), (6.4, -0.03, 0), (6.4, -0.03, 2.1), (5.2, -0.03, 2.1),
@@ -287,15 +339,15 @@ class SyntheticHouseSource(GeometrySource):
         GX, GD, GH, GR = W, 6.0, 2.7, 4.4
         GW = 6.0
         quad("GAR-RF-S", (GX, 0, GH), (GX + GW, 0, GH),
-             (GX + GW, GD / 2, GR), (GX, GD / 2, GR), SHINGLE, "composite_shingle")
+             (GX + GW, GD / 2, GR), (GX, GD / 2, GR), SHINGLE, "composite_shingle", nu=4, nv=3)
         quad("GAR-RF-N", (GX, GD, GH), (GX + GW, GD, GH),
-             (GX + GW, GD / 2, GR), (GX, GD / 2, GR), SHINGLE, "composite_shingle")
+             (GX + GW, GD / 2, GR), (GX, GD / 2, GR), SHINGLE, "composite_shingle", nu=4, nv=3)
         quad("GAR-WALL-S", (GX, 0, 0), (GX + GW, 0, 0),
-             (GX + GW, 0, GH), (GX, 0, GH), STUCCO, "stucco")
+             (GX + GW, 0, GH), (GX, 0, GH), STUCCO, "stucco", nu=4, nv=3)
         quad("GAR-WALL-E", (GX + GW, 0, 0), (GX + GW, GD, 0),
-             (GX + GW, GD, GH), (GX + GW, 0, GH), STUCCO, "stucco")
+             (GX + GW, GD, GH), (GX + GW, 0, GH), STUCCO, "stucco", nu=4, nv=3)
         quad("GAR-WALL-N", (GX, GD, 0), (GX + GW, GD, 0),
-             (GX + GW, GD, GH), (GX, GD, GH), STUCCO, "stucco")
+             (GX + GW, GD, GH), (GX, GD, GH), STUCCO, "stucco", nu=4, nv=3)
         # Gable triangle above the east wall. The WEST gable end is omitted on
         # purpose — the garage abuts the house there, so no surface exists.
         tri("GAR-GABLE-E", (GX + GW, 0, GH), (GX + GW, GD, GH),
@@ -304,8 +356,14 @@ class SyntheticHouseSource(GeometrySource):
              (GX + GW - 0.6, -0.03, 2.2), (GX + 0.6, -0.03, 2.2), METAL, "stucco")
 
         # ── rooftop solar array on the south slope ──
-        quad("SOL-ROOF", (2.5, 1.2, 3.72), (9.0, 1.2, 3.72),
-             (9.0, 3.4, 4.68), (2.5, 3.4, 4.68), PANEL, "solar_panel")
+        # Flush-mounted on a short standoff, filling exactly the roof cells cut
+        # out above — x ∈ [2, 10], y ∈ [MY/4, 3·MY/4].
+        PANEL_STANDOFF = 0.12
+        roof_z = lambda y: H + (y / MY) * (RIDGE - H) + PANEL_STANDOFF
+        PY0, PY1 = MY / 4, 3 * MY / 4
+        quad("SOL-ROOF", (2.0, PY0, roof_z(PY0)), (10.0, PY0, roof_z(PY0)),
+             (10.0, PY1, roof_z(PY1)), (2.0, PY1, roof_z(PY1)),
+             PANEL, "solar_panel", nu=4, nv=2)
 
         # ── chimney (protrusion — EXCLUSION) ──
         quad("CHIMNEY", (9.6, 4.0, RIDGE - 0.2), (10.5, 4.0, RIDGE - 0.2),

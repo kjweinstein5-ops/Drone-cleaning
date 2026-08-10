@@ -128,3 +128,47 @@ def test_grime_is_proxy_bounded():
     for z in zones:
         assert 0.0 <= z.grime_proxy <= 1.0
         assert 0.0 <= z.moisture_index <= 1.0
+
+
+# ── differential moisture proxy ───────────────────────────────────────────────
+
+def test_moisture_is_read_against_the_zone_baseline_not_room_temperature():
+    """A sun-loaded roof is 50-60°C; an absolute anchor saturates and goes blind.
+
+    What indicates damp is a patch reading cooler than the surface AROUND it, so
+    a 6°C depression must register as wet whether the zone sits at 30°C or 55°C.
+    """
+    from propwash.backend.fusion.scan_pipeline import _grime_proxy
+    from propwash.backend.fusion.thermal_registration import ThermalFaceReading
+    from propwash.backend.geometry.source import Face
+
+    face = Face("F-0", (0, 0, 0), (1, 0, 0), (1, 1, 0), rgb_hint=(140, 140, 140))
+
+    def moisture(temp, baseline):
+        reading = ThermalFaceReading(
+            face_id="F-0", temp_c=temp, stdev_c=0.5,
+            temp_min_c=temp - 1, temp_max_c=temp + 1,
+            sample_count=3, reflection_suspect=False,
+        )
+        return _grime_proxy(reading, face, baseline)[1]
+
+    hot_dry = moisture(55.0, 55.0)
+    hot_damp = moisture(49.0, 55.0)
+    cool_dry = moisture(30.0, 30.0)
+    cool_damp = moisture(24.0, 30.0)
+
+    assert hot_dry == cool_dry == 0.0            # no depression = no signal
+    assert hot_damp > 0.5 and cool_damp > 0.5    # same depression, same reading
+    assert hot_damp == cool_damp
+
+
+def test_absolute_fallback_still_applies_without_a_baseline():
+    from propwash.backend.fusion.scan_pipeline import _grime_proxy
+    from propwash.backend.fusion.thermal_registration import ThermalFaceReading
+    from propwash.backend.geometry.source import Face
+
+    face = Face("F-0", (0, 0, 0), (1, 0, 0), (1, 1, 0), rgb_hint=(140, 140, 140))
+    reading = ThermalFaceReading(face_id="F-0", temp_c=20.0, stdev_c=0.5,
+                                 temp_min_c=19.0, temp_max_c=21.0,
+                                 sample_count=3, reflection_suspect=False)
+    assert _grime_proxy(reading, face, None)[1] > 0.5
