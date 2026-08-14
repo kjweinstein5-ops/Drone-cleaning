@@ -1,0 +1,398 @@
+<title>PROPWASH Field Runbook</title>
+<style>
+:root{
+  --ink:#12161c; --ink-2:#3f4a58; --ink-3:#6b7a8d;
+  --paper:#f4f2ed; --card:#ffffff; --rule:#ddd8cf;
+  --steel:#2f5d8a; --steel-soft:#e6eef6;
+  --rust:#b5442a; --rust-soft:#f7e6e1;
+  --amber:#9a6b12; --amber-soft:#faf0d9;
+  --moss:#3d6b4a; --moss-soft:#e4efe6;
+  --shadow:0 1px 2px rgba(18,22,28,.06), 0 4px 14px rgba(18,22,28,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#e8e5df; --ink-2:#a9b3c0; --ink-3:#7b8797;
+    --paper:#101318; --card:#181c23; --rule:#2a3039;
+    --steel:#78aad6; --steel-soft:#1a2733;
+    --rust:#e08268; --rust-soft:#2e1d18;
+    --amber:#d8ac5a; --amber-soft:#2b2314;
+    --moss:#8fc09c; --moss-soft:#18261c;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e8e5df; --ink-2:#a9b3c0; --ink-3:#7b8797;
+  --paper:#101318; --card:#181c23; --rule:#2a3039;
+  --steel:#78aad6; --steel-soft:#1a2733;
+  --rust:#e08268; --rust-soft:#2e1d18;
+  --amber:#d8ac5a; --amber-soft:#2b2314;
+  --moss:#8fc09c; --moss-soft:#18261c;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px;margin:0 auto;padding:40px 22px 80px}
+
+/* ── masthead ─────────────────────────────────────────── */
+header{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:8px}
+.kicker{
+  font:700 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--rust);
+}
+h1{font-size:clamp(30px,5vw,44px);line-height:1.05;letter-spacing:-.02em;
+   font-weight:800;margin:12px 0 10px;text-wrap:balance}
+.standfirst{font-size:17px;color:var(--ink-2);max-width:64ch}
+.meta{
+  display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;
+  font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;
+}
+.meta span{border:1px solid var(--rule);border-radius:100px;padding:6px 11px;color:var(--ink-3)}
+
+/* ── timeline spine ───────────────────────────────────── */
+.phase{
+  position:relative;padding:34px 0 34px 96px;border-bottom:1px solid var(--rule);
+}
+.phase:last-of-type{border-bottom:0}
+.phase::before{                       /* the spine */
+  content:"";position:absolute;left:31px;top:0;bottom:0;width:2px;background:var(--rule);
+}
+.phase:first-of-type::before{top:34px}
+.phase:last-of-type::before{bottom:auto;height:34px}
+.num{
+  position:absolute;left:12px;top:30px;width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--card);border:2px solid var(--ink);color:var(--ink);
+  font:800 15px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  box-shadow:var(--shadow);
+}
+.phase.gap .num{border-color:var(--rust);color:var(--rust)}
+.phase-hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+h2{font-size:23px;font-weight:800;letter-spacing:-.01em}
+.clock{
+  font:700 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--steel);background:var(--steel-soft);
+  padding:5px 9px;border-radius:5px;white-space:nowrap;
+}
+.who{font:600 11px/1 ui-monospace,monospace;letter-spacing:.08em;
+     text-transform:uppercase;color:var(--ink-3)}
+.phase p{color:var(--ink-2);max-width:66ch;margin-top:10px}
+.phase ul{margin:12px 0 0 18px;color:var(--ink-2);max-width:66ch}
+.phase li{margin-bottom:6px}
+.phase li strong{color:var(--ink)}
+
+/* ── gate markers ─────────────────────────────────────── */
+.gate{
+  display:inline-flex;align-items:center;gap:8px;margin-top:16px;
+  background:var(--moss-soft);border:1px solid var(--moss);border-radius:6px;
+  padding:8px 12px;font-size:13px;font-weight:600;color:var(--moss);
+}
+.gate b{color:var(--moss)}
+
+/* ── warnings: the things that actually bite ──────────── */
+.warn{
+  margin-top:18px;background:var(--rust-soft);
+  border-left:4px solid var(--rust);border-radius:0 8px 8px 0;
+  padding:16px 18px;max-width:68ch;
+}
+.warn h3{font-size:15px;font-weight:800;color:var(--rust);margin-bottom:7px}
+.warn p{color:var(--ink-2);margin-top:0;font-size:14.5px}
+.warn p + p{margin-top:9px}
+
+.note{
+  margin-top:18px;background:var(--amber-soft);
+  border-left:4px solid var(--amber);border-radius:0 8px 8px 0;
+  padding:16px 18px;max-width:68ch;
+}
+.note h3{font-size:15px;font-weight:800;color:var(--amber);margin-bottom:7px}
+.note p{color:var(--ink-2);margin-top:0;font-size:14.5px}
+
+/* ── tables ───────────────────────────────────────────── */
+.scroll{overflow-x:auto;margin-top:18px;border:1px solid var(--rule);border-radius:9px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:440px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule)}
+th{font:700 10.5px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;
+   color:var(--ink-3);background:var(--paper)}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.dim{color:var(--ink-3)}
+
+/* ── status strip ─────────────────────────────────────── */
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:26px 0 6px}
+.st{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow)}
+.st .lab{font:700 10px/1 ui-monospace,monospace;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.st .val{font-size:26px;font-weight:800;margin-top:7px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.st .sub{font-size:12.5px;color:var(--ink-3);margin-top:3px}
+.st.ok .val{color:var(--moss)} .st.warn-c .val{color:var(--rust)} .st.mid .val{color:var(--steel)}
+
+/* ── section headings between blocks ──────────────────── */
+.rule{
+  margin:52px 0 0;padding-top:22px;border-top:2px solid var(--ink);
+}
+.rule h2{font-size:26px}
+.rule p{color:var(--ink-2);margin-top:8px;max-width:66ch}
+
+footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
+       font-size:13px;color:var(--ink-3);line-height:1.7;max-width:70ch}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">Field Runbook · v1</div>
+  <h1>One job, beginning to end</h1>
+  <p class="standfirst">
+    Qualify, scout, map, prescribe, wash, verify, close — with the timings the planner
+    actually computes, and the three places this process breaks.
+  </p>
+  <div class="meta">
+    <span>Reference: 363 m² house</span>
+    <span>20 zones · 60 passes</span>
+    <span>980 m flight path</span>
+    <span>Carlsbad, CA</span>
+  </div>
+</header>
+
+<div class="status">
+  <div class="st mid"><div class="lab">Scout on site</div><div class="val">45–60<span style="font-size:15px"> min</span></div><div class="sub">one pilot, two passes</div></div>
+  <div class="st warn-c"><div class="lab">Processing</div><div class="val">1–3<span style="font-size:15px"> h</span></div><div class="sub">forces a two-visit model</div></div>
+  <div class="st mid"><div class="lab">Wash day on site</div><div class="val">4–4.5<span style="font-size:15px"> h</span></div><div class="sub">crew of two, one aircraft</div></div>
+  <div class="st ok"><div class="lab">Throughput</div><div class="val">1<span style="font-size:15px"> house/day</span></div><div class="sub">scouting batched separately</div></div>
+</div>
+
+<!-- ══════════ PHASES ══════════ -->
+
+<section class="phase">
+  <div class="num">1</div>
+  <div class="phase-hd"><h2>Qualify</h2><span class="clock">30 min</span><span class="who">Desk</span></div>
+  <p>Kills bad jobs before anyone drives out. Four checks, all of which can disqualify a site outright.</p>
+  <ul>
+    <li><strong>Airspace.</strong> Much of Carlsbad sits under McClellan-Palomar (CRQ) controlled airspace — LAANC per flight, with a ceiling that may be lower than you need. Check per address; never assume.</li>
+    <li><strong>Ground risk.</strong> Overspray reaches further than the aircraft does, so "not over people" is stricter here than Part 107 alone requires.</li>
+    <li><strong>Water in and out.</strong> A spigot and a hose route — and a containment plan, because detergent reaching a storm drain is a regulated discharge in California.</li>
+    <li><strong>Pre-existing damage.</strong> Photograph it. Damage you didn't document is damage you caused.</li>
+  </ul>
+  <div class="gate">Gate — airspace clear · water solved · owner consent in writing</div>
+</section>
+
+<section class="phase">
+  <div class="num">2</div>
+  <div class="phase-hd"><h2>Scout</h2><span class="clock">45–60 min on site</span><span class="who">RPIC · Autel 4T V2</span></div>
+  <p>
+    Two automated passes. A <strong>nadir grid</strong> at 70–80% forward overlap builds the roof and
+    massing; <strong>oblique orbits</strong> at ~45° build the façades. Skip the obliques and the walls —
+    half your billable area — reconstruct as mush.
+  </p>
+  <p>
+    RGB and thermal are captured co-registered on one gimbal. That is the single biggest reason for
+    this airframe: it turns cross-sensor alignment from a per-frame problem into a fixed constant.
+  </p>
+  <div class="warn">
+    <h3>The weather window is narrower than you think</h3>
+    <p>
+      The grime proxy reads evaporative cooling — damp surfaces read cooler than the dry surface
+      around them. That only works on <strong>dry, sun-loaded</strong> surfaces. Carlsbad's morning
+      marine layer flattens thermal contrast completely.
+    </p>
+    <p>
+      Practical window: <strong>10:00–15:00, no rain in the preceding 24 h.</strong> A scan in the
+      marine layer is not a degraded scan — it is a useless one. Reschedule.
+    </p>
+  </div>
+  <div class="gate">Gate — in-window conditions · coverage complete · exclusions noted on site</div>
+</section>
+
+<section class="phase gap">
+  <div class="num">3</div>
+  <div class="phase-hd"><h2>Process</h2><span class="clock">1–3 h compute</span><span class="who">Unattended</span></div>
+  <p>
+    RGB builds the geometry; thermal supplies the values. The order is not negotiable — thermal
+    can't feature-match, because its landmarks move with temperature.
+  </p>
+  <p>
+    Photogrammetry gives you a thermal-textured model. It does <em>not</em> give you view-angle-weighted,
+    reflection-rejected per-face temperature with a confidence score. That is our stage, and it is
+    what every downstream decision is made from.
+  </p>
+  <div class="warn">
+    <h3>This latency shapes the whole business</h3>
+    <p>
+      You cannot scan at 09:00 and wash at 09:30. The answer is <strong>scan day / wash day</strong>:
+      batch 4–6 properties in one scouting morning, process overnight, wash them across the following days.
+    </p>
+    <p>
+      That isn't a workaround, it's a better business. It separates a cheap, low-risk, high-margin
+      scouting operation from an expensive, liability-heavy wash operation — and the twin becomes a
+      <strong>sales asset you show before the customer commits</strong>.
+    </p>
+  </div>
+</section>
+
+<section class="phase">
+  <div class="num">4</div>
+  <div class="phase-hd"><h2>Prescribe &amp; review</h2><span class="clock">10–20 min</span><span class="who">Human · mandatory</span></div>
+  <p>
+    The agent prescribes, the deterministic safety layer gates, and then a person signs. What the
+    reviewer is actually checking:
+  </p>
+  <ul>
+    <li><strong>Nothing that should be excluded was missed.</strong> The classifier catches HVAC and roof protrusions. It will not catch a koi pond.</li>
+    <li><strong>Solar reads DI-water-only, under the ceiling, in every phase.</strong> Detergent residue cuts panel output; pressure cracks cells.</li>
+    <li><strong>Grime scores agree with the photograph.</strong> A zone reading 60% that looks clean means the thermal was confounded — shade, a wet patch, a reflection.</li>
+    <li><strong>Low-confidence classifications</strong> get human eyes before dispatch.</li>
+  </ul>
+  <div class="gate">Gate — reviewer signature, written to the audit log as waiver &amp; liability evidence</div>
+</section>
+
+<section class="phase">
+  <div class="num">5</div>
+  <div class="phase-hd"><h2>Wash</h2><span class="clock">4–4.5 h on site</span><span class="who">Crew of 2</span></div>
+  <p>
+    The planner says <strong>114 minutes of active spray time</strong> for the reference house. That is
+    airborne spray only — here is the actual day.
+  </p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Block</th><th style="text-align:right">Time</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Arrive, brief, walk the site</td><td class="n">20 min</td><td class="dim">re-verify nothing changed</td></tr>
+        <tr><td>Water, pump, hose, staging</td><td class="n">25 min</td><td class="dim"></td></tr>
+        <tr><td>Pre-flight, LAANC, weather</td><td class="n">15 min</td><td class="dim"></td></tr>
+        <tr><td><strong>Spray passes</strong></td><td class="n">114 min</td><td class="dim">planner output</td></tr>
+        <tr><td>Battery swaps</td><td class="n">20–40 min</td><td class="dim">not a rounding error</td></tr>
+        <tr><td>Nozzles, refills, repositioning</td><td class="n">20 min</td><td class="dim"></td></tr>
+        <tr><td>Pack down</td><td class="n">20 min</td><td class="dim"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <h3>Two windows that don't overlap</h3>
+    <p>
+      Scanning wants surfaces <strong>hot and dry</strong> (10:00–15:00). Solar panels must not be
+      washed hot — cold water on sun-loaded glass is a thermal-shock risk, so panels want
+      <strong>early morning or evening</strong>. The two windows are mutually exclusive, which is one
+      more reason scan day and wash day are different days.
+    </p>
+  </div>
+  <p>
+    Zones run solar-first and top-down, so runoff never re-dirties finished work. Each zone gets
+    pre-soak → chemical → dwell → rinse; pre-soak and rinse are water-only by construction.
+    Throughout, the <strong>operator stays in command</strong> — the software reduces the skill
+    required, never the authority.
+  </p>
+</section>
+
+<section class="phase gap">
+  <div class="num">6</div>
+  <div class="phase-hd"><h2>Verify</h2><span class="clock">15 min + dry-down</span><span class="who">Crew</span></div>
+  <div class="warn">
+    <h3>The dry-down problem</h3>
+    <p>
+      <strong>The grime proxy reads wet as dirty.</strong> Run a verification thermal scan straight
+      after washing and it reports the entire building as maximally soiled. Worse — a drying surface
+      dries unevenly, so you get a confident, detailed, completely spurious grime map.
+    </p>
+    <p>
+      This isn't a bug. It's a physical limit of inferring soiling from evaporative cooling, and it
+      lands squarely on the verification half of the closed loop.
+    </p>
+  </div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Option</th><th>Trade</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Dry-down window, then re-scan</td><td>Correct, but the window length is unknown — 30–90 min? Hours in marine layer?</td><td class="dim">Needs field calibration</td></tr>
+        <tr><td><strong>RGB-primary same-day</strong></td><td>Visible staining isn't confounded by water. Less sensitive.</td><td><strong>Ship this now</strong></td></tr>
+        <tr><td>Next-visit verification</td><td>The next service's pre-scan verifies this one. Free and rigorous.</td><td class="dim">Too slow to close today</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Run the thermal re-scan anyway — as a research capture, to build the dry-down curve. But
+    <strong>don't market thermal verification until that curve exists.</strong>
+  </p>
+</section>
+
+<section class="phase">
+  <div class="num">7</div>
+  <div class="phase-hd"><h2>Close</h2><span class="clock">15 min</span><span class="who">Mostly automated</span></div>
+  <p>
+    Customer report — before/after twin, per-zone results, what was excluded and why. Invoice.
+    Book the next service, whose pre-scan becomes this job's rigorous verification.
+  </p>
+  <p>
+    Then the part that compounds: the <strong>deviation log</strong>. Prescribed versus actual
+    pressure, dwell, standoff, outcome. The surface table ships as unvalidated defaults and only
+    becomes real numbers by accumulating these deltas across jobs. Treat the log as the product,
+    not as telemetry exhaust.
+  </p>
+</section>
+
+<!-- ══════════ WHAT DECIDES IT ══════════ -->
+
+<section class="rule">
+  <h2>Three things decide whether this works</h2>
+  <p>None of them are the drone.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Lever</th><th>Why it dominates</th><th style="text-align:right">Effect</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Traverse speed</strong></td>
+          <td>Job time is path length ÷ speed. The 0.2–0.35 m/s defaults are conservative guesses.</td>
+          <td class="n">114 → 57 min<br><span class="dim" style="font-weight:400">at 2×</span></td>
+        </tr>
+        <tr>
+          <td><strong>The dry-down curve</strong></td>
+          <td>Until it's measured, thermal verification — the defensible half of the loop — can't be sold.</td>
+          <td class="n">Blocks the IP</td>
+        </tr>
+        <tr>
+          <td><strong>A vendor answering</strong></td>
+          <td>No confirmed control API means the software prescribes and a human flies.</td>
+          <td class="n">Path A only</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:18px">
+    Every hour of field calibration that safely raises traverse speed is worth more than any
+    hardware upgrade. And Path A is a real business — it just isn't the one the patent describes.
+  </p>
+</section>
+
+<section class="rule">
+  <h2>Ranked by what it costs you</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Failure</th><th>Cost</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Solar panel damage</strong></td><td>Catastrophic — replacement plus reputation</td><td>Hard ceiling in the safety layer, DI only, never hot, no agent override</td></tr>
+        <tr><td><strong>Detergent to storm drain</strong></td><td>Fines, regulatory, reputational</td><td>Containment planned before the quote</td></tr>
+        <tr><td>Scan in marine layer</td><td>Wasted trip — worse, a <em>confidently wrong</em> grime map</td><td>Weather gate before dispatch; refuse to process out-of-window captures</td></tr>
+        <tr><td>Verification run wet</td><td>Wrong PASS/FAIL, wrong re-queue, customer dispute</td><td>RGB-primary until dry-down is calibrated</td></tr>
+        <tr><td>Glass/solar reconstruct badly</td><td>Manual cleanup, schedule slip</td><td>Expect it; budget the cleanup; fly the obliques</td></tr>
+        <tr><td>Battery logistics</td><td>Job over-runs into a bad wash window</td><td>Buy the batteries; get real endurance <em>with a full tank</em></td></tr>
+        <tr><td>Flying uncleared in CRQ airspace</td><td>Certificate action</td><td>Per-address check, every time</td></tr>
+        <tr><td>Quoting uncalibrated grime as fact</td><td>Erodes the thing that makes you different</td><td>Label the proxy as a proxy — including in customer copy</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  Timings marked as planner output are computed by <code>sim/export_house_3d.py</code> on the
+  reference house — 363 m² across 20 cleanable zones and 980 m of flight path. Everything else is
+  an estimate to validate in the field. Grime is a <strong>proxy</strong> inferred from thermal and
+  RGB, not a spectral measurement. Regulatory specifics — LAANC ceilings, stormwater BMPs — must be
+  confirmed per address and per jurisdiction; they change. Full detail in
+  <code>docs/FIELD_OPERATIONS.md</code>.
+</footer>
+
+</div>
