@@ -1,5 +1,12 @@
 # Decision Note — Cleaning Drone Platform
 
+> ⚠️ **SUPERSEDED IN PART (2026-08-16).** The "own the stack" recommendation below
+> (DJI M350/M400 + Foxtech AeroClean) is no longer viable: DJI went onto the **FCC Covered
+> List** in December 2025, so new models cannot be imported or sold in the US, and federal
+> contractors may not operate them on federally funded work. See
+> **`INTEGRABLE_PLATFORM.md`** for the current platform decision. Pricing and
+> tethered-vs-untethered analysis here remain valid.
+
 > **Status:** OPEN — this is the highest-risk assumption in the project (CLAUDE.md §7).
 > **Type:** Hardware + integration-strategy decision. **Owner:** Kevin. **Last updated:** 2026-07-06.
 > **Related:** `CLAUDE.md` §4 (inventory), §7 (Lucid integration paths), §10 (operator model) ·
