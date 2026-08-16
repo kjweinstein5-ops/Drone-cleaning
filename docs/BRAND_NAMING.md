@@ -623,8 +623,127 @@ cycles on real-words.**
 
 ---
 
+## Pressure test — NITIDO (❌ FAIL) and MIGAKU (✅ PASS) + drone-cleaning sweep
+
+*Screened 2026-08-16. Preliminary web scan, not TESS/counsel.*
+
+### ⚠️ Correction: NITIDO was never "coined"
+
+Earlier rounds recommended NITIDO on the grounds that it was **coined**, and therefore the
+strongest possible mark. **That was wrong.** *Nítido* is a common, everyday adjective in
+Spanish, Portuguese and Italian meaning "clean / clear / sharp."
+
+That single error inverts the recommendation, because it means the name is exactly what every
+Spanish-speaking cleaning business in the US reaches for first.
+
+### ❌ NITIDO — class 37 is already full
+
+| Conflict | Where | Note |
+|---|---|---|
+| **NITIDO CLEANING SERVICES, LLC** | Murray, UT | D&B-listed entity, exact name |
+| **Cleaning by NÍTIDO** — `cleaningbynitido.com` | Chicago, IL | commercial cleaning / sanitization |
+| **Nitido & Pro Cleaning Services** | Coral Springs, FL | residential + commercial |
+| **Nitido Cleaning LLC** | Three Bridges, NJ | |
+| **Nitido 031 Cleaning Services** | Bronx, NY | |
+| **Nítido / Nítidos Cleaning Service** | Instagram | two more |
+| `nitidosolutions.com` | Anthem Home & Carpet | commercial cleaning |
+
+Seven-plus independent users **in the primary class**. None are exterior/drone specialists, so
+it is less acutely damaging than Vesta Wash — but a mark that common is weak, hard to police,
+and cannot be owned.
+
+**Class 9 / 42 adjacency:** **NIDO SYSTEM / NIDO.AI** (Veneto, Italy) — "a distributed Physical
+AI platform connecting autonomous drones, docking stations and robotic nodes into one
+coordinated monitoring network," EASA-compliant, TRL 8. Not the same string, but one letter and
+a near-homophone away, **in precisely our technical space**. That is the kind of adjacency
+counsel flags immediately.
+
+**Verdict: ❌ kill NITIDO.** Not coined, crowded in class 37, and shadowed by NIDO.AI in class 9/42.
+
+### ✅ MIGAKU — the first candidate to survive
+
+| Class | Finding |
+|---|---|
+| **37 — cleaning** | ✅ **Nothing found.** No cleaning, pressure-washing or exterior-services company under this name |
+| **9 / robotics + drones** | ✅ **Nothing found.** Absent from the drone-cleaning landscape entirely |
+| **9 / 41 — software** | ⚠️ **Migaku Inc.** — language-learning app (iOS, Android, web), active press. The only real conflict |
+| **42 — AI/software** | ⚠️ same entity; the app markets AI-driven features |
+
+**磨く (mi-GA-ku), "to polish / to refine."** The double meaning still holds and is still the best
+fit of any candidate: you *polish a surface*, and the learning loop *refines* the prescription.
+
+**The one thing to clear:** Migaku Inc. sits in education/consumer-app territory (class 41, and
+class 9 as software). PROPWASH is class 37 services plus class 9 hardware — genuinely different
+goods and channels, so coexistence is plausible. But we *are* also a software company, so this
+is the same shape of question that partially sank Candor. **Counsel decides this one; it is a
+real question, not a formality.**
+
+**Not yet screened:** Japanese-market use of 磨く on cleaning products. Common verb, likely
+some usage. Matters only if there is ever a JP filing.
+
+**Verdict: ✅ proceed to counsel.** Cleanest result of any name tested — the only candidate with
+*nothing* in class 37 and *nothing* in drones/robotics.
+
+---
+
+### 🔍 Drone-cleaning landscape sweep (new — none of the earlier rounds checked this)
+
+Every previous round screened "cleaning" and "robotics" generically. Nobody checked the
+**drone-cleaning** niche, which is where our actual competitors live.
+
+**The market has real incumbents and real money:**
+
+| Company | Position |
+|---|---|
+| **Lucid Bots** (Charlotte, NC) | Sherpa + Lavo. **$20M Series B, ~$34M total. 400+ active operators across 40+ states, >$75M in operator revenue.** Our assumed hardware vendor is also the category leader |
+| **Spinoff Robotics** | Tethered aerial robots — façade cleaning, **solar panel washing**, inspection. Closest to our solar wedge |
+| **CleanHeights Robotics** (Singapore) | Autonomous cleaning robots for facility management |
+| **Apellix** | Tethered industrial power-wash + coating |
+| **DRONEWASH+** (2021) | Nationwide drone exterior cleaning, **franchise model** |
+| **SkyWash Drones** (Houston, 2022) | Window, façade, roof |
+| Drone Clean USA · Drone Force USA · DroneWorx Pro Washing · Pressure Pros Wash · Drone Powered Solutions · Sun Brite Services | Regional service operators |
+
+**Finding 1 — the "—WASH" suffix is crowded in our exact niche.** DroneWash+, SkyWash,
+DroneWashingEquip, DroneWorx Pro Washing, Pressure Pros Wash. The `<X>WASH` construction is the
+default naming move in drone cleaning, which weakens **any** name built that way — including the
+proposed **SLABWASH** ground line.
+
+**Finding 2 — PROPWASH itself screens clean here.** No drone-cleaning or pressure-washing company
+under that name surfaced. And "prop wash" is an **aviation term of art** (the airflow behind a
+propeller) that is *arbitrary* applied to cleaning services — which is a genuinely favourable
+trademark posture in class 37, better than any of the descriptive candidates we spent eight
+rounds generating.
+
+**Finding 3 — Lucid Bots is the category leader, not a neutral supplier.** 400+ operators and
+$75M of operator revenue means they have every incentive to keep autonomy in-house. This is
+evidence *for* the Path-A-first posture in CLAUDE.md §7, not against it.
+
+### Where this leaves the naming exercise
+
+| Name | Class 37 | Drones/robotics | Software/AI | Verdict |
+|---|---|---|---|---|
+| SEIKA | — | — | — | ❌ meaning trap |
+| TAKUMI | ✅ | ❌ Takumi CNC | ⚠️ | ⚠️ |
+| CANDOR | ✅ | ✅ | ❌ several | ⚠️ |
+| VESTA | ❌❌ Vesta Wash | ❌ Amazon Vesta | ❌ Vesta.AI | ❌❌ |
+| NITIDO | ❌ 7+ users | ⚠️ NIDO.AI | ⚠️ | ❌ |
+| **MIGAKU** | **✅ clear** | **✅ clear** | ⚠️ Migaku Inc. (edu app) | **✅ best** |
+| **PROPWASH** | **✅ clear** | **✅ clear** | ✅ | **✅ + already ours** |
+
+**Recommendation: the two real candidates are MIGAKU and PROPWASH — and PROPWASH is free.**
+
+After nine rounds, the incumbent screens as well as anything we generated, is arbitrary rather
+than descriptive in its class, and is already in the repo, the docs and the visor. The honest
+advice is to **keep PROPWASH** and take **MIGAKU** to counsel only if you want the option.
+
+The one thing worth changing regardless: **drop SLABWASH for the ground line.** The "—wash"
+suffix is the crowded part, and doubling down on it is the weakest available move.
+
+---
+
 ## Log
 | Date | Note | By |
 |---|---|---|
 | 2026-07-06 | Exploration shortlist drafted; recommend keep PROPWASH or explore Facet / Downwash | Claude (advisory) |
+| 2026-08-16 | **NITIDO ❌** — not coined (common ES/PT/IT word); 7+ cleaning cos in class 37; NIDO.AI shadows it in drones. **MIGAKU ✅** — clear in cleaning AND drones; only conflict is Migaku Inc. (language app). Drone-cleaning sweep added: "—wash" suffix is crowded in-niche (DroneWash+, SkyWash), but **PROPWASH itself screens clean and is arbitrary in class 37**. Recommend keep PROPWASH; drop SLABWASH. | Claude (advisory) |
 | 2026-08-16 | **VESTA pressure-tested → ❌ hard fail.** Vesta Wash (14-yr exterior soft-wash co, DE/MD/PA) is a direct class-37 incumbent; plus Amazon Vesta (robots) and Vesta.AI (software). Round-5 "clear in-space" was wrong and is corrected. Converge on NITIDO / MIGAKU. | Claude (advisory) |
