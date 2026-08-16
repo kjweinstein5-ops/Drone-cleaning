@@ -551,7 +551,80 @@ low-crowding); take the top 2 to a trademark attorney — preliminary web scanni
 - [ ] Check social handles + that it doesn't overclaim (§5/§7).
 - [ ] Decide keep-vs-rename; if renaming, update repo, docs, and the visor branding.
 
+## Pressure test — VESTA (❌ HARD FAIL — worst result of any candidate)
+
+*Screened 2026-08-16. Preliminary web scan, not TESS/counsel.*
+
+Round 5 flagged Vesta only for phonetic proximity to **Vestas** (wind energy). That was the
+least of it. Vesta is the first candidate to fail in **all three** of our classes at once.
+
+### ❌ Class 37 (cleaning services) — DIRECT HIT, and more than one
+
+| Conflict | What they do | Severity |
+|---|---|---|
+| **Vesta Wash** — `vestawash.com` | **14+ years**, DE / MD / PA. Soft-washing **roofs, siding, stucco, decks, pavers, concrete**; commercial up to 10 storeys and 50-building portfolios | 🔴 **Fatal.** This is our exact service line, in our exact naming pattern |
+| **Vesta Pro Wash** — `tampasoftwashing.com` | Tampa FL. Pressure + soft washing, window cleaning, commercial janitorial | 🔴 Second independent user, same class |
+| **Vesta Property Pro** — `vestapropertypro.com` | Wesley Chapel FL. Commercial cleaning, power washing, junk removal | 🟠 Third |
+
+**Vesta Wash is the single most damaging conflict any candidate has hit.** It is not an
+adjacent-class coexistence question — it is an incumbent exterior soft-washing company whose
+surface list (roof, siding, stucco, deck, concrete) reads like our own §9 treatment matrix.
+
+Note the specific trap: our naming pattern pairs the mark with "wash". **Naming the company
+Vesta and keeping any "wash" in the brand family literally reproduces an existing company's
+name.**
+
+### ❌ Class 9 (robotics / hardware)
+
+- **Amazon "Vesta"** — Amazon's home-robot programme, named for the same goddess, using
+  cameras and computer-vision navigation. Amazon is not a party you coexist with by accident.
+
+### ❌ Class 42 (software / AI)
+
+- **Vesta.AI** — property-management automation and ML. *Adjacent to our own customer.*
+- **Vesta AI Labs**, **Vesta AI** (consulting), **vesta.com** (AI agents across workflows).
+
+### ⚠️ Phonetic (the original flag, still live)
+
+- **Vestas Wind Systems** — global wind-energy company. Renewables adjacency matters given
+  the solar wedge.
+
+### Verdict
+
+**❌ Kill it.** Not "clear with counsel" — kill it. Every other finalist cracked on exactly one
+adjacent class; Vesta cracks on the **primary** class with an incumbent doing the same work, and
+then again on both secondary classes.
+
+The Round-5 entry recorded it as "clear in-space" — that scan was not deep enough. Corrected here.
+
+### Four pressure tests, and the pattern is now unambiguous
+
+| Name | Result | The crack | Class hit |
+|---|---|---|---|
+| SEIKA | ❌ | reads as "confectionery"; seika.com = Seika Corp | meaning |
+| TAKUMI | ⚠️ | Takumi CNC — hardware/robotics | 7/9 |
+| CANDOR | ⚠️ | multiple Candor AI/software brands | 42 |
+| **VESTA** | ❌❌ | **Vesta Wash + Vesta Pro Wash (cleaning), Amazon Vesta (robots), Vesta.AI (software)** | **37 + 9 + 42** |
+
+Evocative real-words are not merely crowded — in *this* industry they are **already in use by
+exterior-cleaning companies**, because the pool of "clean / pure / bright" words is exactly what
+every power-washing business in the country has already reached for.
+
+**This settles it: stop testing real-words.** The remaining candidates are the ones that were
+never going to be reached for by a regional pressure-washing outfit:
+
+- **NITIDO** — coined from Latin *nitidus* "clean/bright". No meaning trap, no in-space use
+  found, and a coined mark is the strongest kind. **Most defensible.**
+- **MIGAKU** — 磨く "to polish / refine". A Japanese *verb*, almost never used as a company
+  name; only ding is migaku.com (edtech, different class).
+
+**Recommendation unchanged and now firmer: take NITIDO and MIGAKU to counsel. Do not spend more
+cycles on real-words.**
+
+---
+
 ## Log
 | Date | Note | By |
 |---|---|---|
 | 2026-07-06 | Exploration shortlist drafted; recommend keep PROPWASH or explore Facet / Downwash | Claude (advisory) |
+| 2026-08-16 | **VESTA pressure-tested → ❌ hard fail.** Vesta Wash (14-yr exterior soft-wash co, DE/MD/PA) is a direct class-37 incumbent; plus Amazon Vesta (robots) and Vesta.AI (software). Round-5 "clear in-space" was wrong and is corrected. Converge on NITIDO / MIGAKU. | Claude (advisory) |
