@@ -152,6 +152,50 @@ it is the half of the business that is actually differentiated.
 
 ---
 
+## 5.5 Does the Sherpa map the building? **No.** ⭐
+
+*Checked 2026-08-16 against Lucid's own product pages.*
+
+This matters more than any other single capability question, so it was checked directly rather
+than assumed.
+
+| Question | Finding |
+|---|---|
+| Does the Sherpa map / 3D scan / survey? | **No.** No mapping, 3D scanning, reality capture or surveying appears anywhere in Lucid's Sherpa material |
+| Is it autonomous? | **No.** *"The Sherpa Drone is operated by a single pilot with one ground crew member,"* requiring **FAA Part 107** certification |
+| What sensing does it have? | Collision-avoidance radar (0.5–50 m per earlier vendor material). **Obstacle avoidance, not mapping** — the same distinction as laser rangefinder ≠ LiDAR |
+| SDK / API / developer program? | **None published.** The only software offering on the product page is *Sherpa Academy*, a training course |
+| Their `/platform` page | Returns **404** |
+| The "Smarter, Swifter, and Open to All" post | An **industry roundup**, not a product announcement. Its RTK sub-inch site models and 3D Gaussian splatting language describes **competitors' drones**, not Lucid products |
+
+### What this means
+
+**1. The mapping layer is wide open.** The Sherpa is a spray tool that sprays where a pilot
+points it. It has **no model of the building, no per-surface knowledge, and no record of what was
+cleaned.** Everything PROPWASH does upstream of the nozzle is uncontested by the category leader.
+
+**2. It validates the two-drone architecture** (CLAUDE.md §6). Scout maps, cleaner sprays, both
+sync through the plan. **Lucid has no scout.** To close the loop they would need a sensing
+aircraft, a photogrammetry pipeline, a per-surface model and a verification stage — which is the
+entire contents of this repository.
+
+**3. It reframes "Lucid doesn't allow integration."** They are not blocking you. **There is
+nothing to integrate into** — no API, no addressable onboard compute, no map to enrich. The
+Sherpa is a well-built end-effector on a human-piloted airframe.
+
+### ⚠️ The caveat that keeps this honest
+
+**Lavo AI is marketed as an autonomous pressure-washing robot.** A ground robot that navigates
+autonomously needs SLAM — so **mapping competence exists inside Lucid**, it is simply not in the
+Sherpa product. They also acquired the autonomy company Avianna, and just raised $20M.
+
+**So this is a current-product gap, not a capability gap.** It is a real opening, and it is the
+opening most likely to close from their side. That is already logged as a kill criterion in
+`GO_NO_GO.md` §3 — *"Lucid ships per-surface prescription + verification inside Lucid Refresh."*
+Add mapping to that trigger.
+
+---
+
 ## 6. Honest limits of this scan
 
 - **Web search only.** No state business registries, no trade-association lists, no USPTO.
