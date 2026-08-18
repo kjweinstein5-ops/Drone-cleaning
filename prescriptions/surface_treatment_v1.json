@@ -2,8 +2,36 @@
   "_meta": {
     "version": "1.0.0",
     "status": "UNVALIDATED_DEFAULTS",
-    "note": "Starting assumptions only — calibrate from real field jobs. Never hard-code these in logic. See CLAUDE.md §9.",
-    "last_updated": "2026-06-22"
+    "note": "Starting assumptions only \u2014 calibrate from real field jobs. Never hard-code these in logic. See CLAUDE.md \u00a79.",
+    "last_updated": "2026-06-22",
+    "open_calibration_items": [
+      {
+        "id": "roof-dwell-2026-08",
+        "severity": "HIGH",
+        "surfaces": [
+          "composite_shingle",
+          "clay_tile",
+          "concrete_tile"
+        ],
+        "finding": "Roof dwell is 30-40 s. Industry soft-wash practice for biological growth (moss/algae/lichen) is a 15-20 MINUTE dwell. Ours is roughly 26-34x too short to kill growth at the root.",
+        "impact_on_schedule": "None material. Modelled at 900 s: total job dwell rises 8.9 -> 66.5 min, but makespan stays 115 min on one aircraft because 66 min hides behind work on other zones. The phase scheduler absorbs it.",
+        "impact_on_result": "Material. A 35 s dwell rinses; it does not kill. Zones would pass visually and regrow.",
+        "coupled_decision": "Industry roof chemistry is sodium-hypochlorite based. Our table specifies eco_degreaser. Dwell and chemistry must be calibrated together - KEVIN'S CALL, since SH is harsh on landscaping and 'eco' is a positioning choice.",
+        "status": "OPEN - do not change dwell without deciding chemistry"
+      },
+      {
+        "id": "pressure-ceiling-is-correct-2026-08",
+        "severity": "INFO",
+        "finding": "Verified against ARMA guidance: asphalt shingles must NEVER be pressure washed - granule loss and premature failure. Correct method is soft wash at 40-80 psi. Our composite_shingle default of 5.5 bar = 80 psi sits at the top of that band and is CORRECT. The ~7 bar system ceiling is a deliberate design point, not a limitation.",
+        "status": "CONFIRMED"
+      },
+      {
+        "id": "high-pressure-belongs-on-the-ground-2026-08",
+        "severity": "INFO",
+        "finding": "Surfaces that genuinely need 100-200 bar are horizontal hardscape - concrete, driveways, parking decks. That is the ground-robot domain, not the aerial one. The aerial system is soft-wash by design across every surface it touches.",
+        "status": "CONFIRMED"
+      }
+    ]
   },
   "surfaces": {
     "composite_shingle": {
@@ -27,7 +55,7 @@
       "pressure_bar_default": 5.0,
       "pressure_bar_hard_ceiling": 6.5,
       "chemical": "standard_degreaser",
-      "chemical_mix_ratio_default": 0.30,
+      "chemical_mix_ratio_default": 0.3,
       "dwell_seconds_min": 30,
       "dwell_seconds_max": 40,
       "dwell_seconds_default": 35,
@@ -42,7 +70,7 @@
       "pressure_bar_default": 5.0,
       "pressure_bar_hard_ceiling": 6.5,
       "chemical": "standard_degreaser",
-      "chemical_mix_ratio_default": 0.30,
+      "chemical_mix_ratio_default": 0.3,
       "dwell_seconds_min": 30,
       "dwell_seconds_max": 40,
       "dwell_seconds_default": 35,
@@ -65,7 +93,7 @@
       "nozzle_orifice_mm": 0.35,
       "nozzle_pattern": "narrow_fan",
       "standoff_m_default": 0.8,
-      "_safety_note": "HARD CEILING enforced in safety layer — detergent residue cuts panel output; high pressure cracks cells. DI water ONLY."
+      "_safety_note": "HARD CEILING enforced in safety layer \u2014 detergent residue cuts panel output; high pressure cracks cells. DI water ONLY."
     },
     "window_glass": {
       "pressure_bar_min": 2.0,
@@ -73,7 +101,7 @@
       "pressure_bar_default": 2.2,
       "pressure_bar_hard_ceiling": 2.5,
       "chemical": "ammonia_free",
-      "chemical_mix_ratio_default": 0.20,
+      "chemical_mix_ratio_default": 0.2,
       "dwell_seconds_min": 15,
       "dwell_seconds_max": 20,
       "dwell_seconds_default": 17,
@@ -88,7 +116,7 @@
       "pressure_bar_default": 4.0,
       "pressure_bar_hard_ceiling": 5.0,
       "chemical": "standard_degreaser",
-      "chemical_mix_ratio_default": 0.30,
+      "chemical_mix_ratio_default": 0.3,
       "dwell_seconds_min": 25,
       "dwell_seconds_max": 35,
       "dwell_seconds_default": 30,
@@ -103,7 +131,7 @@
       "pressure_bar_default": 6.5,
       "pressure_bar_hard_ceiling": 7.5,
       "chemical": "degreaser_solvent_blend",
-      "chemical_mix_ratio_default": 0.40,
+      "chemical_mix_ratio_default": 0.4,
       "dwell_seconds_min": 35,
       "dwell_seconds_max": 45,
       "dwell_seconds_default": 40,
