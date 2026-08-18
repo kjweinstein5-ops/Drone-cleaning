@@ -75,6 +75,30 @@ airframe is a routine control-authority question, not a research programme.
 > trying to build a flying pressure washer. We are trying to build a flying *soft-wash* gun, and
 > those are two very different engineering problems.
 
+### ✅ CONFIRMED — checked Foxtech's whole catalogue, not one model
+
+Their **entire AeroClean line is high-pressure.** There is no soft-wash option:
+
+| Foxtech model | Pressure | Mounts on |
+|---|---|---|
+| AeroClean **P1 (A2)** | **20 MPa = 200 bar** | DJI M300 RTK / M350 RTK |
+| AeroClean **P2 (A30)** | high-pressure | DJI heavy-lift |
+| AeroClean **P3 (T50)** | **20 MPa = 200 bar** | DJI M400 |
+| AeroClean **T-M400C** | **110–160 bar** | DJI M400 |
+| **P4H** cleaning version | **10 MPa = 100 bar** | DJI |
+| AeroClean **F30** | 10 MPa | DJI FlyCart 30 |
+| AeroClean **S2 / S4** (solar) | — | DJI T-series ag drones |
+
+**Lowest pressure Foxtech sells is 100 bar. Our highest prescription is 7 bar.**
+Even their gentlest product is **14× above** the most aggressive thing we ever ask for, and
+**55× above** our solar prescription.
+
+**And every single one is DJI-mount.** This is not "adaptable with effort" — it is the wrong
+pressure class on the wrong airframe.
+
+> **Verdict on Foxtech: no.** Not "probably not" — their catalogue contains nothing in our
+> pressure class, on any airframe we can buy.
+
 ### Three more reasons Foxtech is the wrong purchase
 
 - **DJI-specified.** AeroClean P3 (T50) and T-M400C are built for M350/M400 mounting, power and
@@ -132,6 +156,49 @@ high-pressure electronics, no 143 N thrust to fight.
 | MAVSDK connection | ⚠️ documented seam in `mavlink_transport.py` |
 | **Onboard AuterionOS app** | ❌ **the new build** — and the differentiator (`PLATFORM_VENDOR_CHOICE.md` §1) |
 | Ground pump controller | ❌ new, and buildable on a bench today |
+
+---
+
+## 3.4 ⭐ Where the add-ons actually come from: the agricultural sprayer ecosystem
+
+This is the answer to "what add-ons," and it is a different industry than the one we were looking in.
+
+**We were shopping in *facade cleaning*, which is a high-pressure industry. We should be shopping
+in *agricultural spraying*, which is a low-pressure, high-flow, open-architecture industry.**
+
+Why it fits, point for point:
+
+| Ag sprayer property | Why it matches us |
+|---|---|
+| **Low pressure by design** | Ag spraying is a few bar — the same class as our 1.8–7 bar table |
+| **Airframe-agnostic components** | Sold as pumps, nozzles, valves and flow sensors, **not** as a kit welded to one drone model |
+| **Native flight-stack support** | **ArduPilot ships a Sprayer library** (ArduCopter 4.0+); PX4 treats sprayers as generic MAVLink actuators. Pump control is a first-class citizen, not a hack |
+| **Mature and cheap** | Brushless IP67 pumps, diaphragm pumps, Y-nozzles, centrifugal and pressure nozzles, quick-connect fittings, anti-drip control — commodity parts |
+| ⭐ **Ground-speed-compensated flow** | Ag spray controllers already **govern pump speed in real time from GPS ground speed to hold a constant application rate** |
+
+### That last row is the important one
+
+Ag controllers solve — in shipping hardware — the problem of applying a **uniform dose while the
+aircraft's speed varies**. That is exactly what `planning/coverage_path.py` needs: our
+`traverse_speed_mps` and `dwell_seconds` only produce an even clean if delivered volume tracks
+actual ground speed, not commanded speed.
+
+**We were going to have to build that. We can adopt it instead**, and spend the effort on the
+per-surface prescription that nobody else has.
+
+### The synthesis with a ground tether
+
+An onboard ag pump is ~5 L/min (~1.3 gpm) — fine for chemicals, **thin for rinsing a building**.
+But we are not carrying a pump:
+
+- **Volume comes from the ground pump** over the tether — 4–8 gpm, commodity soft-wash equipment.
+- **The airborne parts reduce to ag components**: a valve, a nozzle (or the IHM selector), and a
+  flow sensor for closing the loop.
+- **The ag control logic moves to the ground controller**, where it modulates the regulator.
+
+**Airborne bill of materials, final: a gun, a hose, a valve, a nozzle, a flow sensor, a
+rangefinder, a small computer.** Every one of those is off-the-shelf, and none of them is a
+bespoke integration with a Chinese facade-cleaning vendor.
 
 ---
 
