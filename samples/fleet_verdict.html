@@ -1,0 +1,302 @@
+<title>Fleet Procurement Verdict</title>
+<style>
+:root{
+  --ink:#141a21; --ink2:#46535f; --ink3:#77848f;
+  --paper:#f6f5f2; --card:#fff; --rule:#e0ddd6; --rule2:#cfcbc2;
+  --steel:#1f5c8b; --steel-bg:#e8f0f6;
+  --gold:#8a6a12; --gold-bg:#faf3de;
+  --moss:#2f6b45; --moss-bg:#e6f1ea;
+  --brick:#a5372a; --brick-bg:#fbeae7;
+  --sh:0 1px 2px rgba(20,26,33,.05),0 6px 18px rgba(20,26,33,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#eceae5; --ink2:#a8b4bf; --ink3:#7a8794;
+  --paper:#0e1216; --card:#171d23; --rule:#28313a; --rule2:#39434e;
+  --steel:#74add6; --steel-bg:#152430;
+  --gold:#d3a94f; --gold-bg:#2a2314;
+  --moss:#7fc19a; --moss-bg:#15251c;
+  --brick:#e0806f; --brick-bg:#2c1a17;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --ink:#eceae5; --ink2:#a8b4bf; --ink3:#7a8794;
+  --paper:#0e1216; --card:#171d23; --rule:#28313a; --rule2:#39434e;
+  --steel:#74add6; --steel-bg:#152430;
+  --gold:#d3a94f; --gold-bg:#2a2314;
+  --moss:#7fc19a; --moss-bg:#15251c;
+  --brick:#e0806f; --brick-bg:#2c1a17;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);
+  font:16px/1.62 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:960px;margin:0 auto;padding:44px 22px 90px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+header{border-bottom:3px solid var(--ink);padding-bottom:20px}
+.eyebrow{font:700 11px/1 ui-monospace,monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--brick)}
+h1{font-size:clamp(32px,5.4vw,48px);line-height:1.02;letter-spacing:-.025em;font-weight:800;
+   margin:13px 0 12px;text-wrap:balance}
+.sub{font-size:17.5px;color:var(--ink2);max-width:62ch}
+
+/* headline compare */
+.headline{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;
+  margin:30px 0 8px;padding:26px;background:var(--card);border:1px solid var(--rule);
+  border-radius:14px;box-shadow:var(--sh)}
+@media(max-width:640px){.headline{grid-template-columns:1fr;text-align:center}}
+.hl-lab{font:700 10.5px/1 ui-monospace,monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)}
+.hl-num{font-size:34px;font-weight:800;letter-spacing:-.02em;margin-top:9px;font-variant-numeric:tabular-nums}
+.hl-note{font-size:13px;color:var(--ink2);margin-top:7px;line-height:1.45}
+.hl-vs{font:800 13px/1 ui-monospace,monospace;color:var(--ink3);letter-spacing:.1em}
+.win .hl-num{color:var(--moss)} .lose .hl-num{color:var(--ink3)}
+
+.kicker{margin-top:22px;padding:18px 20px;background:var(--moss-bg);
+  border-left:4px solid var(--moss);border-radius:0 10px 10px 0;font-size:15.5px;color:var(--ink2)}
+.kicker b{color:var(--ink)}
+
+/* aircraft cards */
+.craft{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:34px}
+@media(max-width:760px){.craft{grid-template-columns:1fr}}
+.c{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px;box-shadow:var(--sh)}
+.c .role{font:700 10.5px/1 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--steel)}
+.c h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:9px 0 3px}
+.c .price{font-size:29px;font-weight:800;color:var(--moss);font-variant-numeric:tabular-nums;margin:11px 0 14px}
+.c dl{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13.5px;margin-top:4px}
+.c dt{color:var(--ink3);font-weight:600}
+.c dd{color:var(--ink2)}
+.c dd b{color:var(--ink)}
+.badge{display:inline-block;font:700 10px/1 ui-monospace,monospace;letter-spacing:.07em;
+  padding:5px 9px;border-radius:20px;background:var(--moss-bg);color:var(--moss);margin-top:12px}
+
+h3.sec{margin:52px 0 6px;padding-top:24px;border-top:2px solid var(--ink);font-size:25px;
+  font-weight:800;letter-spacing:-.015em}
+.lede{color:var(--ink2);max-width:64ch;margin-bottom:16px}
+
+.scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:11px;background:var(--card);margin-top:14px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:430px}
+th,td{padding:11px 15px;text-align:left;border-bottom:1px solid var(--rule)}
+th{font:700 10px/1 ui-monospace,monospace;letter-spacing:.11em;text-transform:uppercase;
+   color:var(--ink3);background:var(--paper)}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.total td{border-top:2px solid var(--rule2);font-weight:800;font-size:15px;background:var(--paper)}
+tr.grp td{font-weight:700}
+.dim{color:var(--ink3);font-size:12.5px}
+.yes{color:var(--moss);font-weight:800} .no{color:var(--brick);font-weight:800}
+
+/* phases */
+.ph{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--rule)}
+.ph:last-child{border-bottom:0}
+.ph-n{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--card);
+  border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;
+  font:800 13px/1 ui-monospace,monospace}
+.ph-b{flex:1}
+.ph-t{font-weight:800;font-size:16px}
+.ph-c{font-size:13px;color:var(--ink3);margin-top:2px}
+.ph-p{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--steel)}
+.ph.free .ph-p{color:var(--moss)}
+
+.warn{margin-top:20px;padding:19px 21px;background:var(--gold-bg);
+  border-left:4px solid var(--gold);border-radius:0 10px 10px 0}
+.warn h4{font-size:15px;font-weight:800;color:var(--gold);margin-bottom:8px}
+.warn ol{margin:0 0 0 19px;color:var(--ink2);font-size:14px}
+.warn li{margin-bottom:7px}
+.warn li b{color:var(--ink)}
+
+footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--rule);
+  font-size:12.5px;color:var(--ink3);line-height:1.7;max-width:70ch}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Procurement Verdict · 16 Aug 2026</div>
+  <h1>Two aircraft, one stack</h1>
+  <p class="sub">The scout, the cleaner, the ground rig and what each costs — with the compliance
+  facts that decided them.</p>
+</header>
+
+<div class="headline">
+  <div class="lose">
+    <div class="hl-lab">One Lucid Sherpa</div>
+    <div class="hl-num">$75,000</div>
+    <div class="hl-note">Sprays where a pilot points it. No mapping, no API, no model of the building.</div>
+  </div>
+  <div class="hl-vs">VS</div>
+  <div class="win">
+    <div class="hl-lab">The whole PROPWASH fleet</div>
+    <div class="hl-num">$71K–$93K</div>
+    <div class="hl-note">Scout + cleaner + ground rig + payload + software. Every layer yours.</div>
+  </div>
+</div>
+
+<div class="kicker">
+  For roughly the price of <b>one closed spray drone</b>, you get a mapping aircraft, a cleaning
+  aircraft, the ground rig that holds the pressure IP, and a stack you own end to end.
+</div>
+
+<div class="craft">
+  <div class="c">
+    <div class="role">Scout · Mapping</div>
+    <h2>Skydio X10D</h2>
+    <div class="price">~$16,000</div>
+    <dl>
+      <dt>Thermal</dt><dd><b>FLIR Boson+ 640×512, 30 mK</b> — first on any small UAS, ~40% more sensitive than comparable units</dd>
+      <dt>Optical</dt><dd>Three sensors <b>co-registered on one gimbal</b> with the thermal</dd>
+      <dt>Nav</dt><dd>Six nav cameras, visual-inertial odometry — holds position without GPS</dd>
+      <dt>Origin</dt><dd>US-manufactured</dd>
+    </dl>
+    <span class="badge">✓ BLUE UAS CLEARED</span>
+  </div>
+
+  <div class="c">
+    <div class="role">Cleaner · Soft wash</div>
+    <h2>Inspired Flight IF1200A</h2>
+    <div class="price">~$32,000</div>
+    <dl>
+      <dt>Endurance</dt><dd><b>43 min max flight time</b> — more than double the alternative at load</dd>
+      <dt>Payload</dt><dd>19.1 lb under Part 107 (28.7 lb with certification)</dd>
+      <dt>Stack</dt><dd>Open <b>PX4</b> — our code runs on a companion computer</dd>
+      <dt>Origin</dt><dd>US-built, domestically sourced electronics</dd>
+    </dl>
+    <span class="badge">✓ BLUE + GREEN DUAL-CERTIFIED</span>
+  </div>
+</div>
+
+<h3 class="sec">Why these two, and not the ones I recommended first</h3>
+<p class="lede">Both changes trace to one rule, not to a change of opinion.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>Was</th><th>Now</th><th>Because</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>Autel EVO MAX 4T V2</b><div class="dim">scout</div></td>
+      <td><b>Skydio X10D</b></td>
+      <td>On 22 Dec 2025 the FCC added <b>all foreign-produced UAS and critical components</b> to
+      the Covered List — DJI and Autel named explicitly. No new US import.</td>
+    </tr>
+    <tr>
+      <td><b>Freefly Alta X Gen2</b><div class="dim">cleaner</div></td>
+      <td><b>Inspired Flight IF1200A</b></td>
+      <td>Alta X's Blue List Exception to Policy <b>expired 28 Feb 2026</b>. Blue listing is one of
+      only two FCC exemptions, so it is purchase eligibility, not a badge. IF1200A is Blue + Green
+      certified today, with double the endurance.</td>
+    </tr>
+    <tr>
+      <td><b>Foxtech AeroClean kit</b><div class="dim">cleaning payload</div></td>
+      <td><b>Build it from ag-sprayer parts</b></td>
+      <td>Their whole catalogue is 100–200 bar. Our prescriptions are 1.8–7 bar. Even their
+      gentlest product is <b>14× above</b> anything we ask for — and all of it is DJI-mount.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 class="sec">The full bill</h3>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>Item</th><th class="n">Low</th><th class="n">High</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td>Skydio X10D</td><td class="n">$16,000</td><td class="n">$16,000</td></tr>
+    <tr><td class="dim">Spare batteries, case, controller</td><td class="n">$4,000</td><td class="n">$6,000</td></tr>
+    <tr><td class="dim">Agisoft Metashape Professional</td><td class="n">$3,500</td><td class="n">$3,500</td></tr>
+    <tr class="grp"><td>Inspired Flight IF1200A airframe</td><td class="n">$32,000</td><td class="n">$32,000</td></tr>
+    <tr><td class="dim">Ground station, batteries, care plan</td><td class="n">$8,000</td><td class="n">$20,000</td></tr>
+    <tr class="grp"><td>Ground rig — 12V soft-wash system</td><td class="n">$1,500</td><td class="n">$2,500</td></tr>
+    <tr><td class="dim">Electronic regulator + our controller (the PSM)</td><td class="n">$1,500</td><td class="n">$4,000</td></tr>
+    <tr><td class="dim">DI stage, proportioner, containment</td><td class="n">$1,500</td><td class="n">$3,000</td></tr>
+    <tr class="grp"><td>Airborne payload — gun, hose, valve, nozzle, flow sensor</td><td class="n">$1,500</td><td class="n">$3,500</td></tr>
+    <tr><td class="dim">Rangefinder + companion computer</td><td class="n">$1,500</td><td class="n">$2,500</td></tr>
+    <tr class="total"><td>Total — full loop</td><td class="n">$71,000</td><td class="n">$93,000</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="kicker" style="margin-top:20px">
+  <b>The ground rig is almost free — and it is an exact match.</b> Commodity 12V soft-wash systems
+  run <b>5.3–7 gpm at 60–100 PSI</b> for <b>$1,500–$2,500</b>. That is <b>4–7 bar</b>: stucco 4.0,
+  tile 5.0, shingle 5.5, gutter 6.5. We are not designing exotic hardware — we are buying a
+  contractor rig and adding an electronic regulator and our controller.
+</div>
+
+<h3 class="sec">Spend it in this order</h3>
+<p class="lede">Three of the four phases need no cleaning aircraft, and the first one earns money.</p>
+
+<div class="ph free">
+  <div class="ph-n">1a</div>
+  <div class="ph-b"><div class="ph-t">Scout + photogrammetry software</div>
+    <div class="ph-c">Starts scan-only revenue — no spray liability, no water, no containment</div></div>
+  <div class="ph-p">$23.5–25.5K</div>
+</div>
+<div class="ph free">
+  <div class="ph-n">1b</div>
+  <div class="ph-b"><div class="ph-t">Ground rig</div>
+    <div class="ph-c">Proves the per-surface pressure loop and the firmware ceiling — on a bench</div></div>
+  <div class="ph-p">$4.5–9.5K</div>
+</div>
+<div class="ph free">
+  <div class="ph-n">1c</div>
+  <div class="ph-b"><div class="ph-t">Auterion Developer Program + Virtual Skynode</div>
+    <div class="ph-c">Evaluate the onboard SDK in simulation</div></div>
+  <div class="ph-p">subscription</div>
+</div>
+<div class="ph">
+  <div class="ph-n">2</div>
+  <div class="ph-b"><div class="ph-t">Cleaner + airborne payload + integration</div>
+    <div class="ph-c">Only after the intelligence has proven it sells</div></div>
+  <div class="ph-p">$43–58K</div>
+</div>
+
+<div class="kicker" style="margin-top:22px">
+  <b>Phase 1 total: $28,000–$35,000</b> — about <b>37–47% of a single Sherpa</b>. It generates the
+  differentiated product, carries no spray liability, and tests the only question that matters:
+  <b>will anyone pay for the intelligence?</b> If the answer is no, you stopped at $30K instead of $90K.
+</div>
+
+<h3 class="sec">What $75K of Sherpa doesn't buy</h3>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>Capability</th><th>Sherpa</th><th>This fleet</th></tr></thead>
+  <tbody>
+    <tr><td>Sprays a building</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+    <tr><td><b>Maps the building</b></td><td class="no">✕</td><td class="yes">✓</td></tr>
+    <tr><td>Per-surface classification</td><td class="no">✕</td><td class="yes">✓</td></tr>
+    <tr><td>Per-face grime layer</td><td class="no">✕</td><td class="yes">✓</td></tr>
+    <tr><td>Safety-gated per-surface prescription</td><td class="no">✕</td><td class="yes">✓</td></tr>
+    <tr><td><b>Tamper-evident audit of pressure vs material</b></td><td class="no">✕</td><td class="yes">✓</td></tr>
+    <tr><td>Verification and re-queue</td><td class="no">✕</td><td class="yes">✓</td></tr>
+    <tr><td><b>Your code running on the aircraft</b></td><td class="no">✕</td><td class="yes">✓</td></tr>
+    <tr><td>Scan-only revenue, no spray liability</td><td class="no">✕</td><td class="yes">✓</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="warn">
+  <h4>⚠ Verify before you spend — none of this can be settled from a desk</h4>
+  <ol>
+    <li><b>Will Inspired Flight support a liquid spray payload?</b> Warranty and airworthiness.
+      This can disqualify the aircraft outright — ask before anything else.</li>
+    <li><b>Skydio radiometric export.</b> Can you get raw per-pixel temperature out? A colourised
+      JPEG is useless to the fusion pipeline.</li>
+    <li><b>Blue UAS status on the DCMA list itself</b>, not vendor pages — and which FCC exemption
+      each purchase relies on. Both exemptions expire <b>1 Jan 2027</b>.</li>
+    <li><b>Insurance</b> for a self-integrated spray drone vs a vendor-supported one. Still unasked,
+      still likely the deciding number.</li>
+    <li><b>IF1200A lead time</b> — currently listed sold out.</li>
+    <li><b>X10 vs X10D</b> — commercial vs defense SKU; price and capability differ.</li>
+  </ol>
+</div>
+
+<footer>
+  Prices are list or retail from public vendor and reseller sources as of 16 August 2026 and are
+  subject to quote; bundle contents vary by dealer. Compliance status — Blue UAS listing, FCC
+  Covered List, NDAA — changes and must be re-verified at purchase against the DCMA list and FCC
+  guidance, not against this page. Ground-rig, payload and integration figures are estimates, not
+  quotes. Integration labour and airworthiness responsibility for a self-integrated spray payload
+  are not included in any figure here.
+</footer>
+
+</div>
