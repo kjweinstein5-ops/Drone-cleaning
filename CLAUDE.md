@@ -53,7 +53,7 @@ All are Claude-powered, run on PROPWASH servers (Tier 3), and emit decisions to 
 
 | Role | Device | Notes |
 |------|--------|-------|
-| Sensing / mapping | **Autel EVO II Dual 640T (V3)** | Radiometric thermal 640×512 + RGB. **See §5 sensor caveat.** |
+| Sensing / mapping | ⚠️ **SUPERSEDED — see `docs/decisions/FLEET_ARCHITECTURE.md`** | The Autel line is on the **FCC Covered List** (Dec 2025): no new US import. Recommended replacement is the **Skydio X10D** (Blue UAS cleared, FLIR Boson+ radiometric thermal + optical on one gimbal). |
 | Cleaning execution | **Lucid Bots Sherpa** | Operator-piloted spray drone. Onboard chemical tank w/ variable mix. Controlled from ground via **SIYI MK15**. Requires **FAA Part 107**. |
 | Ground detail (later) | **Lucid Lavo Bot** | Wheeled pressure-washing robot. |
 | Ground station | Laptop (i7 / 32 GB) + LTE | Runs orchestrator or connects to cloud. |
