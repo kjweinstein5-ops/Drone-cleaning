@@ -66,9 +66,15 @@ pre-flight and pack-down (~100 min) dominate, so swaps barely move the total.
 **The H6 Hydrone (hydrogen fuel cell) sidesteps exhaust and noise** — worth asking about — but
 adds hydrogen logistics, which is its own operational world.
 
-> **Verdict: 🔬 quote it, but do not lead with it.** The endurance is real and it matters at
-> commercial scale. Ask the exhaust question first — if petrol exhaust lands on cleaned panels,
-> the whole platform is out for our primary surface.
+> **Verdict: ❌ RULED OUT — Kevin's decision, 2026-08-16.** No hybrid cleaning drone.
+>
+> The endurance was real, but it was buying ~14 minutes on a house (6% of the day), and the
+> exhaust question was never answered. **The propulsion decision is now: all-electric, battery.**
+> That also takes the **H6 Hydrone** off the table — hydrogen is not a hybrid, but it is not a
+> battery either, and it carries its own fuel logistics. *(Say so if you want hydrogen kept live.)*
+>
+> **This closes the propulsion question. It does not change the buy list** — both recommended
+> aircraft were already all-electric.
 
 ---
 
@@ -101,8 +107,8 @@ hose and computer.
 | **Inspired Flight IF1200A** | Cleaner | ✅ open PX4 | ✅ Blue **+ Green** | ⭐ **BUY** — ~$32K |
 | Freefly Alta X Gen2 | Cleaner | ✅ Auterion SDK | ⚠️ ETP lapsed Feb 2026 | Backup — best onboard-app story |
 | Watts PRISM Sky | Cleaner | ✅ Auterion | ⚠️ Blue unconfirmed | Backup — rails top *or* bottom |
-| **Harris Aerial H6 Hybrid** | Cleaner | ⚠️ unconfirmed | ⚠️ unconfirmed | 🔬 **Quote it** — 2.5 h endurance. Ask about exhaust |
-| Harris H6 Hydrone | Cleaner | ⚠️ | ⚠️ | 🔬 Hydrogen — no exhaust, new logistics |
+| ~~Harris Aerial H6 Hybrid~~ | Cleaner | ⚠️ | ⚠️ | ❌ **RULED OUT** — no hybrid (Kevin, 16 Aug) |
+| ~~Harris H6 Hydrone~~ | Cleaner | ⚠️ | ⚠️ | ❌ Out under the same all-electric rule |
 | Ascent Spirit | Scout | ✅ MOSA | ✅✅ **dual Blue listing** | 🔬 All-weather scout only; too small to clean |
 | Parrot ANAFI USA | Scout | ⚠️ limited | ✅ Blue | Budget scout |
 | Custom PX4 build | Cleaner | ✅ total control | ⚠️ your sourcing | Later — you own airworthiness |
@@ -129,4 +135,23 @@ leads with:
 **Payload capacity is the spec every vendor leads with and the one that matters least to us.**
 That is what the water tether bought.
 
-> `TODO(PROPWASH): quote Harris Aerial — endurance, exhaust, NDAA/Blue status, price.`
+## ✅ DECIDED — propulsion
+
+**All-electric, battery only. No hybrid, no combustion.** (Kevin, 2026-08-16.)
+
+Rationale, recorded so it doesn't get re-litigated:
+
+- **Exhaust over freshly cleaned glass and solar** was never resolved, and solar is the most
+  failure-sensitive surface we touch. Depositing combustion products on a panel you just cleaned
+  inverts the whole product.
+- **The endurance gain was small where we actually work** — ~14 min of a 3.7 h house job.
+- **Noise** over residential and commercial property is an HOA and neighbour problem.
+- **Fuel + water + electronics** on one airframe is a worse risk profile, and we own the
+  airworthiness of any self-integration.
+
+Both recommended aircraft — **Skydio X10D** and **Inspired Flight IF1200A** — are already
+all-electric, so **the buy list is unchanged.**
+
+**The endurance problem doesn't go away; it moves to the ground.** Batteries and a fast charger
+are the answer (`FIELD_OPERATIONS.md` §5.1), and at 43 min the IF1200A needs only ~2 swaps on a
+house job. Buy enough batteries that swapping never blocks the job.
