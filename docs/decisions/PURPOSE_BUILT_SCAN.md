@@ -27,7 +27,7 @@ supported by evidence rather than assumption.
 | Manufacturer | Where | Electric? | Sells the aircraft? | Integration path | Verdict |
 |---|---|---|---|---|---|
 | **Lucid Bots** — Sherpa | Charlotte, NC | ✅ | ✅ $75K / $2,950 mo | ❌ **No API.** Autonomy in-house; acquired an AI company | ❌ |
-| **Apellix** — Power/Soft Wash | Jacksonville, FL | ✅ **8 batteries + 2 rapid chargers** | ✅ B2B equipment sales | ❌ None documented | 🔬 **Worth one call** — see below |
+| **Apellix** — Power/Soft Wash | Jacksonville, FL | ✅ **8 batteries + 2 rapid chargers** | ✅ **B1 $34K · X1 tethered $79K** | ❌ None documented — **and they sell competing AI software** | 🔬 Worth one call, lower odds |
 | **Foxtech** — AeroClean | China | ✅ | ✅ | ❌ DJI PSDK only | ❌ 100–200 bar, DJI-mount |
 | **Spinoff Robotics** — ALICE, METRON | Singapore | ✅ tethered | ❌ **Managed service only** | ❌ You never own hardware | ❌ Competitor, not supplier |
 | **Aerones** | Latvia | — | — | — | ❌ **Drone projects on hold indefinitely** |
@@ -70,6 +70,64 @@ think that is negotiable.
 - **Their battery architecture already solves our field problem.** 8 batteries and 2 rapid chargers
   per aircraft is exactly the answer to the swap burden, shipped as standard.
 - **They are smaller.** Smaller companies do bespoke integrations.
+
+### 💰 Apellix pricing — found
+
+| Configuration | Price |
+|---|---|
+| **B1 — battery, base model** | **$34,000** |
+| **X1 — tethered** | **$79,000** (includes power station + 300 ft of wire) |
+| Drone + accessories | $47,000–$75,000 |
+| Complete startup package (incl. ~$30K window-capable ground equipment) | **$75,000–$105,000** |
+
+Financing is offered. **Add-ons:** Night Flight LED bar · **Soft-wash Ball Valve** ·
+**Apellix Intelligence (AI) Premium** · Certified Parachute System · Extended Warranty.
+
+### B2 specifications
+
+| | Apellix B2 Power & Soft Wash |
+|---|---|
+| Pressure | Up to **4,000 PSI** — ⚠️ **minimum not published** |
+| Flow | Up to **11 GPM** |
+| Power | Battery, **8 high-capacity batteries included** |
+| Max height | 195 ft / 60 m |
+| Weight | 21.5 lb bare · **55 lb all-up class** |
+| **Payload** | **25 lb** |
+| Autonomy | **"Obstacle detection and front distance hold"** |
+
+**Two things stand out.** *Front distance hold* is **standoff hold** — one of the airborne items
+on our own BOM, already solved. And a **Soft-wash Ball Valve** being a catalogue option means
+soft-wash is a supported mode, not an improvisation.
+
+### ⚠️ But: they sell "Apellix Intelligence — Autonomous cleaning software"
+
+This materially lowers the odds of a partnership, and it is the honest downgrade to my
+enthusiasm last turn.
+
+**Apellix is building the intelligence layer too.** It is a priced add-on described as
+*autonomous cleaning software*. That puts them on the same trajectory as Lucid — and it means
+PROPWASH would not be a complementary partner but **a competitor to a product they already sell.**
+
+The call is still worth making. The odds are now lower than I implied.
+
+### 💵 Price comparison — closer than expected
+
+| | Apellix B1 | Inspired Flight IF1200A |
+|---|---|---|
+| Aircraft | **$34,000** | **$32,000** |
+| Cleaning payload | ✅ **included and proven** | ➕ ~$3,000–$6,000 in parts |
+| Integration labour | ✅ none | ➕ ours |
+| **All-in for a working cleaner** | **~$34,000** | **~$37,000+** |
+| Batteries | ✅ 8 + 2 rapid chargers | ➕ extra |
+| Standoff hold | ✅ front distance hold | ➕ we add a rangefinder |
+| **Our software can drive it** | ❌ | ✅ |
+| Blue UAS | ⚠️ unconfirmed | ✅ Blue + Green |
+
+**Apellix is cheaper, all-in, for a working cleaning drone.** The entire premium on the IF1200A
+buys one thing: **the right to run our own stack.**
+
+Given `GO_NO_GO.md` concluded the software *is* the company, that is the right trade — but it is a
+much narrower call than it looked, and it turns almost entirely on question #2 below.
 
 ### The three questions to ask them
 
