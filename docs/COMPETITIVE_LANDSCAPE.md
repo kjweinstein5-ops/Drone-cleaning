@@ -152,6 +152,33 @@ it is the half of the business that is actually differentiated.
 
 ---
 
+## 5.4b "Apex" — checked, and it is not a manufacturer
+
+*Checked 2026-08-16. Two companies trade under the name; **neither sells drones**.*
+
+| | |
+|---|---|
+| **Apex Drone Cleaning** — `apexdronecleaning.com` | US service operator. HQ **Greenville, SC**, plus **Southeast Florida**. Buildings, windows, solar, up to 25 storeys |
+| **Apex Drone Wash** — `apexdronewash.com.au` | **Sydney, Australia.** CASA-approved pilots. Markets **soft wash explicitly** — *"clean without high-pressure risks, perfect for sensitive materials like solar panels, windows, and facades"* |
+
+**Apex Drone Cleaning sells services only — no drones, no equipment.** They name no hardware
+manufacturer or model, describing it only as *"state-of-the-art drone technology."*
+
+**Two things worth taking from it:**
+
+1. **They are a competitor, not a supplier** — the same category as the ~18 CA/AZ operators above,
+   just in different states.
+2. **They have no intelligence layer at all.** No mapping, no analytics, no inspection reports, no
+   verification method — the only documentation mentioned is **before-and-after photos**. That is
+   precisely the gap this company exists to fill, and more evidence that the service tier competes
+   on price and reputation rather than capability.
+
+**Useful validation:** Apex Drone Wash marketing **soft wash as the selling point for solar,
+windows and façades** confirms the low-pressure positioning is commercially proven, not a niche
+engineering preference (`decisions/BUILD_SPEC.md` §2).
+
+---
+
 ## 5.5 Does the Sherpa map the building? **No.** ⭐
 
 *Checked 2026-08-16 against Lucid's own product pages.*
