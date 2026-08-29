@@ -1,0 +1,456 @@
+<title>Spray Payload Build Spec</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ink:#16191d; --ink2:#4a545f; --ink3:#7e8791;
+  --paper:#f7f6f3; --card:#fff; --rule:#dedad2; --rule2:#c6c1b7;
+  --blue:#1d5b93; --blue-bg:#e9f1f8;
+  --rust:#b0492c; --rust-bg:#fbeae5;
+  --moss:#33684a; --moss-bg:#e7f0ea;
+  --amber:#8d6a10; --amber-bg:#faf2dc;
+  --sh:0 1px 2px rgba(22,25,29,.05),0 5px 16px rgba(22,25,29,.06);
+  --f-disp:"IBM Plex Sans Condensed",ui-sans-serif,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"IBM Plex Sans",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#eae7e1; --ink2:#a6b0bb; --ink3:#78828d;
+  --paper:#0f1215; --card:#181c21; --rule:#2a3038; --rule2:#3b434d;
+  --blue:#77b0dd; --blue-bg:#14222e;
+  --rust:#e0866a; --rust-bg:#2b1a15;
+  --moss:#82bd99; --moss-bg:#15251b;
+  --amber:#d5a94e; --amber-bg:#292213;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 5px 18px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --ink:#eae7e1; --ink2:#a6b0bb; --ink3:#78828d;
+  --paper:#0f1215; --card:#181c21; --rule:#2a3038; --rule2:#3b434d;
+  --blue:#77b0dd; --blue-bg:#14222e;
+  --rust:#e0866a; --rust-bg:#2b1a15;
+  --moss:#82bd99; --moss-bg:#15251b;
+  --amber:#d5a94e; --amber-bg:#292213;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 5px 18px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);
+  font:400 15.5px/1.62 var(--f-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.wrap{max-width:1000px;margin:0 auto;padding:40px 22px 80px}
+.m{font-family:var(--f-mono);font-size:.94em}
+
+header{border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:26px}
+.eyebrow{font:600 11px/1 var(--f-mono);letter-spacing:.19em;text-transform:uppercase;color:var(--rust)}
+h1{font-family:var(--f-disp);font-size:clamp(31px,5.4vw,46px);line-height:1.02;letter-spacing:-.012em;
+  font-weight:700;margin:13px 0 11px;text-wrap:balance}
+.sub{font-size:17px;color:var(--ink2);max-width:64ch}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;
+  font:500 11px/1 var(--f-mono);letter-spacing:.04em}
+.chips span{border:1px solid var(--rule2);border-radius:100px;padding:6px 11px;color:var(--ink3)}
+
+h2{font-family:var(--f-disp);font-size:26px;font-weight:700;letter-spacing:-.006em;
+  margin:46px 0 6px;padding-top:22px;border-top:2px solid var(--ink);text-wrap:balance}
+h3{font-family:var(--f-disp);font-size:18.5px;font-weight:700;margin:26px 0 8px}
+p{color:var(--ink2);max-width:70ch;margin-bottom:10px}
+p b,li b{color:var(--ink);font-weight:600}
+ul{margin:10px 0 10px 20px;color:var(--ink2);max-width:70ch}
+li{margin-bottom:6px}
+
+figure{margin:22px 0;background:var(--card);border:1px solid var(--rule);border-radius:12px;
+  padding:20px 20px 14px;box-shadow:var(--sh);overflow-x:auto}
+figure svg{display:block;max-width:100%;height:auto;margin:0 auto;color:var(--ink)}
+figure svg text{font-family:var(--f-mono)}
+figcaption{margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);
+  font-size:13.5px;color:var(--ink2);line-height:1.55}
+figcaption b{color:var(--ink);font-weight:600}
+
+.scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:11px;background:var(--card);margin-top:14px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 13px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font:600 10px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);background:var(--paper)}
+tr:last-child td{border-bottom:0}
+tr.tot td{border-top:2px solid var(--rule2);font-weight:700;background:var(--paper)}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ph2{color:var(--ink3);font-style:italic}
+
+.call{margin:18px 0;padding:16px 19px;border-left:4px solid;border-radius:0 10px 10px 0;max-width:74ch}
+.call h4{font-family:var(--f-disp);font-size:16px;font-weight:700;margin-bottom:7px;letter-spacing:.002em}
+.call p{margin-bottom:8px;font-size:14.5px}
+.call p:last-child{margin-bottom:0}
+.warn{background:var(--rust-bg);border-color:var(--rust)} .warn h4{color:var(--rust)}
+.note{background:var(--amber-bg);border-color:var(--amber)} .note h4{color:var(--amber)}
+.good{background:var(--moss-bg);border-color:var(--moss)} .good h4{color:var(--moss)}
+.info{background:var(--blue-bg);border-color:var(--blue)} .info h4{color:var(--blue)}
+
+footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink3);line-height:1.7;max-width:72ch}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Fabrication Spec · Rev A · 16 Aug 2026</div>
+  <h1>Bolting a soft-wash payload to a heavy lifter</h1>
+  <p class="sub">The parts list, the weight budget, and three drawings of how the cleaning
+  assembly actually attaches — with the load that decides the whole design.</p>
+  <div class="chips">
+    <span>Inspired Flight IF1200A</span><span>8.66 kg payload limit</span>
+    <span>1.8–7 bar soft wash</span><span>Ground-tethered water</span>
+  </div>
+</header>
+
+<div class="call warn">
+  <h4>⚠ Read this before anything else: the hose is the payload</h4>
+  <p>Equipment comes to <b>4.40 kg</b>, leaving <b>4.26 kg</b> of the aircraft's 8.66 kg limit.
+  A 3/8" hose full of water weighs <b>0.211 kg per metre</b>.</p>
+  <p><b>That is 20 metres of unsupported hose and no more.</b> At 40 m the hose alone is 8.4 kg —
+  it exceeds the entire payload before you attach a single fitting.</p>
+  <p><b>So the ground tether-management system is a load-bearing structural element, not an
+  accessory.</b> It must carry the hose weight and present near-zero tension at the aircraft.
+  Every other decision on this page follows from that.</p>
+</div>
+
+<h2>1 · How the gun attaches</h2>
+<p>The gun goes on a <b>forward boom</b>, not a drop bracket. Two reasons, and they pull in the
+same direction.</p>
+
+<figure>
+<svg viewBox="0 0 800 330" role="img" aria-label="Side elevation comparing a gun hung below the aircraft against a gun on a forward boom. The drop mount puts the spray inside the rotor downwash and creates a 90 millimetre moment arm below the centre of gravity. The forward boom places the nozzle ahead of the rotor disc with a near-zero moment arm.">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+    </marker>
+    <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#b0492c"/>
+    </marker>
+    <marker id="dim" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <!-- ============ PANEL A : AVOID ============ -->
+  <text x="20" y="24" font-size="12.5" font-weight="700" fill="#b0492c" font-family="ui-monospace,monospace">AVOID — DROP MOUNT</text>
+
+  <!-- wall -->
+  <line x1="330" y1="46" x2="330" y2="300" stroke="currentColor" stroke-width="2.5"/>
+  <g stroke="currentColor" stroke-width="1" opacity=".45">
+    <line x1="330" y1="60" x2="344" y2="46"/><line x1="330" y1="100" x2="344" y2="86"/>
+    <line x1="330" y1="140" x2="344" y2="126"/><line x1="330" y1="180" x2="344" y2="166"/>
+    <line x1="330" y1="220" x2="344" y2="206"/><line x1="330" y1="260" x2="344" y2="246"/>
+  </g>
+  <text x="352" y="58" font-size="11" fill="currentColor" opacity=".65">wall</text>
+
+  <!-- rotor wash zone -->
+  <rect x="34" y="122" width="176" height="150" fill="#b0492c" opacity=".09"/>
+  <text x="122" y="266" font-size="10.5" text-anchor="middle" fill="#b0492c" font-family="ui-monospace,monospace">ROTOR DOWNWASH</text>
+
+  <!-- rotors + arms -->
+  <line x1="70" y1="128" x2="42" y2="116" stroke="currentColor" stroke-width="2"/>
+  <line x1="164" y1="128" x2="192" y2="116" stroke="currentColor" stroke-width="2"/>
+  <ellipse cx="42" cy="114" rx="24" ry="3.5" fill="currentColor" opacity=".5"/>
+  <ellipse cx="192" cy="114" rx="24" ry="3.5" fill="currentColor" opacity=".5"/>
+  <!-- body -->
+  <rect x="70" y="116" width="94" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+  <!-- CG -->
+  <circle cx="117" cy="131" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+  <path d="M117 124 v14 M110 131 h14" stroke="currentColor" stroke-width="1.2"/>
+  <text x="86" y="110" font-size="11" fill="currentColor" font-family="ui-monospace,monospace">CG</text>
+  <!-- belly plate -->
+  <rect x="96" y="146" width="44" height="8" fill="currentColor" opacity=".8"/>
+  <!-- drop bracket -->
+  <line x1="118" y1="154" x2="118" y2="208" stroke="currentColor" stroke-width="3"/>
+  <!-- gun -->
+  <rect x="108" y="208" width="72" height="17" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+  <rect x="180" y="212" width="16" height="9" fill="currentColor" opacity=".8"/>
+  <!-- spray -->
+  <line x1="196" y1="216.5" x2="326" y2="216.5" stroke="currentColor" stroke-width="1.3" stroke-dasharray="6 4"/>
+  <path d="M196 210 L326 200 M196 223 L326 233" stroke="currentColor" stroke-width="1" opacity=".4"/>
+  <!-- reaction -->
+  <line x1="180" y1="216.5" x2="126" y2="216.5" stroke="#b0492c" stroke-width="2.6" marker-end="url(#arR)"/>
+  <text x="150" y="245" font-size="11" text-anchor="middle" fill="#b0492c" font-family="ui-monospace,monospace">reaction 12 N</text>
+  <!-- moment arm -->
+  <line x1="262" y1="131" x2="262" y2="216.5" stroke="currentColor" stroke-width="1.2"
+        marker-start="url(#dim)" marker-end="url(#dim)"/>
+  <line x1="124" y1="131" x2="268" y2="131" stroke="currentColor" stroke-width=".8" stroke-dasharray="3 3" opacity=".55"/>
+  <text x="270" y="178" font-size="11.5" font-weight="700" fill="#b0492c" font-family="ui-monospace,monospace">d ≈ 90</text>
+  <text x="270" y="192" font-size="10" fill="currentColor" opacity=".6" font-family="ui-monospace,monospace">mm</text>
+
+  <!-- ============ PANEL B : PREFERRED ============ -->
+  <g transform="translate(400,0)">
+    <text x="20" y="24" font-size="12.5" font-weight="700" fill="#33684a" font-family="ui-monospace,monospace">PREFERRED — FORWARD BOOM</text>
+
+    <line x1="330" y1="46" x2="330" y2="300" stroke="currentColor" stroke-width="2.5"/>
+    <g stroke="currentColor" stroke-width="1" opacity=".45">
+      <line x1="330" y1="60" x2="344" y2="46"/><line x1="330" y1="100" x2="344" y2="86"/>
+      <line x1="330" y1="140" x2="344" y2="126"/><line x1="330" y1="180" x2="344" y2="166"/>
+      <line x1="330" y1="220" x2="344" y2="206"/><line x1="330" y1="260" x2="344" y2="246"/>
+    </g>
+
+    <rect x="34" y="122" width="176" height="150" fill="#b0492c" opacity=".09"/>
+    <text x="122" y="266" font-size="10.5" text-anchor="middle" fill="#b0492c" font-family="ui-monospace,monospace">ROTOR DOWNWASH</text>
+
+    <line x1="70" y1="128" x2="42" y2="116" stroke="currentColor" stroke-width="2"/>
+    <line x1="164" y1="128" x2="192" y2="116" stroke="currentColor" stroke-width="2"/>
+    <ellipse cx="42" cy="114" rx="24" ry="3.5" fill="currentColor" opacity=".5"/>
+    <ellipse cx="192" cy="114" rx="24" ry="3.5" fill="currentColor" opacity=".5"/>
+    <rect x="70" y="116" width="94" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+    <circle cx="117" cy="131" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M117 124 v14 M110 131 h14" stroke="currentColor" stroke-width="1.2"/>
+    <text x="86" y="110" font-size="11" fill="currentColor" font-family="ui-monospace,monospace">CG</text>
+    <rect x="96" y="146" width="44" height="8" fill="currentColor" opacity=".8"/>
+
+    <!-- boom: forward and slightly down, out past the rotor disc -->
+    <line x1="132" y1="152" x2="228" y2="160" stroke="#33684a" stroke-width="4"/>
+    <text x="176" y="184" font-size="11" text-anchor="middle" fill="#33684a" font-family="ui-monospace,monospace">boom 340 mm</text>
+    <!-- gimbal pivot -->
+    <circle cx="228" cy="160" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <text x="222" y="204" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".7" font-family="ui-monospace,monospace">pitch pivot</text>
+    <!-- gun -->
+    <rect x="234" y="151" width="60" height="17" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+    <rect x="294" y="155" width="14" height="9" fill="currentColor" opacity=".8"/>
+    <!-- spray -->
+    <line x1="308" y1="159.5" x2="326" y2="159.5" stroke="currentColor" stroke-width="1.3" stroke-dasharray="6 4"/>
+    <path d="M308 154 L326 148 M308 165 L326 171" stroke="currentColor" stroke-width="1" opacity=".4"/>
+    <!-- reaction -->
+    <line x1="234" y1="159.5" x2="180" y2="159.5" stroke="#b0492c" stroke-width="2.6" marker-end="url(#arR)"/>
+    <!-- moment arm small -->
+    <line x1="262" y1="131" x2="262" y2="159.5" stroke="currentColor" stroke-width="1.2"
+          marker-start="url(#dim)" marker-end="url(#dim)"/>
+    <line x1="124" y1="131" x2="268" y2="131" stroke="currentColor" stroke-width=".8" stroke-dasharray="3 3" opacity=".55"/>
+    <text x="272" y="141" font-size="11.5" font-weight="700" fill="#33684a" font-family="ui-monospace,monospace">d ≈ 28</text>
+    <!-- nozzle clear of wash -->
+    <text x="286" y="228" font-size="10.5" text-anchor="middle" fill="#33684a" font-family="ui-monospace,monospace">nozzle clear</text>
+    <text x="286" y="242" font-size="10.5" text-anchor="middle" fill="#33684a" font-family="ui-monospace,monospace">of downwash</text>
+  </g>
+</svg>
+<figcaption><b>Side elevation — why the gun goes forward, not down.</b> A drop mount puts the
+nozzle inside the rotor downwash, which atomises the spray and blows it back over the aircraft,
+and it sets a <b>90 mm moment arm</b> below the CG that the flight controller must trim against
+continuously. A forward boom pushes the nozzle past the rotor disc and cuts the arm to about
+<b>28 mm</b>. The reaction force itself is only ~12 N at our pressures — it is the
+<em>moment</em>, not the force, that costs control authority.</figcaption>
+</figure>
+
+<h2>2 · The mounting plate</h2>
+<p>One carbon or aluminium belly plate bolts to the aircraft's <b>Universal Payload Interface</b>
+(M600-compatible spacing). Everything else hangs off that plate — so the plate, not the airframe,
+is the part you fabricate.</p>
+
+<figure>
+<svg viewBox="0 0 700 400" role="img" aria-label="Plan view of the belly mounting plate showing the four payload interface bolt holes, the boom root, solenoid valve, flow sensor, rangefinder, companion computer enclosure and the hose strain-relief bracket mounted separately to the airframe rail.">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <text x="20" y="24" font-size="12.5" font-weight="700" fill="currentColor" font-family="ui-monospace,monospace">PLAN VIEW — BELLY PLATE (looking up)</text>
+  <text x="20" y="42" font-size="11" fill="currentColor" opacity=".6" font-family="ui-monospace,monospace">forward ↑</text>
+
+  <!-- plate -->
+  <rect x="180" y="70" width="300" height="250" rx="10" fill="none" stroke="currentColor" stroke-width="2.5"/>
+  <!-- bolt pattern -->
+  <g fill="none" stroke="currentColor" stroke-width="1.8">
+    <circle cx="230" cy="120" r="8"/><circle cx="430" cy="120" r="8"/>
+    <circle cx="230" cy="270" r="8"/><circle cx="430" cy="270" r="8"/>
+  </g>
+  <line x1="230" y1="120" x2="430" y2="120" stroke="currentColor" stroke-width=".8" stroke-dasharray="4 4" opacity=".5"/>
+  <line x1="230" y1="278" x2="430" y2="278" stroke="currentColor" stroke-width=".8" stroke-dasharray="4 4" opacity=".5"/>
+  <text x="330" y="140" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".7" font-family="ui-monospace,monospace">payload interface — 4× M4</text>
+
+  <!-- boom root -->
+  <rect x="294" y="70" width="72" height="34" rx="4" fill="none" stroke="#33684a" stroke-width="2.5"/>
+  <text x="330" y="92" font-size="10.5" text-anchor="middle" fill="#33684a" font-family="ui-monospace,monospace">BOOM ROOT</text>
+  <line x1="330" y1="70" x2="330" y2="48" stroke="#33684a" stroke-width="4"/>
+
+  <!-- components -->
+  <rect x="205" y="150" width="86" height="46" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+  <text x="248" y="170" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="ui-monospace,monospace">SOLENOID</text>
+  <text x="248" y="184" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="ui-monospace,monospace">VALVE</text>
+
+  <rect x="309" y="150" width="66" height="46" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+  <text x="342" y="170" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="ui-monospace,monospace">FLOW</text>
+  <text x="342" y="184" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="ui-monospace,monospace">SENSOR</text>
+
+  <rect x="250" y="212" width="170" height="58" rx="4" fill="none" stroke="#1d5b93" stroke-width="2.2"/>
+  <text x="335" y="236" font-size="10.5" text-anchor="middle" fill="#1d5b93" font-family="ui-monospace,monospace">COMPANION COMPUTER</text>
+  <text x="335" y="252" font-size="10.5" text-anchor="middle" fill="#1d5b93" font-family="ui-monospace,monospace">IP66 SEALED · REAR</text>
+
+  <rect x="384" y="150" width="84" height="34" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+  <text x="426" y="171" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="ui-monospace,monospace">RANGEFINDER</text>
+  <line x1="426" y1="150" x2="426" y2="48" stroke="currentColor" stroke-width="1.3" stroke-dasharray="5 4"/>
+  <text x="436" y="42" font-size="10" fill="currentColor" opacity=".65" font-family="ui-monospace,monospace">co-aligned</text>
+  <text x="436" y="55" font-size="10" fill="currentColor" opacity=".65" font-family="ui-monospace,monospace">with spray axis</text>
+
+  <!-- strain relief : SEPARATE, on the airframe rail -->
+  <line x1="120" y1="70" x2="120" y2="200" stroke="currentColor" stroke-width="3" opacity=".55"/>
+  <line x1="120" y1="252" x2="120" y2="320" stroke="currentColor" stroke-width="3" opacity=".55"/>
+  <text x="104" y="64" font-size="10.5" fill="currentColor" opacity=".7" font-family="ui-monospace,monospace">airframe rail</text>
+  <rect x="86" y="200" width="68" height="52" rx="4" fill="none" stroke="#b0492c" stroke-width="2.5"/>
+  <text x="120" y="222" font-size="10.5" text-anchor="middle" fill="#b0492c" font-family="ui-monospace,monospace">HOSE</text>
+  <text x="120" y="236" font-size="10.5" text-anchor="middle" fill="#b0492c" font-family="ui-monospace,monospace">CLAMP</text>
+  <line x1="154" y1="226" x2="248" y2="226" stroke="#b0492c" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <text x="120" y="278" font-size="10" text-anchor="middle" fill="#b0492c" font-family="ui-monospace,monospace">NOT on the plate</text>
+
+  <!-- water path -->
+  <path d="M120 200 L120 178 L248 178" fill="none" stroke="#1d5b93" stroke-width="2.4" marker-end="url(#ar2)" opacity="0"/>
+  <text x="530" y="150" font-size="11" font-weight="700" fill="currentColor" font-family="ui-monospace,monospace">WATER PATH</text>
+  <text x="530" y="170" font-size="10.5" fill="currentColor" opacity=".75" font-family="ui-monospace,monospace">clamp → solenoid</text>
+  <text x="530" y="186" font-size="10.5" fill="currentColor" opacity=".75" font-family="ui-monospace,monospace">→ flow sensor</text>
+  <text x="530" y="202" font-size="10.5" fill="currentColor" opacity=".75" font-family="ui-monospace,monospace">→ boom → gun</text>
+
+  <text x="530" y="240" font-size="11" font-weight="700" fill="#1d5b93" font-family="ui-monospace,monospace">ELECTRONICS AFT</text>
+  <text x="530" y="260" font-size="10.5" fill="currentColor" opacity=".75" font-family="ui-monospace,monospace">furthest point from</text>
+  <text x="530" y="276" font-size="10.5" fill="currentColor" opacity=".75" font-family="ui-monospace,monospace">the nozzle and drift</text>
+</svg>
+<figcaption><b>Plate layout — plan view, looking up at the aircraft's belly.</b> Wet components
+sit forward along the water path; the <b>companion computer goes aft in a sealed enclosure</b>,
+as far from the nozzle and its drift as the plate allows. The rangefinder is
+<b>co-aligned with the spray axis</b> so the standoff it measures is the standoff the
+prescription specified. The <b>hose clamp is deliberately not on this plate</b> — see below.
+</figcaption>
+</figure>
+
+<div class="call warn">
+  <h4>⚠ The single most important fabrication rule</h4>
+  <p><b>Hose tension must never pass through the gimbal or the payload plate.</b> It goes
+  straight into the airframe's structural rail via its own clamp, with a slack service loop
+  between the clamp and the gun.</p>
+  <p>Get this wrong and every hose tug becomes a torque on the gimbal servo and a bending load on
+  your mounting bolts — the two things most likely to fail in flight.</p>
+</div>
+
+<h2>3 · Where the load actually goes</h2>
+
+<figure>
+<svg viewBox="0 0 760 300" role="img" aria-label="Load path diagram. The powered ground reel carries the hose weight and maintains near-zero tension at the aircraft. At the aircraft the hose enters a clamp bolted to the airframe rail, then a slack service loop feeds the gun, so no tension reaches the gimbal.">
+  <defs>
+    <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#b0492c"/>
+    </marker>
+  </defs>
+
+  <!-- ground -->
+  <line x1="30" y1="250" x2="730" y2="250" stroke="currentColor" stroke-width="2"/>
+  <g stroke="currentColor" stroke-width="1" opacity=".4">
+    <line x1="40" y1="250" x2="30" y2="262"/><line x1="90" y1="250" x2="80" y2="262"/>
+    <line x1="140" y1="250" x2="130" y2="262"/><line x1="190" y1="250" x2="180" y2="262"/>
+  </g>
+
+  <!-- reel -->
+  <rect x="60" y="188" width="110" height="62" rx="5" fill="none" stroke="#b0492c" stroke-width="2.5"/>
+  <circle cx="115" cy="219" r="20" fill="none" stroke="#b0492c" stroke-width="2"/>
+  <circle cx="115" cy="219" r="6" fill="#b0492c" opacity=".7"/>
+  <text x="115" y="272" font-size="11" text-anchor="middle" fill="#b0492c" font-weight="700" font-family="ui-monospace,monospace">POWERED REEL</text>
+  <text x="115" y="288" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".7" font-family="ui-monospace,monospace">carries hose weight</text>
+
+  <!-- pump -->
+  <rect x="196" y="206" width="92" height="44" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
+  <text x="242" y="226" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="ui-monospace,monospace">PUMP +</text>
+  <text x="242" y="240" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="ui-monospace,monospace">REGULATOR</text>
+  <text x="242" y="272" font-size="10" text-anchor="middle" fill="currentColor" opacity=".65" font-family="ui-monospace,monospace">= the PSM</text>
+
+  <!-- aircraft -->
+  <g transform="translate(500,36)">
+    <line x1="20" y1="24" x2="-8" y2="12" stroke="currentColor" stroke-width="2"/>
+    <line x1="114" y1="24" x2="142" y2="12" stroke="currentColor" stroke-width="2"/>
+    <ellipse cx="-8" cy="10" rx="22" ry="3.5" fill="currentColor" opacity=".5"/>
+    <ellipse cx="142" cy="10" rx="22" ry="3.5" fill="currentColor" opacity=".5"/>
+    <rect x="20" y="12" width="94" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+    <rect x="46" y="42" width="44" height="8" fill="currentColor" opacity=".8"/>
+    <!-- boom + gun -->
+    <line x1="82" y1="48" x2="150" y2="56" stroke="#33684a" stroke-width="3.5"/>
+    <rect x="150" y="48" width="46" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    <!-- clamp on rail -->
+    <rect x="16" y="46" width="26" height="22" rx="3" fill="none" stroke="#b0492c" stroke-width="2.4"/>
+    <line x1="10" y1="34" x2="16" y2="50" stroke="#b0492c" stroke-width="1.2"/>
+    <text x="8" y="30" font-size="10.5" text-anchor="end" fill="#b0492c" font-family="ui-monospace,monospace">clamp → rail</text>
+    <!-- service loop -->
+    <path d="M42 58 q 26 30 44 -2 q 10 -14 22 0" fill="none" stroke="#1d5b93" stroke-width="2.2"/>
+    <text x="104" y="100" font-size="10.5" fill="#1d5b93" font-family="ui-monospace,monospace">slack service loop</text>
+  </g>
+
+  <!-- hose catenary -->
+  <line x1="170" y1="219" x2="196" y2="219" stroke="#1d5b93" stroke-width="2.6"/>
+  <path d="M288 216 q 130 24 228 -114" fill="none" stroke="#1d5b93" stroke-width="2.6"/>
+  <text x="430" y="152" font-size="11" text-anchor="end" fill="#1d5b93" font-family="ui-monospace,monospace">3/8" hose · 0.211 kg/m charged</text>
+
+  <!-- tension callout -->
+  <line x1="458" y1="110" x2="508" y2="98" stroke="#b0492c" stroke-width="2.2" marker-end="url(#ar3)"/>
+  <text x="452" y="104" font-size="11" text-anchor="end" fill="#b0492c" font-weight="700" font-family="ui-monospace,monospace">tension ≈ 0</text>
+  <text x="452" y="119" font-size="10" text-anchor="end" fill="currentColor" opacity=".65" font-family="ui-monospace,monospace">at the aircraft</text>
+
+  <!-- limit -->
+  <rect x="300" y="26" width="300" height="0" fill="none"/>
+  <text x="30" y="30" font-size="12.5" font-weight="700" fill="currentColor" font-family="ui-monospace,monospace">LOAD PATH — the reel holds the hose, not the drone</text>
+  <text x="30" y="50" font-size="11" fill="#b0492c" font-family="ui-monospace,monospace">Unsupported limit: 20 m.</text>
+  <text x="30" y="66" font-size="11" fill="#b0492c" font-family="ui-monospace,monospace">Beyond that the hose outweighs the payload.</text>
+</svg>
+<figcaption><b>Load path.</b> The powered reel — not the aircraft — carries the hose. It pays out
+and takes up to hold near-zero tension at the drone, which is what makes working height
+independent of payload. At the aircraft the hose lands on a clamp bolted to the
+<b>airframe rail</b>; only a slack loop continues to the gun, so gimbal motion and hose motion
+are mechanically decoupled.</figcaption>
+</figure>
+
+<h2>4 · Parts list</h2>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>#</th><th>Part</th><th>Spec / note</th><th class="n">Mass</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><b>Soft-wash gun / lance</b></td><td>Rated ≥20 bar (4× our ceiling). Brass or SS wetted parts</td><td class="n">1.20 kg</td></tr>
+    <tr><td>2</td><td><b>Single-axis pitch gimbal</b></td><td>Pitch only — the aircraft yaws. Servo on <span class="m">NOZZLE_CHANNEL</span> spare</td><td class="n">0.60 kg</td></tr>
+    <tr><td>3</td><td><b>Boom, ~340 mm</b></td><td>CF tube, 25 mm OD. Length set by rotor-disc clearance</td><td class="n">incl.</td></tr>
+    <tr><td>4</td><td><b>Belly plate</b></td><td>3 mm CF or 5052 alu. 4× M4 to Universal Payload Interface</td><td class="n">0.70 kg</td></tr>
+    <tr><td>5</td><td><b>Solenoid valve</b></td><td>12 V, ≥8 gpm, low ΔP. Driven by <span class="m">PUMP_CHANNEL</span></td><td class="n">0.30 kg</td></tr>
+    <tr><td>6</td><td><b>Flow sensor</b></td><td>Closes the loop on delivered volume vs ground speed</td><td class="n">0.10 kg</td></tr>
+    <tr><td>7</td><td><b>Laser rangefinder</b></td><td><b>Co-aligned with spray axis.</b> Standoff hold</td><td class="n">0.10 kg</td></tr>
+    <tr><td>8</td><td><b>Companion computer</b></td><td>ARM SBC, <b>IP66 enclosure, mounted aft</b></td><td class="n">0.50 kg</td></tr>
+    <tr><td>9</td><td><b>Hose clamp / strain relief</b></td><td><b>Bolts to airframe rail, NOT the plate</b></td><td class="n">0.40 kg</td></tr>
+    <tr class="ph2"><td>10</td><td>Nozzle selector (IHM)</td><td>Phase 2 — fly fixed nozzles first, change by hand</td><td class="n">0.50 kg</td></tr>
+    <tr class="tot"><td></td><td>Airborne equipment</td><td>Leaves 4.26 kg for hose = <b>20 m unsupported</b></td><td class="n">4.40 kg</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Ground side — where the IP lives</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th>#</th><th>Part</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>11</td><td><b>Soft-wash pump</b>, 4–8 gpm @ 60–100 psi</td><td>Commodity 12 V rig, <b>$1,500–$2,500</b>. 60–100 psi <em>is</em> 4–7 bar — our exact table</td></tr>
+    <tr><td>12</td><td><b>Electronic pressure regulator</b></td><td><b>This is the PSM.</b> It never flies</td></tr>
+    <tr><td>13</td><td><b>Firmware pressure ceiling</b></td><td>Must <b>refuse</b> an over-ceiling command in hardware — not trust software</td></tr>
+    <tr><td>14</td><td><b>Powered hose reel</b></td><td>⚠ <b>Load-bearing.</b> Holds the hose so the drone doesn't have to. Pays out and takes up to keep tension near zero at the aircraft</td></tr>
+    <tr><td>15</td><td><b>Chemical proportioner + DI stage</b></td><td>Per-zone mix ratio; solar is DI-only</td></tr>
+    <tr><td>16</td><td><b>Containment / recovery</b></td><td>Detergent to a storm drain is a regulated discharge in California</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="call info">
+  <h4>Build order</h4>
+  <p><b>Items 11–13 first, on a bench, with no aircraft.</b> A pump, a regulator and a gun on a
+  stand proves the per-surface pressure loop and the firmware ceiling — the actual IP — for a few
+  thousand dollars.</p>
+  <p>Only then fabricate the plate. The airborne side is a gun, a hose, a valve and a small
+  computer; none of it is hard once the ground rig works.</p>
+</div>
+
+<div class="call note">
+  <h4>Before you cut any metal — three unknowns</h4>
+  <p><b>1. Will Inspired Flight support a liquid spray payload?</b> Warranty and airworthiness.
+  A "no" ends this build.</p>
+  <p><b>2. Exact Universal Payload Interface bolt pattern and load rating</b> — the plate can't be
+  drawn to scale until you have the drawing from them.</p>
+  <p><b>3. Insurance</b> for a self-integrated spray drone. Still unasked.</p>
+</div>
+
+<footer>
+Rev A concept layout, not a manufacturing drawing. Dimensions marked are design intents to be
+confirmed against the aircraft's published payload interface and against measured CG with the
+payload fitted. Mass figures are estimates for budgeting, not weighed parts. Jet reaction of ~12 N
+is computed from our own prescription range (1.8–7 bar, ~4 gpm); confirm against the gun actually
+selected. Airworthiness of any customer integration rests with the integrator.
+</footer>
+
+</div>
