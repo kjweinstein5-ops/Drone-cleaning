@@ -87,31 +87,137 @@ footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--rule);font-si
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">Fabrication Spec · Rev A · 16 Aug 2026</div>
-  <h1>Bolting a soft-wash payload to a heavy lifter</h1>
-  <p class="sub">The parts list, the weight budget, and three drawings of how the cleaning
-  assembly actually attaches — with the load that decides the whole design.</p>
+  <div class="eyebrow">Fabrication &amp; Procurement Spec · Rev B · 4 Sep 2026</div>
+  <h1>Everything you need to wash a roof, an array and the glass</h1>
+  <p class="sub">The aircraft, the airborne payload, the ground rig, the water, and the chemistry —
+  one costed kit, with the three questions that decide it answered first.</p>
   <div class="chips">
-    <span>Inspired Flight IF1200A</span><span>8.66 kg payload limit</span>
-    <span>1.8–7 bar soft wash</span><span>Ground-tethered water</span>
+    <span>Inspired Flight IF1200A</span><span>8.66 kg under Part 107</span>
+    <span>1.8–7 bar soft wash</span><span>Ground-tethered water</span><span>$78K–$104K all-in</span>
   </div>
 </header>
 
+<h2>0 · The three answers</h2>
+<p>You asked three specific questions. Here they are before the detail, because each one changes
+what goes on the list.</p>
+
+<div class="call good">
+  <h4>1. Which aircraft — and why the bigger one is worse</h4>
+  <p><b>Inspired Flight IF1200A.</b> The counter-intuitive part: the Freefly Alta X advertises
+  <b>33 lb</b> of payload against the IF1200A's <b>19 lb</b>, and it is still the wrong choice —
+  because the Alta X can only reach that number <i>above</i> the 55 lb Part 107 ceiling. Under
+  Part 107 its own airframe and batteries eat 19.8 kg of the 25 kg budget, leaving about
+  <b>5.2 kg</b>. The IF1200A leaves <b>8.66 kg</b>. <b>You get 66% more usable payload from the
+  smaller aircraft.</b> §1 shows the arithmetic.</p>
+</div>
+
+<div class="call info">
+  <h4>2. No, you don't need a second rig for foam — you need a second water path</h4>
+  <p>Two separate findings got tangled together in the question.</p>
+  <p><b>Foam:</b> at soft-wash pressure you cannot make clinging foam with hardware. Venturi foam
+  cannons need roughly <b>1,000+ psi</b>; you are running <b>60–100 psi</b>. Cling has to come from
+  the chemistry — a thickened surfactant package — not from a foamer. That is a <b>purchase-order
+  change, not an equipment change</b> (§5).</p>
+  <p><b>The real split is DI versus detergent</b>, and it is driven by solar, not by glass. Detergent
+  residue on a panel cuts its output, so the DI path must never carry it. But a second hose would
+  cost you the entire payload budget — so the answer is <b>one hose, two sources, and a sequencing
+  rule</b>: DI-only surfaces run first, every day, before chemistry ever enters the shared line
+  (§4).</p>
+</div>
+
 <div class="call warn">
-  <h4>⚠ Read this before anything else: the hose is the payload</h4>
-  <p>Equipment comes to <b>4.40 kg</b>, leaving <b>4.26 kg</b> of the aircraft's 8.66 kg limit.
+  <h4>3. Inside houses — no, and not with any of this</h4>
+  <p>The IF1200A is <b>1.2 m across the frame and about 1.6 m across the props.</b> It does not go
+  in a house. Indoors there is also no GPS, no place for the downwash to go, and spraying liquid
+  inside an occupied structure is a furnishings-and-electrical liability you do not want on a
+  year-one insurance application.</p>
+  <p><b>There is a real indoor market</b> — atriums, warehouse and hangar ceilings, gymnasiums,
+  stadium concourses — but it is <b>dry work</b> (dusting and blow-down, not washing), on a
+  <b>small caged aircraft with visual-inertial navigation</b>, which shares no parts with this
+  build. It is a separate program, not a payload option (§7).</p>
+</div>
+
+<h2>1 · The aircraft</h2>
+<p>Part 107 caps the <b>whole aircraft</b> at 55 lb / 25 kg — airframe, batteries, payload,
+everything. So the only payload number that means anything is <b>25 kg minus what the aircraft
+weighs with the batteries it needs to be useful.</b> Advertised "max payload" figures are quoted at
+maximum gross takeoff weight, which for larger airframes sits well above the Part 107 line.</p>
+
+<figure>
+<svg viewBox="0 0 800 300" role="img" aria-label="Stacked bar comparison of two heavy-lift drones against the 25 kilogram Part 107 ceiling. The IF1200A weighs 16.3 kilograms with batteries leaving 8.66 kilograms of usable payload. The Alta X weighs 19.8 kilograms with batteries leaving only 5.2 kilograms, and the remainder of its advertised 33 pound payload sits above the Part 107 ceiling where it cannot legally be used.">
+  <defs>
+    <pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="2.5" opacity=".22"/>
+    </pattern>
+  </defs>
+
+  <!-- scale: x = 130 + kg*17 -->
+  <text x="20" y="26" font-size="12.5" font-weight="700" fill="currentColor">USABLE PAYLOAD UNDER PART 107</text>
+
+  <!-- part 107 ceiling -->
+  <line x1="555" y1="44" x2="555" y2="236" stroke="#b0492c" stroke-width="2.2" stroke-dasharray="6 4"/>
+  <text x="563" y="58" font-size="11" font-weight="700" fill="#b0492c">Part 107 ceiling</text>
+  <text x="563" y="72" font-size="10.5" fill="#b0492c" opacity=".8">25 kg · 55 lb</text>
+
+  <!-- IF1200A -->
+  <text x="120" y="104" font-size="11.5" font-weight="700" text-anchor="end" fill="currentColor">IF1200A</text>
+  <text x="120" y="119" font-size="10" text-anchor="end" fill="currentColor" opacity=".6">hexacopter</text>
+  <rect x="130" y="88" width="277" height="40" fill="url(#hatch)" stroke="currentColor" stroke-width="1.6"/>
+  <rect x="407" y="88" width="147" height="40" fill="#33684a" opacity=".8"/>
+  <text x="268" y="113" font-size="10.5" text-anchor="middle" fill="currentColor">16.3 kg airframe + batteries</text>
+  <text x="570" y="113" font-size="12" font-weight="700" fill="#33684a">8.66 kg usable</text>
+
+  <!-- Alta X -->
+  <text x="120" y="180" font-size="11.5" font-weight="700" text-anchor="end" fill="currentColor">Alta X</text>
+  <text x="120" y="195" font-size="10" text-anchor="end" fill="currentColor" opacity=".6">quadcopter</text>
+  <rect x="130" y="164" width="337" height="40" fill="url(#hatch)" stroke="currentColor" stroke-width="1.6"/>
+  <rect x="467" y="164" width="88" height="40" fill="#33684a" opacity=".45"/>
+  <rect x="555" y="164" width="168" height="40" fill="none" stroke="#b0492c" stroke-width="1.4" stroke-dasharray="5 4" opacity=".8"/>
+  <text x="298" y="189" font-size="10.5" text-anchor="middle" fill="currentColor">19.8 kg airframe + batteries</text>
+  <text x="639" y="182" font-size="10.5" text-anchor="middle" fill="#b0492c">advertised payload that</text>
+  <text x="639" y="195" font-size="10.5" text-anchor="middle" fill="#b0492c">sits above the ceiling</text>
+  <text x="511" y="228" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor" opacity=".75">5.20 kg</text>
+
+  <!-- axis -->
+  <line x1="130" y1="252" x2="740" y2="252" stroke="currentColor" stroke-width="1" opacity=".4"/>
+  <g font-size="10" fill="currentColor" opacity=".55" text-anchor="middle">
+    <text x="130" y="268">0</text><text x="300" y="268">10</text>
+    <text x="470" y="268">20</text><text x="640" y="268">30</text><text x="723" y="268">35 kg</text>
+  </g>
+</svg>
+<figcaption><b>The Alta X carries more, and gives you less.</b> Both aircraft are US-made and
+NDAA-compliant, and the Alta X's <b>33.2 lb</b> maximum payload is genuine — but it is quoted at a
+<b>34.9 kg</b> maximum gross takeoff weight, nearly 10 kg past where Part 107 stops. Fly it legally
+and its heavier airframe and battery pack leave about <b>5.2 kg</b>. Inspired Flight publishes
+<b>19.1 lb</b> as its Part 107 figure, meaning they have already done this subtraction for you.
+A tethered wash payload needs 4–5 kg, so 8.66 kg is comfortable and 5.2 kg is not.</figcaption>
+</figure>
+
+<div class="call note">
+  <h4>Deliberately not on this list: prop guards</h4>
+  <p>The instinct near a wall is to cage the props. On a 1.2 m hexacopter a full guard set is
+  <b>0.8–1.5 kg</b> — 10–17% of the entire payload budget — and it buys less than it appears to,
+  because a guard that touches stucco still upsets the aircraft.</p>
+  <p><b>Standoff is the better control:</b> the co-aligned rangefinder (item 7) feeding a
+  deterministic Tier-1 minimum-distance hold. That is a safety check that cannot be talked out of
+  its job by an agent, and it weighs nothing.
+  <span class="m">TODO(PROPWASH): revisit if field data shows contact incidents.</span></p>
+</div>
+<h2>2 · The airborne payload</h2>
+<div class="call warn">
+  <h4>⚠ The constraint that shapes everything: the hose is the payload</h4>
+  <p>Equipment comes to <b>4.10 kg</b>, leaving <b>4.56 kg</b> of the aircraft's 8.66 kg limit.
   A 3/8" hose full of water weighs <b>0.211 kg per metre</b>.</p>
-  <p><b>That is 20 metres of unsupported hose and no more.</b> At 40 m the hose alone is 8.4 kg —
+  <p><b>That is 21 metres of unsupported hose and no more.</b> At 40 m the hose alone is 8.4 kg —
   it exceeds the entire payload before you attach a single fitting.</p>
   <p><b>So the ground tether-management system is a load-bearing structural element, not an
   accessory.</b> It must carry the hose weight and present near-zero tension at the aircraft.
-  Every other decision on this page follows from that.</p>
+  Every mechanical decision below follows from that.</p>
 </div>
 
-<h2>1 · How the gun attaches</h2>
+<h3>2.1 · How the gun attaches</h3>
 <p>The gun goes on a <b>forward boom</b>, not a drop bracket. Two reasons, and they pull in the
 same direction.</p>
-
 <figure>
 <svg viewBox="0 0 800 330" role="img" aria-label="Side elevation comparing a gun hung below the aircraft against a gun on a forward boom. The drop mount puts the spray inside the rotor downwash and creates a 90 millimetre moment arm below the centre of gravity. The forward boom places the nozzle ahead of the rotor disc with a near-zero moment arm.">
   <defs>
@@ -228,12 +334,10 @@ continuously. A forward boom pushes the nozzle past the rotor disc and cuts the 
 <b>28 mm</b>. The reaction force itself is only ~12 N at our pressures — it is the
 <em>moment</em>, not the force, that costs control authority.</figcaption>
 </figure>
-
-<h2>2 · The mounting plate</h2>
+<h3>2.2 · The mounting plate</h3>
 <p>One carbon or aluminium belly plate bolts to the aircraft's <b>Universal Payload Interface</b>
 (M600-compatible spacing). Everything else hangs off that plate — so the plate, not the airframe,
 is the part you fabricate.</p>
-
 <figure>
 <svg viewBox="0 0 700 400" role="img" aria-label="Plan view of the belly mounting plate showing the four payload interface bolt holes, the boom root, solenoid valve, flow sensor, rangefinder, companion computer enclosure and the hose strain-relief bracket mounted separately to the airframe rail.">
   <defs>
@@ -308,18 +412,7 @@ as far from the nozzle and its drift as the plate allows. The rangefinder is
 prescription specified. The <b>hose clamp is deliberately not on this plate</b> — see below.
 </figcaption>
 </figure>
-
-<div class="call warn">
-  <h4>⚠ The single most important fabrication rule</h4>
-  <p><b>Hose tension must never pass through the gimbal or the payload plate.</b> It goes
-  straight into the airframe's structural rail via its own clamp, with a slack service loop
-  between the clamp and the gun.</p>
-  <p>Get this wrong and every hose tug becomes a torque on the gimbal servo and a bending load on
-  your mounting bolts — the two things most likely to fail in flight.</p>
-</div>
-
 <h2>3 · Where the load actually goes</h2>
-
 <figure>
 <svg viewBox="0 0 760 300" role="img" aria-label="Load path diagram. The powered ground reel carries the hose weight and maintains near-zero tension at the aircraft. At the aircraft the hose enters a clamp bolted to the airframe rail, then a slack service loop feeds the gun, so no tension reaches the gimbal.">
   <defs>
@@ -381,7 +474,7 @@ prescription specified. The <b>hose clamp is deliberately not on this plate</b> 
   <!-- limit -->
   <rect x="300" y="26" width="300" height="0" fill="none"/>
   <text x="30" y="30" font-size="12.5" font-weight="700" fill="currentColor" font-family="ui-monospace,monospace">LOAD PATH — the reel holds the hose, not the drone</text>
-  <text x="30" y="50" font-size="11" fill="#b0492c" font-family="ui-monospace,monospace">Unsupported limit: 20 m.</text>
+  <text x="30" y="50" font-size="11" fill="#b0492c" font-family="ui-monospace,monospace">Unsupported limit: 21 m.</text>
   <text x="30" y="66" font-size="11" fill="#b0492c" font-family="ui-monospace,monospace">Beyond that the hose outweighs the payload.</text>
 </svg>
 <figcaption><b>Load path.</b> The powered reel — not the aircraft — carries the hose. It pays out
@@ -390,67 +483,419 @@ independent of payload. At the aircraft the hose lands on a clamp bolted to the
 <b>airframe rail</b>; only a slack loop continues to the gun, so gimbal motion and hose motion
 are mechanically decoupled.</figcaption>
 </figure>
+<h2>4 · The fluid system — where the foam question lands</h2>
+<p>One aircraft, one hose, four surfaces with incompatible requirements. The design problem is not
+how to make foam; it is <b>how to keep detergent away from the solar panels</b> when everything
+shares a single line.</p>
 
-<h2>4 · Parts list</h2>
+<figure>
+<svg viewBox="0 0 840 360" role="img" aria-label="Fluid circuit schematic. Reverse osmosis and deionising resin feed a DI tank; a bulk tank holds untreated water. Both meet a three-way source valve, then the pump, then the chemical proportioner, then the electronic pressure regulator, then the single shared hose and gun. Everything downstream of the proportioner is a shared wetted volume that cross-contaminates, which is why deionised-water-only surfaces must be cleaned before any chemical enters the line.">
+  <defs>
+    <marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d5b93"/>
+    </marker>
+    <marker id="fb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8d6a10"/>
+    </marker>
+  </defs>
+
+  <!-- contamination boundary -->
+  <rect x="468" y="52" width="350" height="186" rx="10" fill="#b0492c" opacity=".07"/>
+  <text x="643" y="72" font-size="11" font-weight="700" text-anchor="middle" fill="#b0492c">SHARED WETTED VOLUME</text>
+  <text x="643" y="87" font-size="10" text-anchor="middle" fill="#b0492c" opacity=".85">once detergent is in here, it is in here</text>
+
+  <!-- DI branch -->
+  <text x="24" y="30" font-size="12.5" font-weight="700" fill="currentColor">FLUID CIRCUITS — one hose, two sources</text>
+  <rect x="24" y="106" width="72" height="40" rx="4" fill="none" stroke="#1d5b93" stroke-width="2"/>
+  <text x="60" y="123" font-size="10" text-anchor="middle" fill="#1d5b93">RO</text>
+  <text x="60" y="136" font-size="9.5" text-anchor="middle" fill="#1d5b93" opacity=".75">membrane</text>
+  <line x1="96" y1="126" x2="122" y2="126" stroke="#1d5b93" stroke-width="2.2" marker-end="url(#fa)"/>
+  <rect x="126" y="106" width="72" height="40" rx="4" fill="none" stroke="#1d5b93" stroke-width="2"/>
+  <text x="162" y="123" font-size="10" text-anchor="middle" fill="#1d5b93">DI resin</text>
+  <text x="162" y="136" font-size="9.5" text-anchor="middle" fill="#1d5b93" opacity=".75">mixed bed</text>
+  <line x1="198" y1="126" x2="224" y2="126" stroke="#1d5b93" stroke-width="2.2" marker-end="url(#fa)"/>
+  <rect x="228" y="100" width="86" height="52" rx="4" fill="none" stroke="#1d5b93" stroke-width="2.5"/>
+  <text x="271" y="120" font-size="10.5" font-weight="700" text-anchor="middle" fill="#1d5b93">DI TANK</text>
+  <text x="271" y="134" font-size="9.5" text-anchor="middle" fill="#1d5b93" opacity=".75">0 ppm</text>
+  <text x="271" y="146" font-size="9.5" text-anchor="middle" fill="#1d5b93" opacity=".75">solar + glass</text>
+
+  <!-- bulk branch -->
+  <rect x="212" y="192" width="118" height="46" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+  <text x="271" y="211" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">BULK TANK</text>
+  <text x="271" y="226" font-size="9.5" text-anchor="middle" fill="currentColor" opacity=".7">tap · roof + walls</text>
+
+  <!-- source valve -->
+  <line x1="314" y1="126" x2="378" y2="140" stroke="#1d5b93" stroke-width="2.4" marker-end="url(#fa)"/>
+  <line x1="330" y1="210" x2="378" y2="176" stroke="currentColor" stroke-width="2.2" opacity=".7" marker-end="url(#fa)"/>
+  <circle cx="400" cy="158" r="24" fill="none" stroke="currentColor" stroke-width="2.4"/>
+  <text x="400" y="155" font-size="9.5" text-anchor="middle" fill="currentColor">3-WAY</text>
+  <text x="400" y="167" font-size="9.5" text-anchor="middle" fill="currentColor">VALVE</text>
+  <text x="400" y="204" font-size="9.5" text-anchor="middle" fill="currentColor" opacity=".7">source select</text>
+
+  <!-- pump -->
+  <line x1="424" y1="158" x2="482" y2="158" stroke="currentColor" stroke-width="2.4" marker-end="url(#fa)"/>
+  <rect x="486" y="136" width="70" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+  <text x="521" y="155" font-size="10" text-anchor="middle" fill="currentColor">PUMP</text>
+  <text x="521" y="169" font-size="9.5" text-anchor="middle" fill="currentColor" opacity=".7">4–8 gpm</text>
+
+  <!-- proportioner -->
+  <line x1="556" y1="158" x2="586" y2="158" stroke="currentColor" stroke-width="2.4" marker-end="url(#fa)"/>
+  <rect x="590" y="136" width="94" height="44" rx="4" fill="none" stroke="#8d6a10" stroke-width="2.4"/>
+  <text x="637" y="155" font-size="10" text-anchor="middle" fill="#8d6a10">PROPORTIONER</text>
+  <text x="637" y="169" font-size="9.5" text-anchor="middle" fill="#8d6a10" opacity=".8">per-zone ratio</text>
+  <rect x="600" y="212" width="74" height="30" rx="3" fill="none" stroke="#8d6a10" stroke-width="1.8"/>
+  <text x="637" y="231" font-size="9.5" text-anchor="middle" fill="#8d6a10">chem drum</text>
+  <line x1="637" y1="212" x2="637" y2="184" stroke="#8d6a10" stroke-width="2" marker-end="url(#fb)"/>
+
+  <!-- PSM -->
+  <line x1="684" y1="158" x2="699" y2="158" stroke="currentColor" stroke-width="2.4" marker-end="url(#fa)"/>
+  <rect x="703" y="130" width="112" height="56" rx="4" fill="none" stroke="#b0492c" stroke-width="2.5"/>
+  <text x="759" y="150" font-size="10" font-weight="700" text-anchor="middle" fill="#b0492c">PSM</text>
+  <text x="759" y="164" font-size="9.5" text-anchor="middle" fill="#b0492c" opacity=".85">regulator +</text>
+  <text x="759" y="176" font-size="9.5" text-anchor="middle" fill="#b0492c" opacity=".85">firmware ceiling</text>
+  <line x1="759" y1="186" x2="759" y2="256" stroke="#1d5b93" stroke-width="2.6" marker-end="url(#fa)"/>
+  <text x="759" y="276" font-size="10.5" font-weight="700" text-anchor="middle" fill="#1d5b93">hose → gun</text>
+  <text x="759" y="290" font-size="9.5" text-anchor="middle" fill="currentColor" opacity=".65">TDS check point</text>
+
+  <!-- the rule -->
+  <line x1="24" y1="300" x2="700" y2="300" stroke="currentColor" stroke-width="1" opacity=".3"/>
+  <text x="24" y="322" font-size="11" font-weight="700" fill="#33684a">THE RULE:</text>
+  <text x="106" y="322" font-size="11" fill="currentColor">DI-only zones run first, every day — before chemistry has ever entered the shared volume.</text>
+  <text x="24" y="340" font-size="10.5" fill="currentColor" opacity=".7">Reverse that order and the only way back is a verified flush (§4.3), which costs ~3 gal and 30 s.</text>
+</svg>
+<figcaption><b>Two sources, one line — and the boundary that matters.</b> Switching source is
+trivial; the shared volume downstream of the proportioner is not. Detergent that has been through
+the pump, hose, boom and gun is still there on the next zone, which is why <b>sequence, not
+plumbing, is the primary control.</b> The TDS meter at the gun is how you prove it rather than
+assume it.</figcaption>
+</figure>
+
+<h3>4.1 · Why solar drives this and glass does not</h3>
+<p>Both solar and glass want deionised water, but for different reasons and with different
+stakes.</p>
+<ul>
+<li><b>Glass wants 0 ppm so it dries without spots.</b> Get it wrong and you get water spots — a
+cosmetic failure, visible, and fixable by doing it again.</li>
+<li><b>Solar wants 0 ppm <i>and</i> zero surfactant, because residue costs the customer
+generating capacity.</b> Get it wrong and you have measurably degraded the asset you were paid to
+improve — and it is invisible until someone reads the inverter.</li>
+</ul>
+<p>That asymmetry is why the sequencing rule is written around solar. It is also the one surface
+where the failure is <b>silent</b>, which is exactly the case verification exists for: the
+Post-Clean agent should be reading <b>panel output</b>, not just thermal residual.
+<span class="m">TODO(PROPWASH): inverter API integration — needs Kevin's call on scope.</span></p>
+
+<h3>4.2 · Enforce the order in software, not in a checklist</h3>
+<p>This is a scheduling constraint, and the Supervisor agent already sequences zones. Encoding it
+there makes it <b>structural rather than procedural</b> — the work order cannot be emitted in an
+order that puts a chemical zone ahead of a DI-only zone. A laminated card in the truck is not the
+same guarantee, and it is the sort of rule that gets skipped at 4pm on the third job.</p>
+
+<h3>4.3 · If you do have to switch back mid-day</h3>
+<p>Flush volume is three times the wetted volume downstream of the proportioner:</p>
+<div class="scroll">
+<table>
+<thead><tr><th>Segment</th><th>Volume</th><th class="n">×3 flush</th></tr></thead>
+<tbody>
+<tr><td>40 m of 3/8" hose</td><td>2.85 L</td><td class="n">8.6 L</td></tr>
+<tr><td>Pump, proportioner, PSM, boom, gun</td><td>≈0.6 L</td><td class="n">1.8 L</td></tr>
+<tr class="tot"><td>Total</td><td>≈3.5 L</td><td class="n">≈10.4 L · 2.7 gal · ~30 s at 6 gpm</td></tr>
+</tbody>
+</table>
+</div>
+<p>So a flush is <b>cheap</b> — the reason to sequence instead is not cost, it is that a flush is
+only as good as its verification. Catch the discharge in a bucket and read it: <b>under 10 ppm
+before you point the gun at a panel.</b> A $25 handheld TDS meter is the whole quality system here.</p>
+<h2>5 · Foam, and why you are not going to make any</h2>
+<p>Clinging foam on a wall comes from <b>air entrained into the solution</b>. The two ways to do
+that are a venturi foam cannon, which needs high pressure to pull the air, or an air compressor
+injecting into the stream. Neither one survives contact with this build.</p>
 
 <div class="scroll">
 <table>
-  <thead><tr><th>#</th><th>Part</th><th>Spec / note</th><th class="n">Mass</th></tr></thead>
-  <tbody>
-    <tr><td>1</td><td><b>Soft-wash gun / lance</b></td><td>Rated ≥20 bar (4× our ceiling). Brass or SS wetted parts</td><td class="n">1.20 kg</td></tr>
-    <tr><td>2</td><td><b>Single-axis pitch gimbal</b></td><td>Pitch only — the aircraft yaws. Servo on <span class="m">NOZZLE_CHANNEL</span> spare</td><td class="n">0.60 kg</td></tr>
-    <tr><td>3</td><td><b>Boom, ~340 mm</b></td><td>CF tube, 25 mm OD. Length set by rotor-disc clearance</td><td class="n">incl.</td></tr>
-    <tr><td>4</td><td><b>Belly plate</b></td><td>3 mm CF or 5052 alu. 4× M4 to Universal Payload Interface</td><td class="n">0.70 kg</td></tr>
-    <tr><td>5</td><td><b>Solenoid valve</b></td><td>12 V, ≥8 gpm, low ΔP. Driven by <span class="m">PUMP_CHANNEL</span></td><td class="n">0.30 kg</td></tr>
-    <tr><td>6</td><td><b>Flow sensor</b></td><td>Closes the loop on delivered volume vs ground speed</td><td class="n">0.10 kg</td></tr>
-    <tr><td>7</td><td><b>Laser rangefinder</b></td><td><b>Co-aligned with spray axis.</b> Standoff hold</td><td class="n">0.10 kg</td></tr>
-    <tr><td>8</td><td><b>Companion computer</b></td><td>ARM SBC, <b>IP66 enclosure, mounted aft</b></td><td class="n">0.50 kg</td></tr>
-    <tr><td>9</td><td><b>Hose clamp / strain relief</b></td><td><b>Bolts to airframe rail, NOT the plate</b></td><td class="n">0.40 kg</td></tr>
-    <tr class="ph2"><td>10</td><td>Nozzle selector (IHM)</td><td>Phase 2 — fly fixed nozzles first, change by hand</td><td class="n">0.50 kg</td></tr>
-    <tr class="tot"><td></td><td>Airborne equipment</td><td>Leaves 4.26 kg for hose = <b>20 m unsupported</b></td><td class="n">4.40 kg</td></tr>
-  </tbody>
+<thead><tr><th>Method</th><th>What it needs</th><th>Verdict here</th></tr></thead>
+<tbody>
+<tr><td><b>Venturi foam cannon</b></td><td>Roughly 1,000+ psi to draw air through the orifice</td><td><b>✗</b> You run 60–100 psi. It will dribble, not foam</td></tr>
+<tr><td><b>Compressed-air injection (CAFS)</b></td><td>A second line up the tether, plus a compressor</td><td><b>✗</b> An air line is more hose weight, and hose weight is the entire constraint (§3)</td></tr>
+<tr><td><b>Onboard mini-compressor</b></td><td>Compressor + power + plumbing on the aircraft</td><td><b>✗</b> Roughly 1 kg of your 4.26 kg, to make foam</td></tr>
+<tr><td><b>Thickened surfactant chemistry</b></td><td>A different drum</td><td><b>✓</b> Cling comes from the formulation. No hardware, no weight, no line</td></tr>
+</tbody>
 </table>
 </div>
 
-<h3>Ground side — where the IP lives</h3>
+<div class="call good">
+  <h4>Buy the cling, don't build it</h4>
+  <p>Soft-wash surfactants are formulated for exactly this: <b>cling and dwell at low pressure</b>,
+  because the chemistry is doing the work and it has to stay on a vertical surface long enough to
+  do it. That is a line item on a chemical order, not a subsystem.</p>
+  <p><b>It also removes a whole failure mode.</b> A foamer is one more wetted component, one more
+  thing to cross-contaminate, one more thing to flush before you touch a panel.</p>
+</div>
+
+<h2>6 · Water — the part that will surprise you</h2>
+<p>Two of your four surfaces need deionised water, and <b>Carlsbad has some of the least convenient
+feed water in the state for making it.</b> Published figures put local TDS at roughly
+<b>474–611 ppm</b> with hardness around <b>18 grains per gallon</b> — "very hard." DI resin
+capacity scales inversely with feed TDS, so this is the difference between a nuisance and a real
+operating cost.</p>
+
 <div class="scroll">
 <table>
-  <thead><tr><th>#</th><th>Part</th><th>Why</th></tr></thead>
-  <tbody>
-    <tr><td>11</td><td><b>Soft-wash pump</b>, 4–8 gpm @ 60–100 psi</td><td>Commodity 12 V rig, <b>$1,500–$2,500</b>. 60–100 psi <em>is</em> 4–7 bar — our exact table</td></tr>
-    <tr><td>12</td><td><b>Electronic pressure regulator</b></td><td><b>This is the PSM.</b> It never flies</td></tr>
-    <tr><td>13</td><td><b>Firmware pressure ceiling</b></td><td>Must <b>refuse</b> an over-ceiling command in hardware — not trust software</td></tr>
-    <tr><td>14</td><td><b>Powered hose reel</b></td><td>⚠ <b>Load-bearing.</b> Holds the hose so the drone doesn't have to. Pays out and takes up to keep tension near zero at the aircraft</td></tr>
-    <tr><td>15</td><td><b>Chemical proportioner + DI stage</b></td><td>Per-zone mix ratio; solar is DI-only</td></tr>
-    <tr><td>16</td><td><b>Containment / recovery</b></td><td>Detergent to a storm drain is a regulated discharge in California</td></tr>
-  </tbody>
+<thead><tr><th>Configuration</th><th>Feed TDS</th><th class="n">Gal per refill</th><th class="n">Resin cost / gal</th><th class="n">120-gal job</th></tr></thead>
+<tbody>
+<tr><td><b>DI resin alone</b></td><td>≈550 ppm</td><td class="n">~150</td><td class="n">~$0.66</td><td class="n">~$79</td></tr>
+<tr><td><b>RO → DI resin</b></td><td>≈15 ppm</td><td class="n">~5,500</td><td class="n">~$0.02</td><td class="n">~$2</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="call warn">
+  <h4>⚠ The RO stage pays for itself in about a month</h4>
+  <p>Reverse osmosis removes 95–99% of dissolved solids <i>before</i> the resin sees them,
+  which on Carlsbad water extends resin life by roughly <b>30×</b>. On a single 120-gallon solar
+  job that is a <b>~$77 swing</b>; at three jobs a week it is on the order of <b>$11,000 a year</b>
+  in resin you would otherwise be throwing away.</p>
+  <p><b>Treat the RO stage as mandatory, not an upgrade.</b> These are published-average figures —
+  <b>put a $25 TDS meter on your own tap before you buy anything</b>, because your actual number
+  drives this more than any other input.</p>
+</div>
+
+<h3>6.1 · RO is slow, so the tank is the real equipment</h3>
+<p>A 300–600 GPD RO unit produces <b>0.2–0.4 gpm</b>. Your gun consumes <b>4–8 gpm</b> — twenty
+times faster than you can make water. You therefore never make DI water at the job; <b>you make it
+overnight at the shop and haul it.</b></p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Job type</th><th>DI needed</th><th class="n">Tank</th><th class="n">Water weight</th><th>Vehicle</th></tr></thead>
+<tbody>
+<tr><td>Residential — array + glass</td><td>60–90 gal</td><td class="n">100 gal</td><td class="n">834 lb</td><td>3/4-ton bed or light trailer</td></tr>
+<tr><td>Small commercial</td><td>150–250 gal</td><td class="n">275 gal</td><td class="n">2,294 lb</td><td>Braked trailer</td></tr>
+<tr><td>Commercial solar farm</td><td>500–1,000 gal</td><td class="n">—</td><td class="n">4,170–8,340 lb</td><td>⚠ Needs on-site high-flow RO. Phase 2</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Water is the heaviest thing you own.</b> A 275-gallon tote of DI water outweighs the entire
+rest of the kit, aircraft included, by a wide margin — so the trailer, its axle rating and its
+brakes are a real line item, not an afterthought. And <b>commercial solar farms do not close on
+this configuration</b>: a 0.4 gpm RO cannot feed a 1,000-gallon day, and hauling it is four tons.
+That market needs a high-flow RO cart before you quote it.</p>
+<h2>7 · The four surfaces, and what each actually asks for</h2>
+<div class="scroll">
+<table>
+<thead><tr><th>Surface</th><th class="n">Pressure</th><th>Water</th><th>Chemical</th><th>Tip</th><th>Limiting factor</th></tr></thead>
+<tbody>
+<tr><td><b>Composite shingle roof</b></td><td class="n">5.0–6.5 bar</td><td>Tap</td><td>Degreaser <i>or</i> biocide (§8)</td><td>40° fan, 0.5 mm</td><td>Dwell. Industry soft wash is 15–20 min, our table says 35 s</td></tr>
+<tr><td><b>Solar panel</b></td><td class="n">1.5–2.0 bar</td><td>⚠ <b>DI only</b></td><td><b>None. Ever.</b></td><td>25° narrow, 0.35 mm</td><td>Residue and cell damage. Hard ceiling in the safety layer</td></tr>
+<tr><td><b>Window glass</b></td><td class="n">2.0–2.4 bar</td><td><b>DI</b></td><td>Ammonia-free</td><td>20° jet</td><td>⚠ No agitation — see below</td></tr>
+<tr><td><b>Stucco / gutter</b></td><td class="n">3.5–7.0 bar</td><td>Tap</td><td>Degreaser (+ solvent, gutters)</td><td>40–45° fan, 0.6–0.7 mm</td><td>Overspray and containment</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="call warn">
+  <h4>⚠ The honest limit on glass: a drone cannot scrub</h4>
+  <p>Water-fed-pole window cleaning works because of the <b>brush</b>. The pure water rinses; the
+  bristles break the bond. <b>You have no brush</b>, so on glass you are relying on chemistry,
+  dwell and rinse alone.</p>
+  <p><b>That is fine for light atmospheric soil and useless on bonded soil</b> — hard-water spotting,
+  construction film, mineral etch. Competitors market "streak-free"; treat that as a claim to
+  verify on your own glass before you put it in a quote.</p>
+  <p>Contact cleaning means a drone that pushes against the building, which is a force-control
+  problem on a different aircraft. <b>Not year one.</b></p>
+</div>
+
+<h3>7.1 · One head, two tips</h3>
+<p>Four surfaces want four tips, and hand-changing nozzles per zone destroys the makespan the
+scheduler is built to protect. A full rotating selector costs <b>0.50 kg</b> of a 4.26 kg budget.
+The cheaper answer covers the spread:</p>
+<p><b>A two-tip head with a solenoid selector, about 0.20 kg</b> — a 25°/0.35 mm for solar and
+glass, and a 40° fan for roof and stucco. Two tips, two pressures, one actuator; the gutter case
+falls back to a hand change, which is once a job, not once a zone.</p>
+
+<h2>8 · The regulatory fork you have not priced yet</h2>
+<p>Everything so far assumed Part 107. <b>Dispensing changes that.</b> FAA Part 137 governs
+agricultural aircraft operations, which the FAA defines to include dispensing <b>"economic
+poisons"</b> from an aircraft, manned or unmanned — and the FAA's own guidance frames it as
+covering dispensed substances <b>including disinfectants</b>.</p>
+<p>Sodium hypochlorite on a roof is not being used as a soap. <b>It is being used to kill
+gloeocapsa magma</b> — that is pest control, and a reasonable reading puts it inside Part 137.
+Many drone soft-wash operators already hold the certificate.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th></th><th>Path A — no biocide</th><th>Path B — biocide</th></tr></thead>
+<tbody>
+<tr><td><b>Chemistry</b></td><td>DI, surfactant, degreaser</td><td>Sodium hypochlorite + surfactant</td></tr>
+<tr><td><b>Roof result</b></td><td>Removes surface soil. <b>Algae returns fast</b></td><td>Kills the organism. Industry-standard result</td></tr>
+<tr><td><b>FAA</b></td><td>Part 107</td><td><b>Part 137 AAOC — 90–180 days</b></td></tr>
+<tr><td><b>California</b></td><td>—</td><td>DPR applicator licensing + county Ag Commissioner registration</td></tr>
+<tr><td><b>Insurance</b></td><td>Easier</td><td>Chemical application changes the conversation</td></tr>
+<tr><td><b>Time to first roof job</b></td><td>Immediate</td><td><b>Two to six months</b></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="call note">
+  <h4>Why this is the decision, not a footnote</h4>
+  <p>It sets your <b>launch date</b>. If roofs need Path B, the roof product cannot ship until the
+  certificate does — which argues for opening on <b>solar, glass and scan-only work</b>, all of
+  which are Path A, and adding roofs when the paperwork lands.</p>
+  <p>It also resolves the open dwell question in <span class="m">prescriptions/surface_treatment_v1.json</span>:
+  the 35 s roof dwell is only defensible with a biocide doing the work. Path A roofs need the full
+  15–20 minute soak, which changes the schedule, the water volume and the tank sizing above.</p>
+  <p><span class="m">TODO(PROPWASH): needs an aviation attorney, not a search result. This page is
+  not legal advice.</span></p>
+</div>
+
+<h2>9 · Indoor work — the answer, and the better version of the question</h2>
+<p>Nothing in this kit goes inside a house, and the reasons stack:</p>
+<div class="scroll">
+<table>
+<thead><tr><th>Blocker</th><th>Why it does not resolve with a smaller payload</th></tr></thead>
+<tbody>
+<tr><td><b>Size</b></td><td>1.2 m frame, ~1.6 m across props. Residential rooms and stairwells are not survivable geometry</td></tr>
+<tr><td><b>Navigation</b></td><td>No GPS indoors. Position hold needs visual-inertial odometry or LiDAR SLAM — a different autonomy stack, not a payload</td></tr>
+<tr><td><b>Downwash</b></td><td>Outdoors the air leaves. Indoors it recirculates, lifting dust and pushing your own overspray back through the room</td></tr>
+<tr><td><b>Liquid</b></td><td>Water near furnishings, electrical and drywall. This is the liability question that ends the conversation with an underwriter</td></tr>
+<tr><td><b>Tether</b></td><td>A charged hose through a doorway is a snag path with no clear line back to the reel</td></tr>
+</tbody>
 </table>
 </div>
 
 <div class="call info">
-  <h4>Build order</h4>
-  <p><b>Items 11–13 first, on a bench, with no aircraft.</b> A pump, a regulator and a gun on a
-  stand proves the per-surface pressure loop and the firmware ceiling — the actual IP — for a few
-  thousand dollars.</p>
-  <p>Only then fabricate the plate. The airborne side is a gun, a hose, a valve and a small
-  computer; none of it is hard once the ground rig works.</p>
+  <h4>The market you probably meant is real — and it is dry</h4>
+  <p><b>High interior volumes</b> — warehouse and hangar ceilings, atriums, gymnasiums, stadium
+  concourses, church naves — are a genuine and underserved market, currently served by scissor
+  lifts and scaffolding at real cost. In some jurisdictions overhead <b>combustible-dust removal is
+  a fire-code obligation</b>, which means a budget line and a schedule.</p>
+  <p>But that work is <b>dusting and blow-down, not washing</b>: no water, no tether, no chemistry.
+  Different aircraft (small, caged, VIO-navigated), different payload, different sale.</p>
+  <p><b>It shares one thing with this build, and it is the valuable thing:</b> the map, the
+  per-surface model and the verification loop are method, not plumbing. They port. The hardware does
+  not. <b>Phase 3, separate program.</b></p>
+</div>
+<h2>10 · The complete kit</h2>
+<p>Everything, in the four groups it actually gets bought in. <b>Prices are public list figures,
+subject to quote</b> — nothing here is a bid.</p>
+
+<h3>A · Aircraft</h3>
+<div class="scroll">
+<table>
+<thead><tr><th>#</th><th>Item</th><th>Note</th><th class="n">Cost</th></tr></thead>
+<tbody>
+<tr><td>A1</td><td><b>IF1200A airframe</b></td><td>Blue + Green UAS. PX4. 43 min. ⚠ Recently listed sold out — ask about lead time first</td><td class="n">$32,000</td></tr>
+<tr><td>A2</td><td><b>GCS + battery sets</b></td><td>Bundle delta. 3+ sets for a field day</td><td class="n">$8,000–$20,000</td></tr>
+<tr><td>A3</td><td><b>Skydio X10D scout</b></td><td>The mapping half of the loop. FLIR Boson+ radiometric, 30 mK</td><td class="n">$16,000</td></tr>
+<tr><td>A4</td><td>Scout batteries, case, controller</td><td></td><td class="n">$4,000–$6,000</td></tr>
+<tr><td>A5</td><td>Corrosion kit + rinse station</td><td>Conformal coat, dielectric grease, stainless, freshwater rinse</td><td class="n">$500–$1,000</td></tr>
+<tr><td>A6</td><td>Spare arms, motors, props</td><td>Near-surface work eats props</td><td class="n">$1,500–$3,000</td></tr>
+<tr class="tot"><td></td><td><b>Aircraft</b></td><td></td><td class="n">$62,000–$78,000</td></tr>
+</tbody>
+</table>
 </div>
 
-<div class="call note">
-  <h4>Before you cut any metal — three unknowns</h4>
+<h3>B · Airborne payload — 4.10 kg</h3>
+<div class="scroll">
+<table>
+<thead><tr><th>#</th><th>Part</th><th>Spec / note</th><th class="n">Mass</th><th class="n">Cost</th></tr></thead>
+<tbody>
+<tr><td>B1</td><td><b>Soft-wash gun / lance</b></td><td>Rated ≥20 bar (4× our ceiling). Brass or SS wetted parts</td><td class="n">1.20 kg</td><td class="n">$200–$400</td></tr>
+<tr><td>B2</td><td><b>Single-axis pitch gimbal</b></td><td>Pitch only — the aircraft yaws</td><td class="n">0.60 kg</td><td class="n">$300–$600</td></tr>
+<tr><td>B3</td><td><b>Boom, ~340 mm</b></td><td>CF tube 25 mm OD. Length set by rotor-disc clearance</td><td class="n">incl.</td><td class="n">$80</td></tr>
+<tr><td>B4</td><td><b>Belly plate</b></td><td>3 mm CF or 5052 alu. 4× M4 to Universal Payload Interface</td><td class="n">0.70 kg</td><td class="n">$150–$400</td></tr>
+<tr><td>B5</td><td><b>Two-tip head + selector solenoid</b></td><td>25°/0.35 mm and 40° fan. Replaces the rotating selector (§7.1)</td><td class="n">0.20 kg</td><td class="n">$150–$300</td></tr>
+<tr><td>B6</td><td><b>Main solenoid valve</b></td><td>12 V, ≥8 gpm, low ΔP. Driven by <span class="m">PUMP_CHANNEL</span></td><td class="n">0.30 kg</td><td class="n">$60–$150</td></tr>
+<tr><td>B7</td><td><b>Flow sensor</b></td><td>Closes the loop on delivered volume vs ground speed</td><td class="n">0.10 kg</td><td class="n">$40–$90</td></tr>
+<tr><td>B8</td><td><b>Laser rangefinder</b></td><td><b>Co-aligned with spray axis.</b> Standoff hold — and the reason you skip prop guards</td><td class="n">0.10 kg</td><td class="n">$150–$400</td></tr>
+<tr><td>B9</td><td><b>Companion computer</b></td><td>ARM SBC, <b>IP66 enclosure, mounted aft</b></td><td class="n">0.50 kg</td><td class="n">$200–$500</td></tr>
+<tr><td>B10</td><td><b>Hose clamp / strain relief</b></td><td><b>Bolts to airframe rail, NOT the plate</b></td><td class="n">0.40 kg</td><td class="n">$80–$200</td></tr>
+<tr class="tot"><td></td><td><b>Airborne equipment</b></td><td><b>Leaves 4.56 kg for hose = 21.6 m unsupported</b></td><td class="n">4.10 kg</td><td class="n">$1,410–$3,120</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>C · Ground rig — where the IP lives</h3>
+<div class="scroll">
+<table>
+<thead><tr><th>#</th><th>Item</th><th>Why</th><th class="n">Cost</th></tr></thead>
+<tbody>
+<tr><td>C1</td><td><b>Soft-wash pump</b>, 4–8 gpm @ 60–100 psi</td><td>Commodity 12 V rig. <b>60–100 psi <i>is</i> 4–7 bar</b> — our exact table</td><td class="n">$1,500–$2,500</td></tr>
+<tr><td>C2</td><td><b>Electronic pressure regulator</b></td><td><b>This is the PSM.</b> It never flies</td><td class="n">$1,500–$4,000</td></tr>
+<tr><td>C3</td><td><b>Firmware pressure ceiling</b></td><td>Must <b>refuse</b> an over-ceiling command in hardware — not trust software</td><td class="n">incl. C2</td></tr>
+<tr><td>C4</td><td><b>Powered hose reel</b></td><td>⚠ <b>Load-bearing.</b> Holds the hose so the drone doesn't have to</td><td class="n">$800–$2,000</td></tr>
+<tr><td>C5</td><td><b>3/8" hose, 60 m</b></td><td>0.211 kg/m charged. Reel carries it; only 21 m may hang free</td><td class="n">$200–$500</td></tr>
+<tr><td>C6</td><td><b>Chemical proportioner</b></td><td>Per-zone mix ratio, driven by the prescription</td><td class="n">$400–$1,200</td></tr>
+<tr><td>C7</td><td><b>3-way source valve</b></td><td>DI tank vs bulk tank, upstream of the pump (§4)</td><td class="n">$80–$250</td></tr>
+<tr><td>C8</td><td><b>Containment / recovery</b></td><td>Detergent to a storm drain is a regulated discharge in California</td><td class="n">$500–$1,500</td></tr>
+<tr class="tot"><td></td><td><b>Ground rig</b></td><td></td><td class="n">$4,980–$11,950</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>D · Water &amp; chemistry</h3>
+<div class="scroll">
+<table>
+<thead><tr><th>#</th><th>Item</th><th>Why</th><th class="n">Cost</th></tr></thead>
+<tbody>
+<tr><td>D1</td><td><b>RO unit, 300–600 GPD</b></td><td>⚠ <b>Mandatory on Carlsbad water</b> — ~30× resin life (§6)</td><td class="n">$400–$1,200</td></tr>
+<tr><td>D2</td><td><b>DI resin vessel + first fill</b></td><td>Mixed bed, 1.6–3.6 ft³. Polishes RO permeate to 0 ppm</td><td class="n">$400–$900</td></tr>
+<tr><td>D3</td><td><b>DI buffer tank, 100–275 gal</b></td><td>You make water 20× slower than you spray it. Fill overnight</td><td class="n">$250–$700</td></tr>
+<tr><td>D4</td><td><b>Bulk tank, 100–200 gal</b></td><td>Untreated water for roof and stucco</td><td class="n">$200–$500</td></tr>
+<tr><td>D5</td><td><b>Trailer, braked</b></td><td>⚠ 275 gal of water is <b>2,294 lb</b>. Axle rating is a real spec</td><td class="n">$2,500–$6,000</td></tr>
+<tr><td>D6</td><td><b>Handheld TDS meter ×2</b></td><td>The entire quality system for §4.3. Verify before every panel</td><td class="n">$50</td></tr>
+<tr><td>D7</td><td><b>Thickened soft-wash surfactant</b></td><td><b>This is your "foam."</b> Cling from chemistry, not hardware (§5)</td><td class="n">$150–$400</td></tr>
+<tr><td>D8</td><td><b>Eco degreaser, ammonia-free glass</b></td><td>Path A chemistry — no Part 137 exposure</td><td class="n">$200–$500</td></tr>
+<tr><td>D9</td><td><i>Sodium hypochlorite + injector</i></td><td class="ph2">⚠ <b>Path B only.</b> Do not buy until §8 is decided</td><td class="n ph2">$300–$800</td></tr>
+<tr class="tot"><td></td><td><b>Water &amp; chemistry</b></td><td></td><td class="n">$4,150–$11,050</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="call info">
+  <h4>Kit total — $72,500 to $104,000</h4>
+  <p>Against a single Lucid Sherpa at <b>$75,000</b>, which maps nothing, integrates nothing, and
+  leaves you with no scout, no ground rig and no water system.</p>
+</div>
+
+<h2>11 · Buy it in this order</h2>
+<div class="scroll">
+<table>
+<thead><tr><th>Phase</th><th>What</th><th>Proves</th><th class="n">Cost</th></tr></thead>
+<tbody>
+<tr><td><b>1</b></td><td><b>Ground rig on a bench</b> — C1, C2, C3, D6, and a gun on a stand</td><td>The per-surface pressure loop and the firmware ceiling. <b>The actual IP.</b> No aircraft, no licence, no liability</td><td class="n">$3,100–$6,600</td></tr>
+<tr><td><b>2</b></td><td><b>Water train</b> — D1–D4, D6</td><td>Your real TDS, your real resin cost, your real fill time. All the numbers in §6 replaced with measurements</td><td class="n">$1,300–$3,300</td></tr>
+<tr><td><b>3</b></td><td><b>Scout + photogrammetry</b> — A3, A4</td><td><b>Scan-only revenue.</b> No spray, no water, no damage exposure — and it is the differentiated half</td><td class="n">$20,000–$22,000</td></tr>
+<tr><td><b>4</b></td><td><b>Cleaner + payload</b> — A1, A2, A5, A6, B1–B10, C4–C8, D5</td><td>The closed loop</td><td class="n">$48,000–$72,000</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Phases 1 and 2 cost under $10,000, need no aircraft and no certificate, and test the only
+thing that can't be bought:</b> whether per-surface prescription and verification actually hold up
+against real dirt. If the pressure loop doesn't work on a bench, none of the $70,000 above it
+matters.</p>
+
+<div class="call warn">
+  <h4>Before you cut metal or sign anything</h4>
   <p><b>1. Will Inspired Flight support a liquid spray payload?</b> Warranty and airworthiness.
-  A "no" ends this build.</p>
-  <p><b>2. Exact Universal Payload Interface bolt pattern and load rating</b> — the plate can't be
-  drawn to scale until you have the drawing from them.</p>
-  <p><b>3. Insurance</b> for a self-integrated spray drone. Still unasked.</p>
+  A "no" ends this build — ask before anything else.</p>
+  <p><b>2. Exact Universal Payload Interface bolt pattern and load rating.</b> The plate can't be
+  drawn to scale until you have their drawing.</p>
+  <p><b>3. Insurance for a self-integrated spray drone.</b> Still unasked, still likely the
+  deciding number — and §8 changes the quote.</p>
+  <p><b>4. Part 137 applicability to hypochlorite soft washing.</b> An aviation attorney, not a
+  search result.</p>
+  <p><b>5. Your own tap water TDS.</b> A $25 meter, ten minutes, and it re-prices all of §6.
+  Do this one today.</p>
 </div>
-
 <footer>
-Rev A concept layout, not a manufacturing drawing. Dimensions marked are design intents to be
-confirmed against the aircraft's published payload interface and against measured CG with the
-payload fitted. Mass figures are estimates for budgeting, not weighed parts. Jet reaction of ~12 N
-is computed from our own prescription range (1.8–7 bar, ~4 gpm); confirm against the gun actually
-selected. Airworthiness of any customer integration rests with the integrator.
+<b>Rev B · 4 September 2026.</b> Supersedes Rev A, which covered the airborne payload only.
+Aircraft payload figures are the manufacturers' published Part 107 and maximum-gross numbers;
+water chemistry figures are published averages for the Carlsbad supply and <b>must be replaced with
+your own meter readings</b>. Prices are public list, subject to quote — none of this is a bid.
+Pressure and dwell values come from <span class="m">prescriptions/surface_treatment_v1.json</span>
+and remain <b>uncalibrated starting assumptions</b>, not validated constants; §8 flags the roof
+dwell figure as coupled to the chemistry decision. Nothing here is legal, aviation-regulatory or
+insurance advice.
 </footer>
-
 </div>
